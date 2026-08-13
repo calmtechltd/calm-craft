@@ -19,9 +19,15 @@ Commands come from `commands` in `.engineering/config.yaml`, which `engineering-
 
 ## Workflow
 
-### 1. Run the gates in CI's order
+### 1. Run exactly what `gates` lists, in order
 
-Types → lint → dead code → tests, or whatever order the config records. **Stop and fix at the first failure** before continuing; a later gate's output is noise while an earlier one is broken.
+The config's `gates` list names the commands that actually gate a merge, in CI's order — typically a `setup` generation step, then types, lint, dead code, tests.
+
+**Run the `setup` command if one exists.** It's there because CI runs a generation step before the gates; skip it and a later gate fails on missing generated files, and you report a phantom failure on a perfectly clean branch.
+
+**Never run anything under `non_gating`.** Those commands exist but don't gate. A formatter failing on hundreds of pre-existing files is not this branch's problem, and reporting Blocked on it makes this skill worse than useless — people stop believing it. Mention them only if asked.
+
+**Stop and fix at the first failure** before continuing; a later gate's output is noise while an earlier one is broken.
 
 Skip any command the config doesn't define. Don't invent one — a guessed test command that passes proves nothing.
 
@@ -57,7 +63,8 @@ Be accurate about what actually ran. "Ready" after skipping the test suite is th
 
 ## Quality gate
 
-- [ ] Every command defined in the config was run, or its absence explained.
+- [ ] Every command in `gates` was run, in order, or its absence explained.
+- [ ] Nothing under `non_gating` was run or reported as blocking.
 - [ ] Failures fixed at the root, not suppressed.
 - [ ] Config commands match what CI runs — drift reported.
 - [ ] Git sanity check done.

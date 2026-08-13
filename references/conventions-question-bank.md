@@ -178,51 +178,174 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 
 # Other languages
 
-Same twelve axes. These are the questions that carry real weight in each — not literal translations of the TypeScript list.
+Same twelve axes. These list the questions that carry real weight in each language — not literal translations of the TypeScript list. Where a language has already decided something, don't re-decide it: record it as settled and move on.
+
+## Go
+
+The closest thing to a solved problem, and a useful benchmark for the others: `gofmt` ends every formatting argument, `go vet` and the standard layout settle much of the rest. What genuinely remains:
+
+- **Linting:** `golangci-lint` with a committed config, CI-enforced. Which linter set is on.
+- **Error wrapping:** ★ wrap with `%w` and check with `errors.Is`/`errors.As` · sentinel errors · typed error structs. State which, because mixing them makes errors unmatchable.
+- **`any` / `interface{}`:** ★ requires justification · free.
+- **Context:** ★ first parameter, never stored in a struct, always propagated.
+- **Panics:** ★ library code never panics; recover only at process boundaries.
+- **Package layout:** naming (short, no stutter), and how deep `internal/` goes.
+- **Struct embedding vs explicit composition.**
+- **Tests:** ★ table-driven as house style · free-form.
+
+## Rust
+
+`rustfmt` is the authority and is not worth arguing about. What's left is mostly about escape hatches:
+
+- **Clippy:** which lint groups are on (`pedantic`, `nursery`), and whether CI denies or warns.
+- **`unwrap()` / `expect()`:** ★ banned in production paths, allowed in tests · `expect` with a message allowed · free. The single highest-value decision here.
+- **`unsafe`:** ★ `#![deny(unsafe_code)]` at the crate root, lifted per module with a `// SAFETY:` comment · allowed with justification · free. This one is compiler-enforceable, so it belongs in the enforced tier.
+- **Error handling:** ★ `thiserror` for libraries, `anyhow` for binaries · concrete enums throughout · mixed. Say which crates and where.
+- **Module layout:** ★ `foo.rs` + `foo/` · `mod.rs`.
+- **Crate-root re-exports (`pub use`):** the barrel-file question in Rust clothing.
+- **Generics vs `dyn Trait`:** where the monomorphisation cost is worth it.
+- **Workspace shape:** one crate or many, and what earns a new one.
+- **MSRV:** pinned and tested in CI, or track stable.
+
+## Java
+
+- **Formatting:** ★ one formatter (google-java-format via Spotless) enforced in CI.
+- **Null:** ★ `Optional` at API boundaries only, never as a field or parameter · nullability annotations checked by a static analyser · neither.
+- **Lombok:** ★ banned — records and modern Java cover most of it · allowed for a named subset · free. Genuinely contested; decide it explicitly or it spreads.
+- **Records vs classes** for data carriers.
+- **Checked exceptions:** ★ avoid in new code; wrap at boundaries · use as designed.
+- **`var`:** ★ when the type is apparent on the right-hand side · always · never.
+- **Dependency injection:** ★ constructor injection; field injection banned.
+- **Static imports:** ★ tests and constants only.
+- **Package structure:** by feature or by layer.
+- **Build:** Maven or Gradle, version catalogue, and whether the wrapper is committed.
+
+## Kotlin
+
+- **Formatting:** ★ ktlint or ktfmt as sole authority, CI-enforced.
+- **`!!` (not-null assertion):** ★ banned outside tests · allowed with justification · free. The Kotlin equivalent of force-unwrap, and the same reasoning applies.
+- **Nullability at the Java boundary:** where platform types must be narrowed, and who owns doing it.
+- **Immutability:** ★ `val` by default; `var` needs a reason.
+- **Coroutines:** ★ structured concurrency only — `GlobalScope` banned, every launch has an owning scope. Where `runBlocking` is acceptable, if anywhere.
+- **Extension functions:** ★ defined next to the type they extend or in a named module — not scattered top-level · free.
+- **Data classes vs value classes** for wrappers.
+- **Explicit API mode** for anything published as a library.
+- **Scope functions** (`let`, `run`, `apply`, `also`, `with`): whether the team standardises which to use when, or accepts all five.
 
 ## Swift
 
-- **Formatting:** SwiftFormat or swift-format as sole authority; SwiftLint for rules. Do they run in CI?
-- **Force unwrap `!`:** ★ banned outside tests and `@IBOutlet` · allowed with justification · free. Force-try and force-cast too.
-- **Access control:** ★ explicit and minimal (`private` by default, widen deliberately) · rely on `internal` default.
-- **Value vs reference types:** ★ structs unless identity or inheritance is needed.
-- **Optionals:** `guard let` early return as the house style, and where implicitly-unwrapped optionals are tolerated (if anywhere).
-- **Concurrency:** strict concurrency checking on or off; `@MainActor` discipline for UI; whether `Task { }` detached work needs a stated cancellation story.
+- **Formatting:** SwiftFormat or swift-format as sole authority; SwiftLint for rules. Both CI-enforced.
+- **Force unwrap `!`:** ★ banned outside tests and `@IBOutlet` · allowed with justification · free. Same for force-try and force-cast.
+- **Access control:** ★ explicit and minimal — `private` by default, widened deliberately · rely on the `internal` default.
+- **Value vs reference types:** ★ structs unless identity or inheritance is genuinely needed.
+- **Optionals:** `guard let` early return as house style, and where implicitly-unwrapped optionals are tolerated, if anywhere.
+- **Concurrency:** strict concurrency checking on or off; `@MainActor` discipline for UI; whether detached `Task { }` work needs a stated cancellation story.
 - **Singletons and `.shared`:** ★ named exceptions only, listed.
 - **File layout:** one primary type per file; where extensions live; `// MARK:` conventions.
-- **Dependencies:** SPM pinning policy, and the bar for adding one.
+- **Dependencies:** SPM pinning policy and the bar for adding one.
 
 ## Python
 
 - **Formatting and linting:** ★ one tool as authority (Ruff covers both), CI-enforced.
-- **Type hints:** ★ required on public functions, checked by a type checker in CI · gradual · none. If checked, which strictness level, and is it error or warning?
-- **Imports:** ★ absolute only · relative within a package. Whether `__init__.py` may re-export (the barrel-file question in Python clothing).
-- **Mutable default arguments:** lint-enforced ban — cheap, and catches a real bug class.
+- **Type hints:** ★ required on public functions and checked by a type checker in CI · gradual · none. If checked, at which strictness, and error or warning.
+- **Imports:** ★ absolute only · relative within a package. Whether `__init__.py` may re-export — the barrel-file question again.
+- **Mutable default arguments:** lint-enforced ban. Cheap, and catches a real bug class.
 - **Data structures:** ★ dataclasses for plain data, a validation library only at input boundaries · validation models throughout.
-- **Environment and packaging:** which tool owns it (uv, Poetry, pip-tools), lockfile committed, Python version pinned.
 - **Exceptions:** custom hierarchy vs built-ins; bare `except:` banned.
+- **Packaging:** which tool owns the environment (uv, Poetry, pip-tools), lockfile committed, Python version pinned.
 
 ## Ruby
 
-- **RuboCop as sole authority**, with the config committed and CI-enforced — and a policy on how `.rubocop_todo.yml` gets burned down rather than grown.
-- **`frozen_string_literal` magic comment:** ★ required.
-- **Guard clauses over nested conditionals**; method length and ABC-size thresholds.
+- **RuboCop as sole authority**, config committed and CI-enforced — plus a policy for burning down `.rubocop_todo.yml` rather than growing it.
+- **`frozen_string_literal`:** ★ required.
+- **Guard clauses** over nested conditionals; method length and ABC-size thresholds.
 - **Autoloading vs explicit `require`**, and where each applies.
-- **Service objects / interactors:** whether they're the house pattern, and what their call signature looks like.
+- **Service objects / interactors:** whether they're the house pattern, and what their call signature is.
 - **Metaprogramming:** where `define_method` and `method_missing` are acceptable, if anywhere.
+
+## PHP
+
+- **Standard and formatter:** ★ PSR-12 enforced by PHP-CS-Fixer or PHP_CodeSniffer in CI.
+- **`declare(strict_types=1)`:** ★ required in every file. Lint-enforceable, and it changes real behaviour.
+- **Static analysis level:** PHPStan or Psalm, and **which level** — the highest-value decision in PHP, because the level is the whole conversation. State it and the ratchet policy for raising it.
+- **Final by default:** ★ classes final unless designed for extension · open.
+- **Constructor property promotion** and readonly properties: house style or optional.
+- **Framework conventions:** where the framework's opinion ends and yours begins — especially around fat models, service layers, and where business logic may not live.
+- **Dependencies:** Composer lockfile committed, PHP version pinned in `composer.json` and CI.
 
 ## C#
 
-- **EditorConfig as the authority**, with analyzers on and warnings-as-errors in CI.
-- **Nullable reference types:** ★ enabled solution-wide; policy on `!` null-forgiving.
+- **EditorConfig as the authority**, analysers on, warnings-as-errors in CI.
+- **Nullable reference types:** ★ enabled solution-wide; policy on the `!` null-forgiving operator.
 - **`var`:** ★ when the type is apparent on the right-hand side · always · never.
 - **File-scoped namespaces**, one type per file.
-- **Async:** `Async` suffix required; `ConfigureAwait` policy; `async void` banned outside event handlers.
-- **LINQ:** method syntax vs query syntax; whether deferred execution crossing a boundary is allowed.
-- **Dependency injection:** constructor injection as the rule; where a service locator is tolerated, if anywhere.
+- **Async:** `Async` suffix required; `ConfigureAwait` policy; ★ `async void` banned outside event handlers.
+- **LINQ:** method vs query syntax; whether deferred execution may cross a boundary.
+- **Dependency injection:** ★ constructor injection; where a service locator is tolerated, if anywhere.
 
-## Go
+## C++
 
-Worth including as the counter-example: `gofmt`, `go vet`, and the standard layout settle most of this at the language level, which is exactly the end-state the other lists are approximating. What's left to decide is genuinely small — error wrapping conventions, whether `interface{}`/`any` needs justification, package naming and the depth of `internal/`, and context propagation rules.
+The most contested list here, because the language supports several incompatible styles and teams genuinely differ:
 
-If your language decided something for you, don't re-decide it. Record it as settled and move on.
+- **Standard version:** pinned, and enforced by the build.
+- **`clang-format` as sole authority**, config committed; `clang-tidy` check set chosen and CI-enforced.
+- **Exceptions:** ★ on · off (`-fno-exceptions`). Games, embedded, and some finance shops turn them off, and it changes every error-handling decision downstream. Decide first; everything else follows.
+- **RTTI:** on or off, for the same reason.
+- **Ownership:** ★ smart pointers express ownership, raw pointers and references are non-owning views · free. Write the rule down; this is where the memory bugs come from.
+- **Headers:** ★ `#pragma once` · include guards. Include-what-you-use enforced or not.
+- **`auto`:** where it aids readability vs where it hides a type that matters.
+- **Build:** CMake conventions, dependency management (vcpkg, Conan, submodules), and whether sanitiser builds run in CI.
+
+## WebAssembly
+
+Not a language — a compilation target — so the questions are about the **boundary**, which is where every WASM problem actually lives.
+
+- **Source language and toolchain pinned**, in the manifest and in CI. A `.wasm` built by a different toolchain version is a different artifact.
+- **Interface style:** ★ a generated binding layer (`wasm-bindgen`, WIT / the Component Model) · hand-rolled imports and exports. Hand-rolled boundaries rot silently because nothing type-checks across them.
+- **Binary size budget:** ★ stated, and enforced in CI. This ships over the wire; without a number it only ever grows. Say whether size optimisation and stripping are on in release builds.
+- **Memory ownership across the boundary:** ★ write down who allocates and who frees, per direction. This is the single biggest source of WASM bugs and it is invisible to both sides' type systems.
+- **Call granularity:** ★ batch at the boundary — crossing is expensive, and a chatty interface will dominate your profile regardless of how fast the module is.
+- **What may cross:** ★ plain data only; no host handles or DOM access from the module.
+- **The built artifact:** committed to the repo or built in CI. Pick one — a committed `.wasm` that CI also builds is a divergence waiting to happen.
+- **Debug symbols:** whether they ship in release, and what that costs in size.
+
+## Infrastructure and glue
+
+Nobody thinks of these as needing conventions, everybody has them, and they're where the expensive mistakes live. Worth a short section even when they're a small fraction of the codebase.
+
+**Shell scripts**
+- ★ `set -euo pipefail` at the top of every script. Lint-enforceable with ShellCheck.
+- ShellCheck in CI, at a stated severity.
+- ★ Quote every expansion. Where a script grows past a stated length, rewrite it in a real language — name the length.
+
+**Terraform / infrastructure as code**
+- ★ `terraform fmt` and `validate` in CI; a linter (`tflint`) with a committed config.
+- Module boundaries: what earns a module, and where shared modules live.
+- State: remote backend, locking, and who may apply.
+- ★ Never commit secrets or state files; enforce with a scanner in CI.
+- Naming and tagging conventions for resources — the thing that decides whether your cloud bill is ever explicable.
+
+**SQL and migrations**
+- Migrations forward-only or reversible; who runs them and when.
+- Naming: tables, columns, indexes, constraints.
+- ★ Every migration reviewed for a lock that would take production down. Name the operations that need special handling.
+
+If your language or tool decided something for you, don't re-decide it. Record it as settled and move on.
+
+---
+
+## Turbo Pascal 6.0
+
+Included because it makes the point better than anything modern can: **the twelve axes are not a product of the current era.** Every one of them existed in 1990, with the same arguments, and mostly without tooling to settle them.
+
+- **Formatting authority (Axis 1):** none. There is no formatter. The IDE indents, and everything else is an argument you have in person. This is the world the other lists are trying not to live in.
+- **Module boundaries (Axis 2):** units. `interface` declares the public surface, `implementation` hides the rest — a genuinely good boundary, better enforced than most barrel-file conventions in this document. What earns a new unit is the same question as what earns a new module.
+- **Imports (Axis 3):** the `uses` clause, and the order matters — units initialise in the order they're used. Circular unit references are a compile error, which is Axis 2.4 decided for you at the language level.
+- **File and unit size (Axis 4):** decided for you by the 64KB segment limit. A cap you cannot argue with is, in fairness, the most effective kind.
+- **Naming (Axis 5):** the compiler is case-insensitive and only the first 63 characters are significant, so the convention is entirely for humans. Filenames are 8.3, which is a naming constraint no style guide could improve on.
+- **Type discipline (Axis 6):** `{$R+}` range checking and `{$I+}` I/O checking on in development, off in release — the original "strict in dev, fast in prod" bargain, and the original argument about whether shipping with the checks off is brave or foolish.
+- **Errors (Axis 7):** no exceptions until Turbo Pascal 7 and Delphi. Return codes and `IOResult`, checked immediately or not at all.
+- **Memory (Axis 8's era-appropriate cousin):** `New` and `Dispose`, by hand, inside 640KB. Ownership rules written down or leaks — which is precisely the WebAssembly boundary question above, forty years earlier.
+- **Escape hatches:** inline `asm` blocks and `goto`, both available, both requiring exactly the same conversation as `unsafe` in Rust and `any` in TypeScript: banned, or allowed with a written reason?
+
+The lesson isn't nostalgia. It's that these questions are structural rather than fashionable, the tooling to enforce them is recent and unevenly distributed, and a team that writes its answers down will out-live one that keeps re-litigating them — in any language, in any decade.

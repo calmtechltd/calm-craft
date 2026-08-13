@@ -27,7 +27,7 @@ Read the repo and work out what you can. Do not ask about anything you can deter
 - **Toolchain** — formatter, linter, type checker, test runner, dead-code checker, package manager. Read the actual config files and the scripts in the project manifest, not the dependency list.
 - **CI** — read the workflow files. The commands CI runs are the commands `ready-for-pr` must run; take them from there rather than guessing.
 - **Default branch** — `git remote show origin`, falling back to `origin/HEAD`.
-- **Ticket references** — sample recent commit messages and PR titles for an issue-key pattern.
+- **Ticket references** — check existing rule files, skill files, and contributing docs **first**; teams write the pattern down long before it appears reliably in commit subjects. Only then sample recent commits and pull request titles. Coming up empty on git history is not evidence the repo has no ticket convention.
 - **Test layout** — colocated, `__tests__/`, or a mirrored tree; and how unit and integration tests are distinguished.
 - **Existing agent instructions** — `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `CONTRIBUTING.md`.
 
@@ -56,12 +56,26 @@ paths:
 
 commands:
   # Exactly what CI runs, in CI's order. Omit any that don't exist.
+  # `setup` is any generation or codegen step CI runs BEFORE the gates.
+  # Skip it and later gates fail on missing generated files — a phantom
+  # failure on a perfectly clean branch.
+  setup: <pre-gate generation command, if any>
   types: <type check command>
   lint: <lint command>
-  format_check: <format check command>
   deadcode: <dead code command>
   test: <full test command>
   test_file: "<command with {file} placeholder>"
+
+# Which commands gate a merge, in order. `ready-for-pr` runs exactly these
+# and reports Blocked only on these.
+gates: [setup, types, lint, deadcode, test]
+
+# Commands that exist but do NOT gate. Never report Blocked on these.
+# A formatter failing on hundreds of pre-existing files, and absent from CI,
+# belongs here — treating it as a gate blocks every branch on unrelated drift.
+non_gating:
+  format_check: <command>
+  format_fix: <command>
 
 vcs:
   default_branch: <branch>
