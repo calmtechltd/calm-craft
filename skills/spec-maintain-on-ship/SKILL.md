@@ -15,7 +15,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 - A behaviour shipped, fully or partly.
 - A future behaviour got prioritised.
-- An Open Question got answered.
+- An Open Question got answered, in conversation or via `spec-harvest-discussion`.
 - A journey changed shape.
 
 **Not this skill:** finding drift (`spec-audit-drift`), authoring a new spec (`spec-author-greenfield` / `spec-author-from-impl`).
@@ -24,7 +24,9 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 ### A partial behaviour shipped
 
-🟡 → 🟢. Remove the ticket reference and the note on what was missing.
+🟡 → 🟢. Remove the note on what was missing, and the ticket reference if the repo uses one.
+
+**A closed ticket is not evidence.** It means someone marked a card done. Verify the code and the test yourself before promoting anything — the tracker owns scheduling, the spec owns intent.
 
 **Verify before flipping.** 🟢 means built *and* tested. If the tests aren't there, either write them or the badge stays 🟡 with an updated note. Flipping a badge because a pull request merged is how an estate stops being trustworthy.
 

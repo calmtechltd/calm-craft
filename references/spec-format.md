@@ -21,11 +21,26 @@ kebab-case, no number prefixes. Ordering comes from the folder and the front-mat
 id: billing-invoicing-refund-processing   # globally unique, mirrors the folder path
 area: Billing / Invoicing                 # Title Case, used for grouping
 status: partial                           # implemented | partial | future — roll-up of behaviours
-ticket: ABC-123                           # omit entirely when nothing is in flight
 ---
 ```
 
-The `ticket` field name and format come from `.engineering/config.yaml`. Omit it if the repo doesn't link tickets.
+### Ticket references are optional, and off by default
+
+`tickets.provider` in `.engineering/config.yaml` defaults to `none`. With `none` there is **no ticket field at all** — not a blank one. A field nobody fills in is worse than no field: it makes the format look more rigorous than it is, and every author has to decide whether they were supposed to complete it.
+
+With a provider set, a `ticket` field becomes available in front matter and on 🟡 behaviours:
+
+| Provider | Setup |
+| --- | --- |
+| `none` | Default. No ticket field |
+| `github` | Inferred from the repository. `gh` is already authenticated, so skills can genuinely resolve issue state |
+| `linear`, `jira`, `custom` | Require `pattern` and a `url` template. Skills can link, but usually cannot resolve state without credentials |
+
+**What never changes:** a 🟡 behaviour always carries a one-line note on what's missing. The note is the valuable half — it describes the state of the product. The ticket is optional metadata recording that someone made a card.
+
+**The spec owns intent; the tracker owns scheduling.** A closed ticket never promotes a badge. It makes `spec-gap-sweep` report the behaviour as worth verifying, and `spec-maintain-on-ship` still demands evidence — the code and the test, named. Anything else and badges go back to being optimistic rather than honest, which is the one property worth protecting.
+
+Discussion flows the other way, through `spec-harvest-discussion`: it proposes spec changes from an issue or review thread and never writes back to the tracker.
 
 ## Sections
 

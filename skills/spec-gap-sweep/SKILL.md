@@ -26,11 +26,15 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 Recompute every front-matter `status` from the behaviour badges and report mismatches. A spec marked `implemented` containing a 🔵 behaviour is the common case, and it's how an estate starts overstating itself.
 
-### 2. Partial behaviours with no ticket
+### 2. Partial behaviours with no note
 
-🟡 requires a ticket reference (where the repo links tickets) and a note on what's missing. A 🟡 with neither is work nobody is tracking, described nowhere else.
+Every 🟡 requires a one-line note on what's missing. A 🟡 without one is work nobody is tracking, described nowhere else. **The note is the requirement**; a ticket reference is optional, and absent entirely when `tickets.provider` is `none`.
 
-Also flag 🟡 behaviours whose ticket is closed — either the work shipped and the badge is stale, or the ticket was abandoned and the note is a lie.
+Where a provider *is* configured, also flag 🟡 behaviours whose ticket is closed. With `provider: github`, resolve it properly — `gh` is authenticated, so this is a real check rather than a guess. With `linear`, `jira`, or `custom`, attempt it only if credentials exist and **say plainly when you couldn't**; an unresolvable ticket is evidence of nothing.
+
+A closed ticket means the badge is **worth verifying** and nothing more. Report it as such and hand to `spec-maintain-on-ship`, which requires the code and the test before promoting anything. Never infer a badge from tracker state — the spec owns intent, the tracker owns scheduling, and collapsing the two puts the estate back to being optimistic.
+
+A closed ticket with a long thread is also the best candidate for `spec-harvest-discussion`: that's where decisions were made that the spec never absorbed.
 
 ### 3. Ageing future behaviours
 

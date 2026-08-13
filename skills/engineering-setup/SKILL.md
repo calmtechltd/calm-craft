@@ -39,7 +39,7 @@ Ask only about what you genuinely could not detect:
 
 - Where should working documents live — implementation plans, review reports? Suggest a gitignored directory if the repo has no convention.
 - Where do specs live, if not `specs/`?
-- Is the ticket URL template different from what the pattern suggests?
+- **Do specs link to a tracker at all?** Default to `none` and say so — it's the right answer for most repos, and a ticket field nobody completes is worse than no field. If they want one, `github` is the only provider where skills can actually resolve issue state without extra credentials. Anything else needs a pattern and URL template.
 - Which of this plugin's three areas do I want — conventions, specs, delivery, or all three?
 
 ### 3. Write `.engineering/config.yaml`
@@ -82,8 +82,14 @@ vcs:
   pr_cli: gh              # or none
 
 tickets:
-  pattern: "<regex, e.g. ABC-\\d+>"
-  url: "<url template with {id}>"
+  # none is the default and a perfectly good answer. With `none`, specs carry
+  # no ticket field at all — a field nobody fills in is worse than no field.
+  provider: none          # none | github | linear | jira | custom
+  # github needs nothing else — inferred from the repo, and `gh` is already
+  # authenticated, so skills can resolve issue state.
+  # linear | jira | custom also need:
+  # pattern: "<regex, e.g. ABC-\\d+>"
+  # url: "<url template with {id}>"
 
 tests:
   location: colocated     # colocated | tests-dir | mirrored-tree
