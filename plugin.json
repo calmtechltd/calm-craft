@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "calm-craft",
+  "version": "0.1.0",
+  "description": "Specs as the source of truth, a chunked delivery loop, and decided-and-enforced code conventions \u2014 as portable agent skills.",
+  "author": {
+    "name": "Calm Tech Ltd",
+    "url": "https://github.com/calmtechltd"
+  },
+  "license": "MIT",
+  "keywords": [
+    "specs",
+    "conventions",
+    "code-review",
+    "implementation-plan",
+    "testing",
+    "linting"
+  ],
+  "repository": "https://github.com/calmtechltd/calm-craft",
+  "homepage": "https://github.com/calmtechltd/calm-craft"
+}
