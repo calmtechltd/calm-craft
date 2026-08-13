@@ -115,12 +115,20 @@ If a command fails, fix it or drop it — and say which you did.
 
 If it doesn't exist, create it. If it does, propose a merge rather than overwriting.
 
-`AGENTS.md` is the canonical instruction file — a real standard, read natively by most agents. Make tool-specific files thin pointers, never copies:
+`AGENTS.md` is the canonical instruction file — stewarded by the Agentic AI Foundation under the Linux Foundation, and [officially supported](https://agents.md) by Codex, Cursor, VS Code, GitHub Copilot, Gemini CLI, Windsurf, Devin, Zed and many others.
+
+Make tool-specific files thin pointers, never copies. **Use each tool's own mechanism — a prose "see AGENTS.md" line is a suggestion, not a load.**
+
+**Claude Code** does not read `AGENTS.md` and does **not** fall back to it. Its [documentation](https://code.claude.com/docs/en/memory) is explicit: "Claude Code reads `CLAUDE.md`, not `AGENTS.md`." A repo shipping only `AGENTS.md` gives it nothing. Write a real import, which Claude Code expands at load time:
 
 ```markdown
 <!-- CLAUDE.md -->
-Conventions and workflow for this repo live in [AGENTS.md](AGENTS.md). Read it before writing code.
+@AGENTS.md
 ```
+
+Claude-specific instructions can follow below the import. A symlink (`ln -s AGENTS.md CLAUDE.md`) also works when nothing extra is needed, but requires Administrator or Developer Mode on Windows — prefer the import.
+
+Verify it loaded rather than assuming: in a Claude Code session, `/context` lists what's under **Memory files**.
 
 Three files with the same rules disagree within a month and nobody can tell which one the agent read.
 
