@@ -8,6 +8,7 @@ export type SessionSource = {
   content: string;
   mediaType?: string;
   contexts?: string[];
+  generic?: boolean;
 };
 
 export type StartLocalSessionOptions = {
@@ -145,11 +146,13 @@ export async function startLocalSession(options: StartLocalSessionOptions): Prom
   );
   const sessionPayload = serializeData({
     data: options.data,
-    sources: [...resources].flatMap(([id, source]) =>
-      source.contexts && source.contexts.length > 0
-        ? source.contexts.map((context) => ({ id, path: source.path, context }))
-        : [{ id, path: source.path }],
-    ),
+    sources: [...resources].flatMap(([id, source]) => {
+      const descriptors: Array<{ id: string; path: string; context?: string }> =
+        source.contexts?.map((context) => ({ id, path: source.path, context })) ?? [];
+      if (source.generic || descriptors.length === 0)
+        descriptors.unshift({ id, path: source.path });
+      return descriptors;
+    }),
   });
   let active = true;
   let activePort = 0;

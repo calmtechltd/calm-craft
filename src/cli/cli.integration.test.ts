@@ -158,6 +158,7 @@ describe("CalmCraft CLI", () => {
     expect(session.data.review.semanticChanges.length).toBeGreaterThan(0);
     expect(session.sources.some((source) => source.context?.endsWith(":before"))).toBe(true);
     expect(session.sources.some((source) => source.context?.endsWith(":after"))).toBe(true);
+    expect(session.sources.some((source) => source.context === undefined)).toBe(true);
   });
 
   it("uses an injected browser opener and rejects unsupported Node before repository access", async () => {

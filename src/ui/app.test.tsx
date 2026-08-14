@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -124,6 +124,10 @@ describe("CalmCraft Atlas", () => {
   afterEach(() => cleanup());
 
   it("parses durable feature context and rejects malformed route encoding", () => {
+    expect(parseAppRoute("#/atlas?status=future&findings=1")).toEqual({
+      view: "atlas",
+      selection: { status: "future", findings: true },
+    });
     expect(parseAppRoute("#/review")).toEqual({ view: "review", selection: {} });
     expect(
       parseAppRoute(
@@ -142,14 +146,28 @@ describe("CalmCraft Atlas", () => {
     expect(parseAppRoute("#/feature/example/behaviour/B2a")).toEqual({
       view: "feature",
       id: "example",
-      selection: { behaviour: "B2a", flow: undefined, state: undefined, transition: undefined },
+      selection: {
+        behaviour: "B2a",
+        flow: undefined,
+        state: undefined,
+        transition: undefined,
+        finding: undefined,
+        question: undefined,
+      },
     });
     expect(parseAppRoute("#/feature/example?flow=F1&transition=F1.T2")).toEqual({
       view: "feature",
       id: "example",
-      selection: { behaviour: undefined, flow: "F1", state: undefined, transition: "F1.T2" },
+      selection: {
+        behaviour: undefined,
+        flow: "F1",
+        state: undefined,
+        transition: "F1.T2",
+        finding: undefined,
+        question: undefined,
+      },
     });
-    expect(parseAppRoute("#/feature/%")).toEqual({ view: "atlas" });
+    expect(parseAppRoute("#/feature/%")).toEqual({ view: "atlas", selection: {} });
   });
 
   it("orients the repository and communicates status without colour alone", () => {
@@ -194,11 +212,12 @@ describe("CalmCraft Atlas", () => {
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot() }} />);
     const first = screen.getByRole("button", { name: /Feature 0/i });
 
-    fireEvent.keyDown(window, { key: "k", metaKey: true });
-    expect(document.activeElement).toBe(
-      screen.getByRole("searchbox", { name: "Search specifications" }),
-    );
     first.focus();
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    expect(await screen.findByRole("dialog", { name: "Command palette" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Search commands" })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole("dialog", { name: "Command palette" }), { key: "Escape" });
+    await waitFor(() => expect(first).toHaveFocus());
     fireEvent.keyDown(first, { key: "ArrowDown" });
     expect(document.activeElement).not.toBe(first);
     await user.keyboard("{Enter}");
@@ -222,5 +241,16 @@ describe("CalmCraft Atlas", () => {
     });
     expect(await screen.findByText("Showing 1 of 1 matches across 1000 specs")).toBeInTheDocument();
     expect(performance.now() - started).toBeLessThan(750);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(await screen.findByText("Showing 120 of 1000 matches")).toBeInTheDocument();
+    const filterStarted = performance.now();
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter by status" }), {
+      target: { value: "future" },
+    });
+    expect(
+      await screen.findByText("Showing 120 of 334 matches across 1000 specs"),
+    ).toBeInTheDocument();
+    expect(performance.now() - filterStarted).toBeLessThan(750);
   });
 });

@@ -54,6 +54,7 @@
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@onebeyond/license-checker": "^1.0.2",
     "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "6.9.1",

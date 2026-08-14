@@ -1,11 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { SpecDocument } from "../specs/model";
 import { CALMCRAFT_VERSION } from "../meta";
 import { Atlas } from "./atlas";
+import { atlasHref, parseAtlasSelection, type AtlasSelection } from "./atlas-route";
 import { BranchChangeDetail } from "./branch-change";
 import { BranchReviewNotStarted, BranchReviewView } from "./branch-review";
-import { FeatureView, type FeatureSelection } from "./feature";
+import { CommandPalette } from "./command-palette";
+import { featureHref, FeatureView, type FeatureSelection } from "./feature";
+import {
+  buildHealthItems,
+  healthHref,
+  HealthView,
+  parseHealthSelection,
+  type HealthSelection,
+} from "./health";
 import { AtlasIcon, BranchIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
 import { parseReviewSelection, reviewHref, type ReviewSelection } from "./review-route";
 import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
@@ -33,12 +42,13 @@ function repositoryName(root: string): string {
 }
 
 function openSpec(spec: SpecDocument): void {
-  window.location.hash = `/feature/${encodeURIComponent(spec.id)}`;
+  window.location.hash = featureHref(spec.id);
 }
 
 type AppRoute =
-  | { view: "atlas" }
+  | { view: "atlas"; selection: AtlasSelection }
   | { view: "review"; selection: ReviewSelection }
+  | { view: "health"; selection: HealthSelection }
   | { view: "feature"; id: string; selection: FeatureSelection };
 
 function decodeRouteSegment(value: string): string | undefined {
@@ -52,15 +62,22 @@ function decodeRouteSegment(value: string): string | undefined {
 export function parseAppRoute(hash: string): AppRoute {
   const [path = "", query = ""] = hash.replace(/^#/u, "").split("?");
   const segments = path.split("/").filter(Boolean);
+  const parameters = new URLSearchParams(query);
+  if (segments[0] === "atlas") {
+    return { view: "atlas", selection: parseAtlasSelection(parameters) };
+  }
   if (segments[0] === "review")
     return {
       view: "review",
-      selection: parseReviewSelection(segments, new URLSearchParams(query)),
+      selection: parseReviewSelection(segments, parameters),
     };
-  if (segments[0] !== "feature" || !segments[1]) return { view: "atlas" };
+  if (segments[0] === "health") {
+    return { view: "health", selection: parseHealthSelection(segments, parameters) };
+  }
+  if (segments[0] !== "feature" || !segments[1]) return { view: "atlas", selection: {} };
   const id = decodeRouteSegment(segments[1]);
-  if (!id) return { view: "atlas" };
-  const parameters = new URLSearchParams(query);
+  if (!id) return { view: "atlas", selection: {} };
+  const question = Number(parameters.get("question"));
   return {
     view: "feature",
     id,
@@ -70,6 +87,8 @@ export function parseAppRoute(hash: string): AppRoute {
       flow: parameters.get("flow") ?? undefined,
       state: parameters.get("state") ?? undefined,
       transition: parameters.get("transition") ?? undefined,
+      finding: parameters.get("finding") ?? undefined,
+      question: Number.isInteger(question) && question > 0 ? question : undefined,
     },
   };
 }
@@ -84,6 +103,8 @@ export function CalmCraftApp({
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const review = session.mode === "review" ? session.review : undefined;
   const snapshot = session.mode === "estate" ? session.snapshot : review?.target;
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteReturnFocus = useRef<HTMLElement | null>(null);
   const [route, setRoute] = useState<AppRoute>(() =>
     !window.location.hash && session.mode === "review"
       ? {
@@ -109,17 +130,37 @@ export function CalmCraftApp({
   }, []);
 
   useEffect(() => {
-    if (session.mode !== "review" || window.location.hash) return;
-    const href = reviewHref({ provenance: session.initialProvenance, group: "module" });
+    if (window.location.hash) return;
+    const href =
+      session.mode === "review"
+        ? reviewHref({ provenance: session.initialProvenance, group: "module" })
+        : atlasHref();
     window.history.replaceState(window.history.state, "", href);
     setRoute(parseAppRoute(href));
   }, [session]);
 
+  useEffect(() => {
+    const openPalette = (event: KeyboardEvent): void => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLocaleLowerCase() !== "k") return;
+      event.preventDefault();
+      paletteReturnFocus.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setPaletteOpen(true);
+    };
+    window.addEventListener("keydown", openPalette);
+    return () => window.removeEventListener("keydown", openPalette);
+  }, []);
+
+  const closePalette = (): void => {
+    setPaletteOpen(false);
+    queueMicrotask(() => paletteReturnFocus.current?.focus());
+  };
+
   const health = useMemo(() => {
-    const findings = snapshot?.estate.findings ?? [];
-    const errors = findings.filter((finding) => finding.severity === "error").length;
-    return { findings: findings.length, errors };
-  }, [snapshot]);
+    const items = snapshot ? buildHealthItems(snapshot.estate, review) : [];
+    const errors = items.filter((item) => item.finding.severity === "error").length;
+    return { findings: items.length, errors };
+  }, [review, snapshot]);
 
   if (!snapshot) {
     return (
@@ -154,7 +195,7 @@ export function CalmCraftApp({
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <aside className="sidebar">
+      <aside aria-hidden={paletteOpen ? true : undefined} className="sidebar">
         <div className="brand">
           <span aria-hidden="true" className="brand-mark">
             <i />
@@ -172,7 +213,7 @@ export function CalmCraftApp({
             aria-label="Atlas"
             aria-current={route.view === "atlas" ? "page" : undefined}
             className={`nav-item ${route.view === "atlas" ? "active" : ""}`}
-            href="#/atlas"
+            href={route.view === "atlas" ? atlasHref(route.selection) : atlasHref()}
           >
             <AtlasIcon />
             <span>Atlas</span>
@@ -188,15 +229,23 @@ export function CalmCraftApp({
             <span>Branch Review</span>
             <small>{review?.semanticChanges.length ?? "—"}</small>
           </a>
-          <button aria-label="Health" className="nav-item" disabled type="button">
+          <a
+            aria-label="Health"
+            aria-current={route.view === "health" ? "page" : undefined}
+            className={`nav-item ${route.view === "health" ? "active" : ""}`}
+            href={route.view === "health" ? healthHref(route.selection) : healthHref()}
+          >
             <HealthIcon />
             <span>Health</span>
             <small>{health.findings}</small>
-          </button>
+          </a>
         </nav>
 
         <div className="sidebar-foot">
-          <div className={`health-summary ${health.errors > 0 ? "has-errors" : ""}`}>
+          <a
+            className={`health-summary ${health.errors > 0 ? "has-errors" : ""}`}
+            href={healthHref()}
+          >
             <span aria-hidden="true" className="health-dot" />
             <span>
               <strong>
@@ -204,12 +253,12 @@ export function CalmCraftApp({
               </strong>
               <small>{health.findings} total findings</small>
             </span>
-          </div>
+          </a>
           <span className="version">Local · v{CALMCRAFT_VERSION}</span>
         </div>
       </aside>
 
-      <div className="workspace">
+      <div aria-hidden={paletteOpen ? true : undefined} className="workspace">
         <header className="topbar">
           <div className="repository-identity">
             <span className="repository-monogram" aria-hidden="true">
@@ -229,6 +278,17 @@ export function CalmCraftApp({
               <i aria-hidden="true" /> Private to this machine
             </span>
             <button
+              aria-label="Open command palette"
+              className="command-trigger"
+              onClick={(event) => {
+                paletteReturnFocus.current = event.currentTarget;
+                setPaletteOpen(true);
+              }}
+              type="button"
+            >
+              Search <kbd>⌘ K</kbd>
+            </button>
+            <button
               aria-label={`Use ${theme === "light" ? "dark" : "light"} theme`}
               className="theme-toggle"
               onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
@@ -243,6 +303,7 @@ export function CalmCraftApp({
           <Atlas
             estate={snapshot.estate}
             onOpenSpec={openSpec}
+            selection={route.selection}
             worktreeEntries={repository.worktreeEntries}
           />
         ) : route.view === "review" ? (
@@ -264,6 +325,8 @@ export function CalmCraftApp({
           ) : (
             <BranchReviewNotStarted />
           )
+        ) : route.view === "health" ? (
+          <HealthView estate={snapshot.estate} review={review} selection={route.selection} />
         ) : selectedSpec ? (
           <FeatureView
             estate={snapshot.estate}
@@ -279,6 +342,9 @@ export function CalmCraftApp({
           </main>
         )}
       </div>
+      {paletteOpen ? (
+        <CommandPalette estate={snapshot.estate} onClose={closePalette} review={review} />
+      ) : null}
     </div>
   );
 }

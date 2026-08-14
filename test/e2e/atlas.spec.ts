@@ -12,6 +12,7 @@ import {
 
 let repositoryRoot: string;
 let session: LocalSession;
+let coldStartDuration = 0;
 
 test.beforeAll(async () => {
   repositoryRoot = await createGitFixture();
@@ -34,6 +35,7 @@ test.beforeAll(async () => {
   );
   await fixtureGit(repositoryRoot, ["add", "specs"]);
   await fixtureGit(repositoryRoot, ["commit", "-m", "Add generated Atlas estate"]);
+  const coldStart = performance.now();
   session = await startViewCommand(
     {
       command: "view",
@@ -46,6 +48,7 @@ test.beforeAll(async () => {
       io: { stdout: () => undefined, stderr: () => undefined },
     },
   );
+  coldStartDuration = performance.now() - coldStart;
 });
 
 test.afterAll(async () => {
@@ -63,6 +66,7 @@ test("packed Atlas opens, filters, selects, themes, and adapts at 300 specs", as
   const started = Date.now();
   await page.goto(session.url);
   await expect(page.getByRole("heading", { name: "Atlas" })).toBeVisible();
+  expect(coldStartDuration).toBeLessThan(4_000);
   expect(Date.now() - started).toBeLessThan(4_000);
   await expect(page.getByLabel("300 specifications")).toBeVisible();
   await expect(page.locator("[data-spec-id]")).toHaveCount(120);

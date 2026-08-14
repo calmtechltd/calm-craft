@@ -39,6 +39,7 @@ async function session(port?: number): Promise<LocalSession> {
         path: "specs/fixture.md",
         content: "bounded source",
         contexts: ["change:fixture:before", "change:fixture:after"],
+        generic: true,
       },
     ],
     port,
@@ -117,9 +118,11 @@ describe("loopback session server", () => {
     });
     expect(JSON.stringify(payload)).not.toContain("must not appear");
     expect(payload.sources).toEqual([
+      expect.objectContaining({ path: "specs/fixture.md" }),
       expect.objectContaining({ path: "specs/fixture.md", context: "change:fixture:before" }),
       expect.objectContaining({ path: "specs/fixture.md", context: "change:fixture:after" }),
     ]);
+    expect(payload.sources[0]).not.toHaveProperty("context");
     expect(new Set(payload.sources.map((item) => item.id)).size).toBe(1);
     const source = await fetch(
       `http://127.0.0.1:${active.port}/api/source/${payload.sources[0]?.id}?token=${active.token}`,

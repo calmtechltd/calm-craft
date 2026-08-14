@@ -17,6 +17,8 @@ export type FeatureSelection = {
   flow?: string;
   state?: string;
   transition?: string;
+  finding?: string;
+  question?: number;
 };
 
 type FeatureViewProps = {
@@ -27,12 +29,15 @@ type FeatureViewProps = {
 };
 
 export function featureHref(id: string, selection: FeatureSelection = {}): string {
-  const base = `#/feature/${encodeURIComponent(id)}`;
-  if (selection.behaviour) return `${base}/behaviour/${encodeURIComponent(selection.behaviour)}`;
+  const base = `#/feature/${encodeURIComponent(id)}${
+    selection.behaviour ? `/behaviour/${encodeURIComponent(selection.behaviour)}` : ""
+  }`;
   const query = new URLSearchParams();
   if (selection.flow) query.set("flow", selection.flow);
   if (selection.state) query.set("state", selection.state);
   if (selection.transition) query.set("transition", selection.transition);
+  if (selection.finding) query.set("finding", selection.finding);
+  if (selection.question) query.set("question", String(selection.question));
   return query.size > 0 ? `${base}?${query}` : base;
 }
 
@@ -281,17 +286,25 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
     () => new Map(sources.filter((item) => !item.context).map((item) => [item.path, item])),
     [sources],
   );
+  const selectedFinding = selection.finding
+    ? spec.findings.find((finding) => finding.id === selection.finding)
+    : undefined;
   const specsById = useMemo(
     () => new Map(estate.specs.map((item) => [item.id, item])),
     [estate.specs],
   );
 
   useEffect(() => {
-    if (!selection.behaviour) return;
-    const target = document.getElementById(`behaviour-${spec.id}-${selection.behaviour}`);
+    const target = selection.finding
+      ? document.getElementById(`finding-${spec.id}-${selection.finding}`)
+      : selection.question
+        ? document.getElementById(`question-${spec.id}-${selection.question}`)
+        : selection.behaviour
+          ? document.getElementById(`behaviour-${spec.id}-${selection.behaviour}`)
+          : undefined;
     target?.scrollIntoView?.({ block: "start" });
     target?.focus({ preventScroll: true });
-  }, [selection.behaviour, spec.id]);
+  }, [selection.behaviour, selection.finding, selection.question, spec.id]);
 
   const relationshipGroups = [
     { label: "Connects to", relationships: spec.forwardLinks, direction: "forward" },
@@ -337,6 +350,35 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
         <section className="feature-findings" aria-label="Feature findings">
           <strong>{spec.findings.length} contract findings</strong>
           <span>Safe sections remain available; Health owns repair guidance.</span>
+        </section>
+      ) : null}
+
+      {selectedFinding ? (
+        <section
+          className={`feature-finding-detail severity-${selectedFinding.severity}`}
+          id={`finding-${spec.id}-${selectedFinding.id}`}
+          tabIndex={-1}
+        >
+          <div>
+            <p className="eyebrow">Health finding · {selectedFinding.severity}</p>
+            <h2>{selectedFinding.message}</h2>
+            <code>{selectedFinding.code}</code>
+          </div>
+          <div>
+            <span>
+              {selectedFinding.path}
+              {selectedFinding.location ? ` · line ${selectedFinding.location.line}` : ""}
+            </span>
+            <p>
+              {selectedFinding.hint ??
+                "Inspect the source contract and resolve the reported inconsistency."}
+            </p>
+            <SourceButton
+              descriptor={sourceByPath.get(selectedFinding.path)}
+              label="Open finding source"
+              onOpen={openSource}
+            />
+          </div>
         </section>
       ) : null}
 
@@ -538,7 +580,9 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
                 {spec.openQuestions.map((question, index) => (
                   <article
                     className={question.resolved ? "resolved" : "open"}
+                    id={`question-${spec.id}-${question.location.line}`}
                     key={`${question.location.line}-${index}`}
+                    tabIndex={-1}
                   >
                     <span>{question.resolved ? "Settled" : "Open"}</span>
                     <RichText html={question.renderedHtml} relationships={spec.forwardLinks} />

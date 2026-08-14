@@ -1,7 +1,7 @@
 ---
 id: calmcraft-visualizer-ui
 area: CalmCraft
-status: partial
+status: implemented
 ---
 
 # Visualizer Interface
@@ -10,9 +10,7 @@ The local CalmCraft application gives developers and reviewers a clear route thr
 
 ## Behaviours
 
-### B1 — Orient the session 🟡 partial
-
-> Implemented for Atlas, Feature, and Branch Review. Health becomes active with its owning view.
+### B1 — Orient the session 🟢 implemented
 
 The application shows the repository, worktree or remote-session state, current branch or detached commit, selected comparison base when present, and session health. Navigation exposes Atlas, Branch Review, and Health from every view.
 
@@ -48,19 +46,15 @@ Selecting a change shows the typed before-and-after comparison for behaviours, i
 
 Reviewers can move to the next or previous change, change provenance filters, open source evidence, and return to the summary while retaining the selected feature.
 
-### B10 — Inspect estate health 🔵 future
+### B10 — Inspect estate health 🟢 implemented
 
 Health lists findings by severity, code, feature, source, and introduced or resolved state. Selecting a finding opens its feature and exact source context when available.
 
-### B11 — Use browser history and durable local URLs 🟡 partial
-
-> Feature, behaviour, flow state, transition, review change, provenance, grouping, and source-evidence selection have token-free local URLs and restore across reload, back, and forward. Atlas filter and Health finding state remain for their owning view cards.
+### B11 — Use browser history and durable local URLs 🟢 implemented
 
 View, feature, behaviour, change, filter, and finding selection are represented in the session URL. Reload, back, and forward restore valid state without exposing the repository path or session token in copied content URLs.
 
-### B12 — Work with keyboard and assistive technology 🟡 partial
-
-> The application shell, Atlas, Branch Review summary and semantic detail, full feature contract, relationship navigation, flow explorer, decision tables, provenance controls, and bounded source evidence are keyboard operable with names and visible focus. The later Health view owns its controls.
+### B12 — Work with keyboard and assistive technology 🟢 implemented
 
 All navigation, filters, commands, tables, and comparison controls work by keyboard, expose useful names and state to screen readers, preserve visible focus, and honour reduced-motion preferences.
 

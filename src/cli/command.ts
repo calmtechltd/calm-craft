@@ -72,6 +72,7 @@ function collectSources(data: unknown): SessionSource[] {
             ? `${changeId}:${key === "beforeSource" ? "before" : "after"}`
             : undefined;
         if (context) source.contexts = [...new Set([...(source.contexts ?? []), context])];
+        else source.generic = true;
         sources.set(sourceKey, source);
       } else {
         visit(item, changeId);

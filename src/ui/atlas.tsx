@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import type { SpecDocument, SpecEstate, SpecStatus } from "../specs/model";
 import type { WorktreeEntry } from "../git/model";
+import { atlasHref, type AtlasSelection } from "./atlas-route";
 import { ArrowIcon, CloseIcon, SearchIcon } from "./icons";
 import { StatusBadge } from "./status";
 
@@ -20,6 +21,7 @@ type AtlasProps = {
   estate: SpecEstate;
   worktreeEntries: WorktreeEntry[];
   onOpenSpec: (spec: SpecDocument) => void;
+  selection: AtlasSelection;
   selectedId?: string;
 };
 
@@ -110,20 +112,11 @@ function SpecRow({
   );
 }
 
-export function Atlas({ estate, worktreeEntries, onOpenSpec, selectedId }: AtlasProps) {
-  const [filters, setFilters] = useState<AtlasFilters>({
-    search: "",
-    module: "all",
-    status: "all",
-    blockers: false,
-    findings: false,
-    changed: false,
-  });
+export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selectedId }: AtlasProps) {
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
   const [focusIndex, setFocusIndex] = useState(0);
+  const [searchDraft, setSearchDraft] = useState(selection.search ?? "");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
-  const searchRef = useRef<HTMLInputElement>(null);
-  const deferredSearch = useDeferredValue(filters.search.trim().toLocaleLowerCase());
   const changedPaths = useMemo(
     () => worktreeSpecPaths(worktreeEntries, estate.specsRoot),
     [estate.specsRoot, worktreeEntries],
@@ -132,6 +125,18 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selectedId }: Atlas
     () => [...new Set(estate.specs.map((spec) => spec.module))].toSorted(),
     [estate.specs],
   );
+  const filters = useMemo<AtlasFilters>(
+    () => ({
+      search: searchDraft,
+      module: selection.module && modules.includes(selection.module) ? selection.module : "all",
+      status: selection.status ?? "all",
+      blockers: selection.blockers ?? false,
+      findings: selection.findings ?? false,
+      changed: selection.changed ?? false,
+    }),
+    [modules, searchDraft, selection],
+  );
+  const deferredSearch = useDeferredValue(filters.search.trim().toLocaleLowerCase());
   const filtered = useMemo(() => {
     const result: SpecDocument[] = [];
     for (const spec of estate.specs) {
@@ -171,20 +176,27 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selectedId }: Atlas
     filters.changed;
 
   useEffect(() => {
-    const focusSearch = (event: KeyboardEvent): void => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase() === "k") {
-        event.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
-
-  const updateFilters = (update: Partial<AtlasFilters>): void => {
-    setFilters((current) => ({ ...current, ...update }));
     setVisibleLimit(PAGE_SIZE);
     setFocusIndex(0);
+    setSearchDraft(selection.search ?? "");
+  }, [selection]);
+
+  const updateFilters = (update: Partial<AtlasFilters>): void => {
+    const next = { ...filters, ...update };
+    const href = atlasHref({
+      search: next.search || undefined,
+      module: next.module === "all" ? undefined : next.module,
+      status: next.status === "all" ? undefined : next.status,
+      blockers: next.blockers || undefined,
+      findings: next.findings || undefined,
+      changed: next.changed || undefined,
+    });
+    if (Object.keys(update).length === 1 && update.search !== undefined) {
+      setSearchDraft(update.search);
+      window.history.replaceState(window.history.state, "", href);
+    } else {
+      window.location.hash = href;
+    }
   };
   const focusRow = (index: number): void => {
     const bounded = Math.max(0, Math.min(index, visible.length - 1));
@@ -232,11 +244,9 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selectedId }: Atlas
             aria-label="Search specifications"
             onChange={(event) => updateFilters({ search: event.currentTarget.value })}
             placeholder="Search intent, behaviour, or path…"
-            ref={searchRef}
             type="search"
             value={filters.search}
           />
-          <kbd>⌘ K</kbd>
         </label>
         <div className="filter-row">
           <label>
