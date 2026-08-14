@@ -1,9 +1,17 @@
+import { lstat, readFile } from "node:fs/promises";
+import { isAbsolute, relative, resolve, sep } from "node:path";
+
 import { isSpecMarkdownPath, loadSpecEstate, loadSpecEstateFromSources } from "../specs";
 import { runReadOnlyGit } from "./command";
 import type { RepositoryInfo, RepositorySnapshot } from "./model";
 import { discoverRepository } from "./repository";
 
 const SNAPSHOT_EXTENSIONS = [".md", ".flow.yaml", ".flow.mmd"] as const;
+
+type IndexEntry = {
+  hash: string;
+  path: string;
+};
 
 function normalizeSpecsRoot(specsRoot: string): string {
   const normalized = specsRoot.replaceAll("\\", "/").replace(/^\.\//u, "").replace(/\/$/u, "");
@@ -23,6 +31,20 @@ function normalizeSpecsRoot(specsRoot: string): string {
 
 function isSnapshotSource(path: string): boolean {
   return SNAPSHOT_EXTENSIONS.some((extension) => path.endsWith(extension));
+}
+
+function safeRepositoryPath(root: string, path: string): string | undefined {
+  const absolutePath = resolve(root, path);
+  const fromRoot = relative(root, absolutePath);
+  if (
+    fromRoot === "" ||
+    fromRoot === ".." ||
+    fromRoot.startsWith(`..${sep}`) ||
+    isAbsolute(fromRoot)
+  ) {
+    return undefined;
+  }
+  return absolutePath;
 }
 
 async function mapConcurrent<T, U>(
@@ -70,6 +92,33 @@ async function resolveCommit(repository: RepositoryInfo, revision: string): Prom
       `${revision}^{commit}`,
     ])
   ).stdout.trim();
+}
+
+async function readIndexEntries(
+  repository: RepositoryInfo,
+  specsRoot: string,
+): Promise<IndexEntry[]> {
+  const result = await runReadOnlyGit(repository.root, ["ls-files", "-s", "-z", "--", specsRoot]);
+  return result.stdout
+    .split("\0")
+    .flatMap((record) => {
+      const match = record.match(/^\d+ ([a-f0-9]+) 0\t(.+)$/u);
+      if (!match?.[1] || !match[2] || !isSnapshotSource(match[2])) return [];
+      return [{ hash: match[1], path: match[2] }];
+    })
+    .toSorted((left, right) => left.path.localeCompare(right.path));
+}
+
+async function estateFromRepositorySources(
+  repository: RepositoryInfo,
+  specsRoot: string,
+  entries: readonly (readonly [string, string])[],
+) {
+  const sourcePrefix = `${specsRoot}/`;
+  const sources = new Map(
+    entries.map(([path, source]) => [path.slice(sourcePrefix.length), source] as const),
+  );
+  return loadSpecEstateFromSources(repository.root, specsRoot, sources);
 }
 
 export async function loadCommitSnapshot(
@@ -140,5 +189,70 @@ export async function loadFilesystemSnapshot(
     sourcePaths: snapshotSourcePaths(estate, specsRoot),
     deletedSpecPaths,
     untrackedSpecPaths,
+  };
+}
+
+export async function loadIndexSnapshot(
+  target: string,
+  specsRootInput = "specs",
+): Promise<RepositorySnapshot> {
+  const repository = await discoverRepository(target);
+  const specsRoot = normalizeSpecsRoot(specsRootInput);
+  const indexEntries = await readIndexEntries(repository, specsRoot);
+  const entries = await mapConcurrent(indexEntries, 12, async (entry) => {
+    const source = await runReadOnlyGit(repository.root, ["cat-file", "blob", entry.hash], {
+      maxOutputBytes: 4 * 1024 * 1024,
+    });
+    return [entry.path, source.stdout] as const;
+  });
+  const estate = await estateFromRepositorySources(repository, specsRoot, entries);
+  return {
+    kind: "index",
+    repository,
+    revision: repository.head,
+    specsRoot,
+    estate,
+    sourcePaths: indexEntries.map((entry) => entry.path),
+    deletedSpecPaths: [],
+    untrackedSpecPaths: [],
+  };
+}
+
+export async function loadTrackedFilesystemSnapshot(
+  target: string,
+  specsRootInput = "specs",
+): Promise<RepositorySnapshot> {
+  const repository = await discoverRepository(target);
+  const specsRoot = normalizeSpecsRoot(specsRootInput);
+  const indexEntries = await readIndexEntries(repository, specsRoot);
+  const loadedEntries = await Promise.all(
+    indexEntries.map(async (entry) => {
+      const absolutePath = safeRepositoryPath(repository.root, entry.path);
+      if (!absolutePath) return undefined;
+      try {
+        const details = await lstat(absolutePath);
+        if (!details.isFile() || details.isSymbolicLink()) return undefined;
+        return [entry.path, await readFile(absolutePath, "utf8")] as const;
+      } catch {
+        return undefined;
+      }
+    }),
+  );
+  const entries = loadedEntries.filter((entry) => entry !== undefined);
+  const estate = await estateFromRepositorySources(repository, specsRoot, entries);
+  const sourcePaths = entries.map(([path]) => path).toSorted();
+  const deletedSpecPaths = indexEntries
+    .map((entry) => entry.path)
+    .filter((path) => !sourcePaths.includes(path) && repositorySpecPath(specsRoot, path))
+    .toSorted();
+  return {
+    kind: "filesystem",
+    repository,
+    revision: repository.head,
+    specsRoot,
+    estate,
+    sourcePaths,
+    deletedSpecPaths,
+    untrackedSpecPaths: [],
   };
 }

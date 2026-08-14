@@ -115,6 +115,7 @@ export type ParsedFlowContract = {
   path: string;
   diagramPath: string;
   sourceHash: string;
+  source: string;
   diagramSource?: string;
   diagramSourceHash?: string;
   contract: FlowContract;

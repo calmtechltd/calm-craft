@@ -39,12 +39,17 @@ function assertReadOnlyArguments(args: string[]): void {
   const [command, ...rest] = args;
   const allowed =
     command === "rev-parse" ||
-    (command === "symbolic-ref" && rest.join("\u0000") === "--quiet\u0000--short\u0000HEAD") ||
+    (command === "symbolic-ref" &&
+      (rest.join("\u0000") === "--quiet\u0000--short\u0000HEAD" ||
+        rest.join("\u0000") === "--quiet\u0000refs/remotes/origin/HEAD")) ||
     (command === "remote" &&
       (rest.length === 0 || (rest.length === 3 && rest[0] === "get-url" && rest[1] === "--all"))) ||
     (command === "status" &&
       rest.join("\u0000") === "--porcelain=v2\u0000--branch\u0000-z\u0000--untracked-files=all") ||
     (command === "ls-tree" && rest.includes("--name-only") && rest.includes("-z")) ||
+    (command === "ls-files" && rest.includes("-s") && rest.includes("-z")) ||
+    command === "merge-base" ||
+    command === "diff" ||
     (command === "cat-file" && rest.length === 2 && rest[0] === "blob");
   if (!allowed) {
     throw new GitReadError(

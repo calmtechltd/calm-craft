@@ -1,7 +1,7 @@
 ---
 id: calmcraft-branch-review
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # Branch Review
@@ -10,11 +10,11 @@ A reviewer can see the product behaviour changed by a branch and separate commit
 
 ## Behaviours
 
-### B1 — Compare from the merge-base 🔵 future
+### B1 — Compare from the merge-base 🟢 implemented
 
 Branch review compares the current target with the merge-base between `HEAD` and the selected base. The review shows the selected base, merge-base commit, current branch or detached commit, and target snapshot.
 
-### B2 — Separate change provenance 🔵 future
+### B2 — Separate change provenance 🟢 implemented
 
 CalmCraft classifies branch commits, staged changes, unstaged changes, deleted paths, and untracked spec files. A reviewer can include or exclude local work without changing the repository.
 
@@ -22,35 +22,35 @@ CalmCraft classifies branch commits, staged changes, unstaged changes, deleted p
 
 The review groups changes by module and feature, then states which semantic elements changed. Unchanged features remain available in estate views but do not crowd the branch summary.
 
-### B4 — Compare spec identity and metadata 🔵 future
+### B4 — Compare spec identity and metadata 🟢 implemented
 
 The review reports added, removed, moved, renamed, and metadata-changed specs. Stable IDs distinguish a move from removal plus addition.
 
-### B5 — Compare behaviours 🔵 future
+### B5 — Compare behaviours 🟢 implemented
 
 The review reports added, removed, renamed, content-changed, and status-changed behaviours by stable behaviour key. Status changes show both states.
 
-### B6 — Compare rules, decisions, and questions 🔵 future
+### B6 — Compare rules, decisions, and questions 🟢 implemented
 
 The review reports added, removed, and changed invariants and decision rows. It distinguishes questions that were added, resolved, reopened, retargeted, or edited.
 
-### B7 — Compare relationships and flows 🔵 future
+### B7 — Compare relationships and flows 🟢 implemented
 
 The review reports relationships that were added, removed, or broken. Flow comparison covers states, transitions, events, guards, destinations, terminal outcomes, and behaviour coverage.
 
-### B8 — Label inferred renames 🔵 future
+### B8 — Label inferred renames 🟢 implemented
 
 If stable IDs cannot prove a rename, CalmCraft may suggest a text-similarity match. The review labels the match as inferred and keeps both original sources available.
 
-### B9 — Show exact source evidence 🔵 future
+### B9 — Show exact source evidence 🟢 implemented
 
 Every semantic change links to the before and after source locations when they exist. A reviewer can open the raw Markdown or YAML diff without leaving the feature context.
 
-### B10 — Handle a missing base honestly 🔵 future
+### B10 — Handle a missing base honestly 🟢 implemented
 
 If no base can be resolved, Branch Review explains how to supply one and does not present a fabricated or empty change set. Atlas, Feature, and Health remain available.
 
-### B11 — Produce deterministic review data 🔵 future
+### B11 — Produce deterministic review data 🟢 implemented
 
 The same base, target filesystem, configuration, and Git object state produce the same ordered semantic change set.
 

@@ -83,6 +83,7 @@ async function buildSpecEstate(
                 path: contractPath,
                 diagramPath,
                 sourceHash: hash(flowSource),
+                source: flowSource,
                 contract: parseFlowContract(flowSource),
               };
               try {

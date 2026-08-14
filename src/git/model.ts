@@ -23,7 +23,7 @@ export type RepositoryInfo = {
 };
 
 export type RepositorySnapshot = {
-  kind: "commit" | "filesystem";
+  kind: "commit" | "index" | "filesystem";
   repository: RepositoryInfo;
   revision: string;
   specsRoot: string;

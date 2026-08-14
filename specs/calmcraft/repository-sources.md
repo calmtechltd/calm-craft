@@ -26,15 +26,15 @@ Running CalmCraft inside a linked worktree reads spec files from that worktree. 
 
 Opening, browsing, and comparing specs does not checkout a branch, stage a file, create a worktree, fetch a remote, change Git configuration, or write into the selected repository.
 
-### B5 — Select a branch-review base 🔵 future
+### B5 — Select a branch-review base 🟢 implemented
 
 Branch review uses an explicit base when the developer supplies one. Otherwise CalmCraft uses the repository configuration, the symbolic origin default, or a conventional local or remote default branch in the documented order.
 
-### B6 — Continue when no base exists 🔵 future
+### B6 — Continue when no base exists 🟢 implemented
 
 If CalmCraft cannot find a comparison base, it explains how to provide one and still opens the estate views. The session does not invent a base or present an empty comparison as proof that nothing changed.
 
-### B7 — Include local work with honest provenance 🔵 future
+### B7 — Include local work with honest provenance 🟢 implemented
 
 The current-filesystem snapshot can include branch commits, staged edits, unstaged edits, deleted specs, and untracked specs. CalmCraft keeps those groups distinct so a reviewer can tell committed branch work from local work in progress.
 
