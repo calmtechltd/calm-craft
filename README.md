@@ -16,6 +16,21 @@ The `calmcraft` command reads CalmCraft specs from a local checkout, linked work
 
 Repository content stays on the developer's machine. CalmCraft has no telemetry transport and does not send spec content to a hosted service.
 
+## Develop the CLI locally
+
+After installing the repository dependencies, start the visualizer against any local checkout without publishing or globally installing the package:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev -- /absolute/path/to/a-repository --diff --base origin/main
+```
+
+The development command opens a loopback-only Vite session backed by the real CalmCraft parser, Git reader, semantic diff, and private data server. React and CSS edits use hot module replacement. Changes to imported CLI, parser, Git, diff, and server modules restart the development process. The selected repository remains read-only.
+
+Use `--no-open` to leave the browser closed, `--ui-port <number>` when a stable Vite port is useful, and the normal `view` options for source and comparison control. Run `pnpm dev -- --help` for the complete development command. Stop both local servers with `Ctrl+C`.
+
+To exercise only the source CLI against the last built browser bundle, use `pnpm dev:cli -- view [path] [options]`.
+
 ## Install the CLI
 
 CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version without installing it globally:

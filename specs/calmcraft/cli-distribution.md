@@ -54,6 +54,10 @@ CalmCraft publishes through trusted CI with npm provenance, an MIT license, a ve
 
 Partial delivery: stage-only trusted-publishing and cross-platform smoke workflows are implemented; npm scope ownership, the first-package bootstrap, release-candidate approval, and public promotion remain external release gates.
 
+### B11 — Develop the CLI without publishing 🟢 implemented
+
+A contributor can run one documented development command against any local checkout. The command starts the real CLI data path and a loopback-only Vite UI with hot module replacement, opens the private session unless disabled, restarts when imported backend modules change, and shuts down both servers together. Development requires neither a global install nor an npm publication.
+
 ## Rules (Invariants)
 
 - The executable name is `calmcraft`.
@@ -75,6 +79,17 @@ Partial delivery: stage-only trusted-publishing and cross-platform smoke workflo
 | `calmcraft view --diff --base <ref>`          | Open comparison against explicit base       |
 | `calmcraft view --no-open`                    | Start session and print URL                 |
 | Invalid command or option                     | Print help-oriented error and exit non-zero |
+
+### Development outcome
+
+| Invocation                                                | Result                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| `pnpm dev -- <path>`                                      | Open a source UI backed by the real local repository data   |
+| `pnpm dev -- <path> --diff --base <ref>`                  | Develop against a real semantic Branch Review               |
+| `pnpm dev -- <path> --no-open`                            | Start both servers and print the private development URL    |
+| `pnpm dev -- <path> --ui-port <number>`                   | Request a stable loopback Vite port or fail on its conflict |
+| UI or CSS source changes                                  | Update through Vite hot module replacement                  |
+| Imported CLI, parser, Git, diff, or server source changes | Restart the development process through the source watcher  |
 
 ### Configuration source
 
