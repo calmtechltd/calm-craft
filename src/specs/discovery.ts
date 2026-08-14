@@ -5,6 +5,17 @@ function toPosixPath(path: string): string {
   return path.split(sep).join("/");
 }
 
+export function isSpecMarkdownPath(path: string): boolean {
+  const parts = path.split("/");
+  const name = parts.at(-1) ?? "";
+  return (
+    !parts.some((part) => part.startsWith("_")) &&
+    name !== "README.md" &&
+    name.endsWith(".md") &&
+    !name.endsWith(".flow.mmd")
+  );
+}
+
 export async function discoverSpecFiles(specsRoot: string): Promise<string[]> {
   async function walk(directory: string): Promise<string[]> {
     const entries = await readdir(directory, { withFileTypes: true });
@@ -15,8 +26,9 @@ export async function discoverSpecFiles(specsRoot: string): Promise<string[]> {
           if (entry.name.startsWith("_") || entry.name === "README.md") return [];
           const fullPath = join(directory, entry.name);
           if (entry.isDirectory()) return walk(fullPath);
-          if (entry.isFile() && entry.name.endsWith(".md") && !entry.name.endsWith(".flow.mmd")) {
-            return [toPosixPath(relative(specsRoot, fullPath))];
+          const relativePath = toPosixPath(relative(specsRoot, fullPath));
+          if (entry.isFile() && isSpecMarkdownPath(relativePath)) {
+            return [relativePath];
           }
           return [];
         }),

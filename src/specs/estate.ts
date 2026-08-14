@@ -1,17 +1,15 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 
-import { discoverSpecFiles } from "./discovery";
+import { discoverSpecFiles, isSpecMarkdownPath } from "./discovery";
 import { findingAt } from "./findings";
 import { parseFlowContract } from "./flow-contract";
 import type { ParsedFlowContract, SpecEstate, SpecFinding } from "./model";
 import { parseSpecDocument, resolveSpecSiblingPath } from "./parser";
 import { validateSpecEstate } from "./validator";
 
-function toPosixPath(path: string): string {
-  return path.split(sep).join("/");
-}
+type SourceReader = (path: string) => Promise<string>;
 
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -31,6 +29,14 @@ function safePath(root: string, relativePath: string): string | undefined {
   return undefined;
 }
 
+function safeRelativePath(path: string): string | undefined {
+  const normalized = path.replaceAll("\\", "/");
+  if (normalized.startsWith("/") || /^[a-z]:\//iu.test(normalized)) return undefined;
+  const parts = normalized.split("/");
+  if (parts.some((part) => part === "..")) return undefined;
+  return parts.filter((part) => part && part !== ".").join("/");
+}
+
 function flowFinding(path: string, code: string, message: string): SpecFinding {
   return findingAt(
     path,
@@ -42,25 +48,26 @@ function flowFinding(path: string, code: string, message: string): SpecFinding {
   );
 }
 
-export async function loadSpecEstate(
-  repositoryRoot: string,
-  specsRootName = "specs",
+async function buildSpecEstate(
+  root: string,
+  specsRoot: string,
+  paths: string[],
+  readSource: SourceReader,
 ): Promise<SpecEstate> {
-  const root = resolve(repositoryRoot);
-  const specsRoot = resolve(root, specsRootName);
-  const paths = await discoverSpecFiles(specsRoot);
   const results = await Promise.all(
-    paths.map(async (path) => {
+    paths.toSorted().map(async (path) => {
       try {
-        const source = await readFile(join(specsRoot, path), "utf8");
+        const source = await readSource(path);
         const spec = parseSpecDocument({ path, source });
         await Promise.all(
           spec.flowReferences.map(async (reference) => {
-            const contractPath = resolveSpecSiblingPath(path, reference.contractPath);
-            const diagramPath = resolveSpecSiblingPath(path, reference.diagramPath);
-            const absoluteContractPath = safePath(specsRoot, contractPath);
-            const absoluteDiagramPath = safePath(specsRoot, diagramPath);
-            if (!absoluteContractPath || !absoluteDiagramPath) {
+            const contractPath = safeRelativePath(
+              resolveSpecSiblingPath(path, reference.contractPath),
+            );
+            const diagramPath = safeRelativePath(
+              resolveSpecSiblingPath(path, reference.diagramPath),
+            );
+            if (!contractPath || !diagramPath) {
               spec.findings.push(
                 flowFinding(
                   path,
@@ -71,15 +78,15 @@ export async function loadSpecEstate(
               return;
             }
             try {
-              const flowSource = await readFile(absoluteContractPath, "utf8");
+              const flowSource = await readSource(contractPath);
               const parsedFlow: ParsedFlowContract = {
-                path: toPosixPath(contractPath),
-                diagramPath: toPosixPath(diagramPath),
+                path: contractPath,
+                diagramPath,
                 sourceHash: hash(flowSource),
                 contract: parseFlowContract(flowSource),
               };
               try {
-                parsedFlow.diagramSource = await readFile(absoluteDiagramPath, "utf8");
+                parsedFlow.diagramSource = await readSource(diagramPath);
                 parsedFlow.diagramSourceHash = hash(parsedFlow.diagramSource);
               } catch {
                 // The validator reports a stable missing-diagram finding with repair guidance.
@@ -88,7 +95,7 @@ export async function loadSpecEstate(
             } catch (error) {
               spec.findings.push(
                 flowFinding(
-                  toPosixPath(contractPath),
+                  contractPath,
                   "flow.contract.invalid",
                   `Flow contract could not be loaded: ${String(error)}`,
                 ),
@@ -122,5 +129,35 @@ export async function loadSpecEstate(
     specs: orderedSpecs,
     relationships: [],
     findings: estateFindings,
+  });
+}
+
+export async function loadSpecEstate(
+  repositoryRoot: string,
+  specsRootName = "specs",
+): Promise<SpecEstate> {
+  const root = resolve(repositoryRoot);
+  const specsRoot = resolve(root, specsRootName);
+  const paths = await discoverSpecFiles(specsRoot);
+  return buildSpecEstate(root, specsRoot, paths, async (path) => {
+    const absolutePath = safePath(specsRoot, path);
+    if (!absolutePath) throw new Error(`Source path escapes the specs root: ${path}`);
+    return readFile(absolutePath, "utf8");
+  });
+}
+
+export async function loadSpecEstateFromSources(
+  repositoryRoot: string,
+  specsRootName: string,
+  sources: ReadonlyMap<string, string>,
+): Promise<SpecEstate> {
+  const root = resolve(repositoryRoot);
+  const specsRoot = resolve(root, specsRootName);
+  const paths = [...sources.keys()].filter(isSpecMarkdownPath).toSorted();
+  return buildSpecEstate(root, specsRoot, paths, async (path) => {
+    const normalizedPath = safeRelativePath(path);
+    const source = normalizedPath ? sources.get(normalizedPath) : undefined;
+    if (source === undefined) throw new Error(`Source is not present in the snapshot: ${path}`);
+    return source;
   });
 }

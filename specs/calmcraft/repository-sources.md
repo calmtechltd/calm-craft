@@ -1,7 +1,7 @@
 ---
 id: calmcraft-repository-sources
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # Repository Sources
@@ -18,11 +18,11 @@ Running `calmcraft view` inside a Git checkout opens the CalmCraft specs from th
 
 A developer can pass a local path to `calmcraft view`. CalmCraft resolves the repository that owns that path and opens its spec estate without changing the developer's working directory.
 
-### B3 — Keep worktrees isolated 🔵 future
+### B3 — Keep worktrees isolated 🟢 implemented
 
 Running CalmCraft inside a linked worktree reads spec files from that worktree. Shared Git metadata may inform branch and commit details, but files from another worktree never enter the session.
 
-### B4 — Leave the repository unchanged 🔵 future
+### B4 — Leave the repository unchanged 🟢 implemented
 
 Opening, browsing, and comparing specs does not checkout a branch, stage a file, create a worktree, fetch a remote, change Git configuration, or write into the selected repository.
 
