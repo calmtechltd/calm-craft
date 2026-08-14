@@ -1,7 +1,7 @@
 ---
 id: calmcraft-repository-sources
 area: CalmCraft
-status: partial
+status: implemented
 ---
 
 # Repository Sources
@@ -14,7 +14,7 @@ A developer can open a CalmCraft estate from the checkout or worktree they are u
 
 Running `calmcraft view` inside a Git checkout opens the CalmCraft specs from that checkout. The session identifies the repository root, current branch or detached commit, and current filesystem.
 
-### B2 — Open another local repository 🔵 future
+### B2 — Open another local repository 🟢 implemented
 
 A developer can pass a local path to `calmcraft view`. CalmCraft resolves the repository that owns that path and opens its spec estate without changing the developer's working directory.
 
@@ -38,19 +38,19 @@ If CalmCraft cannot find a comparison base, it explains how to provide one and s
 
 The current-filesystem snapshot can include branch commits, staged edits, unstaged edits, deleted specs, and untracked specs. CalmCraft keeps those groups distinct so a reviewer can tell committed branch work from local work in progress.
 
-### B8 — Open an authorised private remote 🔵 future
+### B8 — Open an authorised private remote 🟢 implemented
 
 A developer can supply a supported SSH or HTTPS Git URL and an optional branch. CalmCraft clones the requested source into a session-specific temporary directory, then opens it through the same estate and branch-review experience as a local repository.
 
-### B9 — Use installed Git authentication 🔵 future
+### B9 — Use installed Git authentication 🟢 implemented
 
 Remote sessions use the authentication already configured for the developer's Git executable. CalmCraft does not ask for, receive, or store a GitHub token.
 
-### B10 — Remove temporary repository data 🔵 future
+### B10 — Remove temporary repository data 🟢 implemented
 
 CalmCraft removes a remote session's temporary clone after a normal stop, cancellation, or handled process signal. The session explains that the operating system may clean up remnants after an uncatchable process termination.
 
-### B11 — Explain source failures 🔵 future
+### B11 — Explain source failures 🟢 implemented
 
 An invalid local path, non-Git directory, unsupported URL, authentication failure, missing branch, or insufficient history produces a clear error. Logged URLs redact credentials and sensitive query values.
 
@@ -64,7 +64,7 @@ CalmCraft opens the local application unless the developer disables browser open
 - A local filesystem snapshot belongs to the selected worktree, even when Git metadata lives in a shared common directory.
 - CalmCraft does not run repository hooks, submodule commands, package scripts, or code from the selected repository.
 - Remote access starts only after the developer supplies a remote URL.
-- Base inference uses local references and performs no network fetch in v1.
+- Base inference for a local source uses existing references and performs no network fetch. A remote session fetches only its selected branch and comparison base into the owned temporary clone.
 - Uncommitted content is never attributed to a commit.
 - A failed base comparison cannot prevent estate browsing when specs remain readable.
 

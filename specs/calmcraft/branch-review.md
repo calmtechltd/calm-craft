@@ -60,7 +60,7 @@ The same base, target filesystem, configuration, and Git object state produce th
 - A semantic change retains enough source evidence for the reviewer to challenge it.
 - Stable IDs beat similarity when classifying identity.
 - An inferred rename never deletes the underlying add and remove evidence.
-- Branch review performs no fetch or repository write.
+- Branch review performs no fetch or write in a selected local repository. A remote session fetches only its selected branch and comparison base inside the owned temporary clone.
 - Filtering provenance changes presentation only; it does not recalculate or mutate Git state.
 
 ## Decision Tables
@@ -101,5 +101,5 @@ _None._
 ## Out of Scope
 
 - Approving, commenting on, merging, or changing a pull request.
-- Fetching remote refs without an explicit future option.
+- Refreshing refs in a selected local repository or fetching branches outside a remote session's selected branch and comparison base.
 - Generating or editing specs from review findings.

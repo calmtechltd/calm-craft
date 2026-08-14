@@ -28,7 +28,7 @@ export class GitReadError extends Error {
 export function redactSensitiveText(value: string): string {
   return value
     .replace(/([a-z][a-z0-9+.-]*:\/\/)([^/@\s]+)@/giu, "$1[redacted]@")
-    .replace(/([?&](?:access_token|auth|key|password|signature|token)=)[^&#\s]*/giu, "$1[redacted]")
+    .replace(/([?&][^=&#\s]+)=([^&#\s]*)/gu, "$1=[redacted]")
     .replace(
       /\b(?:ghp_[a-z0-9]+|github_pat_[a-z0-9_]+|glpat-[a-z0-9_-]+)\b/giu,
       "[redacted-token]",

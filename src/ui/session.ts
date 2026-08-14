@@ -4,13 +4,25 @@ import type { BranchReview, Provenance } from "../diff/model";
 export type EstateSession = {
   mode: "estate";
   snapshot: RepositorySnapshot;
+  repositorySource?: RepositorySessionSource;
 };
 
 export type ReviewSession = {
   mode: "review";
   review: BranchReview;
   initialProvenance: Provenance[];
+  repositorySource?: RepositorySessionSource;
 };
+
+export type RepositorySessionSource =
+  | { kind: "local" }
+  | {
+      kind: "remote";
+      displayUrl: string;
+      branch: string;
+      storage: "temporary";
+      cleanup: "removed-on-stop";
+    };
 
 export type CalmCraftSession = EstateSession | ReviewSession;
 

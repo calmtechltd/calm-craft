@@ -362,6 +362,20 @@ select {
   font-size: 11px;
 }
 
+.remote-identity {
+  overflow: hidden;
+  padding: 5px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .branch-identity svg {
   width: 15px;
 }
@@ -3444,6 +3458,7 @@ select {
 
   .repository-identity small,
   .branch-identity,
+  .remote-identity,
   .privacy-label {
     display: none;
   }

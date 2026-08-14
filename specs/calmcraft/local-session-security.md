@@ -52,7 +52,7 @@ Terminal and browser errors remove credentials, tokens, and sensitive URL query 
 
 ### B11 — End the session cleanly 🟢 implemented
 
-Shutdown closes the listener, invalidates the token, releases the port, and removes owned temporary remote data. A request after shutdown receives no session data.
+Shutdown closes the listener, invalidates the token, releases the port, and removes owned temporary remote data. A request after shutdown receives no session data. An uncatchable hard process termination cannot run application cleanup, so any remnant is left to the operating system's temporary-file policy.
 
 ## Rules (Invariants)
 

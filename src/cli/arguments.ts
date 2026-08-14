@@ -113,11 +113,13 @@ Options:
 
 Defaults and privacy:
   path defaults to the current repository. CalmCraft binds to 127.0.0.1,
-  sends no telemetry, performs no fetch, and never writes the selected repository.
+  sends no telemetry, and never writes a selected local repository. A supplied
+  remote URL uses installed Git authentication and a clone removed on shutdown.
 
 Examples:
   calmcraft view
   calmcraft view ../another-project --no-open
   calmcraft view --diff --base origin/main
   calmcraft view --diff --provenance committed,staged
+  calmcraft view git@github.com:team/private-specs.git --branch feature/review --diff --base main
 `;

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -35,6 +35,34 @@ async function repository(): Promise<string> {
   const root = await createGitFixture();
   repositories.push(root);
   return root;
+}
+
+async function remoteRepository(): Promise<{
+  environment: NodeJS.ProcessEnv;
+  source: string;
+}> {
+  const working = await repository();
+  await fixtureGit(working, ["switch", "-c", "feature/remote-cli"]);
+  await writeFixtureFile(
+    working,
+    "specs/core/original.md",
+    canonicalSpec("fixture-original", "Remote CLI", "Private remote branch intent"),
+  );
+  await fixtureGit(working, ["add", "specs/core/original.md"]);
+  await fixtureGit(working, ["commit", "-m", "Change the remote fixture"]);
+  await fixtureGit(working, ["switch", "main"]);
+  const root = await mkdtemp(join(tmpdir(), "calmcraft-cli-remote-"));
+  roots.push(root);
+  await fixtureGit(root, ["clone", "--bare", working, "repository.git"]);
+  return {
+    source: "https://fixture.invalid/repository.git",
+    environment: {
+      GIT_ALLOW_PROTOCOL: "file",
+      GIT_CONFIG_COUNT: "1",
+      GIT_CONFIG_KEY_0: `url.file://${root}/.insteadOf`,
+      GIT_CONFIG_VALUE_0: "https://fixture.invalid/",
+    },
+  };
 }
 
 afterEach(async () => {
@@ -183,5 +211,85 @@ describe("CalmCraft CLI", () => {
         { nodeVersion: "v20.19.0", assetsRoot: await assets() },
       ),
     ).rejects.toThrow(/Node\.js 22 or newer/u);
+  });
+
+  it("serves a remote branch review and removes its temporary clone on close", async () => {
+    const remote = await remoteRepository();
+    const output: string[] = [];
+    const active = await startViewCommand(
+      {
+        command: "view",
+        source: remote.source,
+        branch: "feature/remote-cli",
+        diff: true,
+        base: "main",
+        openBrowser: false,
+      },
+      {
+        assetsRoot: await assets(),
+        remoteEnvironment: remote.environment,
+        io: { stdout: (value) => output.push(value), stderr: () => undefined },
+      },
+    );
+    const response = await fetch(
+      `http://127.0.0.1:${active.port}/api/session?token=${active.token}`,
+    );
+    const payload = (await response.json()) as {
+      data: {
+        mode: string;
+        repositorySource: {
+          kind: string;
+          displayUrl: string;
+          branch: string;
+          storage: string;
+          cleanup: string;
+        };
+        review: {
+          available: boolean;
+          repository: { root: string };
+          semanticChanges: unknown[];
+        };
+      };
+    };
+    expect(payload.data).toMatchObject({
+      mode: "review",
+      repositorySource: {
+        kind: "remote",
+        displayUrl: remote.source,
+        branch: "feature/remote-cli",
+        storage: "temporary",
+        cleanup: "removed-on-stop",
+      },
+      review: { available: true },
+    });
+    expect(payload.data.review.semanticChanges.length).toBeGreaterThan(0);
+    expect(output.join("")).not.toContain(remote.source);
+
+    const temporaryDirectory = payload.data.review.repository.root.replace(/\/repository$/u, "");
+    await active.close();
+    await expect(access(temporaryDirectory)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("returns a useful credential-safe remote access error", async () => {
+    const root = await mkdtemp(join(tmpdir(), "calmcraft-cli-remote-"));
+    roots.push(root);
+    const source =
+      "https://person:super-secret@fixture.invalid/missing.git?access_token=hidden-token";
+    const stderr: string[] = [];
+    const result = await runCli(["view", source, "--branch", "main", "--no-open"], {
+      remoteEnvironment: {
+        GIT_ALLOW_PROTOCOL: "file",
+        GIT_CONFIG_COUNT: "1",
+        GIT_CONFIG_KEY_0: `url.file://${root}/.insteadOf`,
+        GIT_CONFIG_VALUE_0: "https://person:super-secret@fixture.invalid/",
+      },
+      io: { stdout: () => undefined, stderr: (value) => stderr.push(value) },
+    });
+
+    expect(result).toBe(1);
+    expect(stderr.join("")).toContain("Git ls-remote failed");
+    expect(stderr.join("")).not.toContain("super-secret");
+    expect(stderr.join("")).not.toContain("hidden-token");
+    expect(stderr.join("")).toContain("Run calmcraft --help for usage");
   });
 });

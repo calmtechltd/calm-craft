@@ -182,6 +182,30 @@ describe("CalmCraft Atlas", () => {
     expect(screen.getByText("Changed")).toBeInTheDocument();
   });
 
+  it("makes remote source and temporary-storage cleanup visible", () => {
+    render(
+      <CalmCraftApp
+        session={{
+          mode: "estate",
+          snapshot: makeSnapshot(),
+          repositorySource: {
+            kind: "remote",
+            displayUrl: "https://example.test/calm/private-specs.git",
+            branch: "feature/private-review",
+            storage: "temporary",
+            cleanup: "removed-on-stop",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Remote · temporary clone")).toHaveAttribute(
+      "title",
+      "https://example.test/calm/private-specs.git",
+    );
+    expect(screen.getByText("Private remote · removed on stop")).toBeInTheDocument();
+  });
+
   it("searches and filters by status, module, blockers, findings, and changed state", async () => {
     const user = userEvent.setup();
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot() }} />);

@@ -12,9 +12,20 @@ Portable by design: skills live in `skills/` per the Agent Plugins v1 spec, so t
 
 ## CalmCraft visualizer
 
-The repository also contains the source for the `calmcraft` command. The visualizer will read CalmCraft specs from a local checkout or worktree and open a private browser session on the developer's machine. Branch review will explain changes by behaviour, invariant, decision row, question, relationship, and flow transition.
+The repository also contains the source for the `calmcraft` command. The visualizer reads CalmCraft specs from a local checkout, worktree, or authorised SSH/HTTPS Git remote and opens a private browser session on the developer's machine. Branch review explains changes by behaviour, invariant, decision row, question, relationship, and flow transition.
 
 The CLI is under active development and has not been published to npm. Repository content stays on the developer's machine. CalmCraft has no telemetry transport and does not send spec content to a hosted service.
+
+CLI development usage:
+
+```sh
+pnpm build
+node dist/cli/index.js view
+node dist/cli/index.js view ../another-repository --diff
+node dist/cli/index.js view git@github.com:organisation/private-repository.git --branch feature/specs --diff --base main
+```
+
+Remote sessions use the credentials already available to `git`, including an SSH agent or credential helper. CalmCraft does not ask for or store a provider token. It clones only the selected branch and comparison base into a unique operating-system temporary directory, disables repository hooks and submodules, and removes the clone on normal stop, cancellation, or a handled process signal. An uncatchable hard termination cannot run application cleanup; the operating system may remove any remaining temporary directory through its normal temporary-file policy.
 
 ## Install
 

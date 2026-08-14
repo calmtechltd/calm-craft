@@ -114,11 +114,12 @@ describe("read-only Git repository snapshots", () => {
 
   it("redacts credentials, query secrets, and provider tokens from errors", () => {
     const redacted = redactSensitiveText(
-      "https://user:password@example.com/repo.git?token=secret ghp_123456 glpat-secret",
+      "https://user:password@example.com/repo.git?token=secret&custom=private ghp_123456 glpat-secret",
     );
 
     expect(redacted).not.toContain("user:password");
     expect(redacted).not.toContain("token=secret");
+    expect(redacted).not.toContain("custom=private");
     expect(redacted).not.toContain("ghp_123456");
     expect(redacted).not.toContain("glpat-secret");
   });

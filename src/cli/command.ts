@@ -3,7 +3,15 @@ import { fileURLToPath } from "node:url";
 
 import { loadConfig } from "../config";
 import { createBranchReview } from "../diff";
-import { discoverRepository, loadFilesystemSnapshot, redactSensitiveText } from "../git";
+import {
+  cloneRemoteRepository,
+  discoverRepository,
+  isRemoteSource,
+  loadFilesystemSnapshot,
+  prepareRemoteComparison,
+  redactSensitiveText,
+  type RemoteClone,
+} from "../git";
 import { CALMCRAFT_VERSION } from "../meta";
 import { startLocalSession, type LocalSession, type SessionSource } from "../server";
 import { ALL_PROVENANCE, HELP_TEXT, parseCliArguments, type ViewArguments } from "./arguments";
@@ -19,6 +27,8 @@ export type ViewDependencies = {
   browserOpener?: BrowserOpener;
   io?: CliIo;
   nodeVersion?: string;
+  remoteEnvironment?: NodeJS.ProcessEnv;
+  signal?: AbortSignal;
 };
 
 const DEFAULT_IO: CliIo = {
@@ -31,10 +41,6 @@ function assertSupportedNode(version: string): void {
   if (!Number.isInteger(major) || major < 22) {
     throw new Error(`CalmCraft requires Node.js 22 or newer; found ${version}.`);
   }
-}
-
-function isRemoteSource(source: string): boolean {
-  return /^(?:https?:\/\/|ssh:\/\/|git@[^:]+:)/iu.test(source);
 }
 
 function collectSources(data: unknown): SessionSource[] {
@@ -92,50 +98,120 @@ export async function startViewCommand(
   dependencies: ViewDependencies = {},
 ): Promise<LocalSession> {
   assertSupportedNode(dependencies.nodeVersion ?? process.version);
-  if (isRemoteSource(arguments_.source)) {
-    throw new Error("Remote repository sessions are not available in this release yet.");
-  }
-  if (arguments_.branch) throw new Error("--branch is only valid for a remote repository source.");
-
   const io = dependencies.io ?? DEFAULT_IO;
-  const repository = await discoverRepository(arguments_.source);
-  const config = await loadConfig(repository.root);
-  const data = arguments_.diff
-    ? {
-        mode: "review",
-        review: await createBranchReview(repository.root, {
-          explicitBase: arguments_.base,
-          configuredBase: config.defaultBase,
-          specsRoot: config.specsRoot,
-        }),
-        initialProvenance: arguments_.provenance ?? ALL_PROVENANCE,
+  const remoteSource = isRemoteSource(arguments_.source);
+  if (arguments_.branch && !remoteSource)
+    throw new Error("--branch is only valid for a remote repository source.");
+
+  let remote: RemoteClone | undefined;
+  try {
+    remote = remoteSource
+      ? await cloneRemoteRepository(arguments_.source, arguments_.branch, {
+          environment: dependencies.remoteEnvironment,
+          signal: dependencies.signal,
+        })
+      : undefined;
+    const repositoryRoot = remote?.checkout ?? arguments_.source;
+    const repository = await discoverRepository(repositoryRoot);
+    const config = await loadConfig(repository.root);
+    const remoteComparison =
+      remote && arguments_.diff
+        ? await prepareRemoteComparison(
+            remote,
+            { explicitBase: arguments_.base, configuredBase: config.defaultBase },
+            {
+              environment: dependencies.remoteEnvironment,
+              signal: dependencies.signal,
+            },
+          )
+        : undefined;
+    const repositorySource = remote
+      ? {
+          kind: "remote" as const,
+          displayUrl: remote.remote.display,
+          branch: remote.branch,
+          storage: "temporary" as const,
+          cleanup: "removed-on-stop" as const,
+        }
+      : { kind: "local" as const };
+    const data = arguments_.diff
+      ? {
+          mode: "review" as const,
+          review: await createBranchReview(repository.root, {
+            explicitBase: remoteComparison?.explicitBase ?? arguments_.base,
+            configuredBase: remoteComparison?.configuredBase ?? config.defaultBase,
+            specsRoot: config.specsRoot,
+          }),
+          initialProvenance: arguments_.provenance ?? ALL_PROVENANCE,
+          repositorySource,
+        }
+      : {
+          mode: "estate" as const,
+          snapshot: await loadFilesystemSnapshot(repository.root, config.specsRoot),
+          repositorySource,
+        };
+    const localSession = await startLocalSession({
+      assetsRoot: dependencies.assetsRoot ?? defaultAssetsRoot(),
+      data,
+      sources: collectSources(data),
+      port: arguments_.port,
+    });
+    let cleanupPromise: Promise<void> | undefined;
+    const cleanup = (): Promise<void> => {
+      cleanupPromise ??= remote?.cleanup() ?? Promise.resolve();
+      return cleanupPromise;
+    };
+    const close = async (): Promise<void> => {
+      try {
+        await localSession.close();
+      } finally {
+        await cleanup();
       }
-    : {
-        mode: "estate",
-        snapshot: await loadFilesystemSnapshot(repository.root, config.specsRoot),
-      };
-  const session = await startLocalSession({
-    assetsRoot: dependencies.assetsRoot ?? defaultAssetsRoot(),
-    data,
-    sources: collectSources(data),
-    port: arguments_.port,
-  });
-  io.stdout(`CalmCraft ${CALMCRAFT_VERSION}\n${session.url}\n`);
-  if (arguments_.openBrowser) {
-    try {
-      await (dependencies.browserOpener ?? openBrowser)(session.url);
-    } catch (error) {
+    };
+    const session: LocalSession = {
+      ...localSession,
+      close,
+      closed: localSession.closed.then(cleanup),
+    };
+    const stopForCancellation = (): void => {
+      void session.close();
+    };
+    dependencies.signal?.addEventListener("abort", stopForCancellation, { once: true });
+    const removeCancellationListener = (): void =>
+      dependencies.signal?.removeEventListener("abort", stopForCancellation);
+    void session.closed.then(removeCancellationListener, removeCancellationListener);
+    if (dependencies.signal?.aborted) {
       await session.close();
-      throw new Error(`Could not open the browser: ${redactSensitiveText(String(error))}`, {
-        cause: error,
-      });
+      throw new Error("CalmCraft session startup was cancelled.");
     }
+    io.stdout(`CalmCraft ${CALMCRAFT_VERSION}\n${session.url}\n`);
+    if (arguments_.openBrowser) {
+      try {
+        await (dependencies.browserOpener ?? openBrowser)(session.url);
+      } catch (error) {
+        await session.close();
+        throw new Error(`Could not open the browser: ${redactSensitiveText(String(error))}`, {
+          cause: error,
+        });
+      }
+    }
+    return session;
+  } catch (error) {
+    await remote?.cleanup();
+    throw error;
   }
-  return session;
 }
 
 export async function runCli(args: string[], dependencies: ViewDependencies = {}): Promise<number> {
   const io = dependencies.io ?? DEFAULT_IO;
+  const cancellation = new AbortController();
+  let session: LocalSession | undefined;
+  const stop = (): void => {
+    cancellation.abort();
+    void session?.close();
+  };
+  process.once("SIGINT", stop);
+  process.once("SIGTERM", stop);
   try {
     const parsed = parseCliArguments(args);
     if (parsed.command === "help") {
@@ -146,20 +222,19 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
       io.stdout(`${CALMCRAFT_VERSION}\n`);
       return 0;
     }
-    const session = await startViewCommand(parsed, dependencies);
-    const stop = (): void => {
-      void session.close();
-    };
-    process.once("SIGINT", stop);
-    process.once("SIGTERM", stop);
+    session = await startViewCommand(parsed, {
+      ...dependencies,
+      signal: dependencies.signal ?? cancellation.signal,
+    });
     await session.closed;
-    process.off("SIGINT", stop);
-    process.off("SIGTERM", stop);
     return 0;
   } catch (error) {
     io.stderr(
       `CalmCraft: ${redactSensitiveText(error instanceof Error ? error.message : String(error))}\nRun calmcraft --help for usage.\n`,
     );
     return 1;
+  } finally {
+    process.off("SIGINT", stop);
+    process.off("SIGTERM", stop);
   }
 }

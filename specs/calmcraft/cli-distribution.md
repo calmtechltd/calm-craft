@@ -14,7 +14,7 @@ A developer can install or invoke one npm package and run the `calmcraft` comman
 
 `calmcraft view` and `npx @calmcraft/cli view` open the current checkout or worktree when no source argument is present.
 
-### B2 — Accept a local path or remote URL 🔵 future
+### B2 — Accept a local path or remote URL 🟢 implemented
 
 The `view` command accepts one local repository path or supported Git remote URL. Remote branch selection uses `--branch`.
 

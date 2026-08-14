@@ -173,6 +173,7 @@ export function CalmCraftApp({
   }
 
   const repository = snapshot.repository;
+  const repositorySource = session.repositorySource ?? { kind: "local" as const };
   const selectedSpec =
     route.view === "feature"
       ? (snapshot.estate.specs.find((spec) => spec.id === route.id) ??
@@ -273,9 +274,17 @@ export function CalmCraftApp({
             <BranchIcon />
             {repository.branch ?? `detached · ${repository.head.slice(0, 7)}`}
           </span>
+          {repositorySource.kind === "remote" ? (
+            <span className="remote-identity" title={repositorySource.displayUrl}>
+              Remote · temporary clone
+            </span>
+          ) : null}
           <div className="topbar-actions">
             <span className="privacy-label">
-              <i aria-hidden="true" /> Private to this machine
+              <i aria-hidden="true" />
+              {repositorySource.kind === "remote"
+                ? "Private remote · removed on stop"
+                : "Private to this machine"}
             </span>
             <button
               aria-label="Open command palette"
