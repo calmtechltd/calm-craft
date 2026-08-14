@@ -44,7 +44,8 @@ Work through the question bank, instantiated for the languages in `config.yaml`.
 - Target **twenty questions**. Drop axes that don't apply. Do not pad.
 - If an answer contradicts an earlier one, say so and ask which wins.
 - **Do not ask which package manager to switch to.** 10.1 pins the one `engineering-setup` recorded. Instantiating 10.7–10.10 means writing *that* manager's config, from *that* manager's current docs — not a favourite's, and not a table copied from an older interview. If the manager cannot enforce a question (trust downgrade is the usual case), mark it N/A and skip it.
-- **Secrets (S.1–S.5)** belong in the same interview when the repo has env files, a client bundle, or neither and you still need the ignore rule. Skip S.5 if there is no client bundle. Skip S.3's local-scanner option if they already have platform push protection and no appetite for a hook.
+- **Offer 10.7–10.10 as a heads-up, not a gauntlet.** Most people do not know a release cooldown or a script allowlist exists. One sentence each on what they do, the recommended pair (cooldown + allowlist), and "off" / "manager default" as ordinary answers. Do not walk every sub-flag. Do not upsell trust policy or a week-long gate.
+- **Secrets (S.1–S.5)** belong in the same interview when the repo has env files, a client bundle, or neither and you still need the ignore rule. Skip S.5 if there is no client bundle. Skip S.3's local-scanner option if they already have platform push protection and no appetite for a hook. S.1 and S.2 are the ones that matter; the rest are optional.
 
 ### 3. Sort into tiers, and push everything down
 
@@ -127,6 +128,7 @@ Set severity to error where the codebase already complies. Where violations exis
 - **A long always-on rule file.** Glob-scope it, or accept that it gets skimmed.
 - **Prescribing a package manager, or copying another manager's keys into this one.** Detected manager, that manager's docs.
 - **Turning on every supply-chain flag at once.** Cooldown plus an allowlist is the useful pair. Trust policy and a week-long gate are how you break the next install.
+- **Treating this as a security framework.** The job is to name a switch most people have never heard of, and turn it on if they want it. A lecture, a scanner they did not ask for, or a fourth follow-up question is the opposite.
 
 ## Related skills
 

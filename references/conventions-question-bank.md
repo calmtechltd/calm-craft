@@ -142,6 +142,8 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 
 These are **policies**, not a product pick. 10.1 records the manager the repo already uses — detect it, pin it, do not convert the repo to a favourite. npm, pnpm, Yarn, and Bun (and uv, Poetry, Composer, Cargo…) instantiate the same answers with different config keys; `conventions-decide` writes the one the recorded manager understands, from that manager's current docs.
 
+10.7–10.10 exist because the managers shipped them and most people have never heard of them. Offer the useful pair (a one-day cooldown and an install-script allowlist), say what each one does in a sentence, and accept "off" without a lecture. This is a helper pointing at a switch, not a security programme.
+
 | # | Question | Options |
 | --- | --- | --- |
 | 10.1 | Package manager | ★ One, pinned in the manifest, enforced so a wrong-manager install fails · Whatever works |
@@ -344,7 +346,7 @@ Nobody thinks of these as needing conventions, everybody has them, and they're w
 
 **Secrets and environment**
 
-The expensive mistake is committing a real value, or teaching an agent that `.env` is "just config". These are cheap to decide and cheap to enforce; skipping them is how keys land in git history.
+The expensive mistake is committing a real value, or teaching an agent that `.env` is "just config". These are cheap to decide and cheap to enforce; skipping them is how keys land in git history. Same helper rule as Axis 10: point at the obvious bits, do not invent a secrets framework.
 
 | # | Question | Options |
 | --- | --- | --- |
