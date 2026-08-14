@@ -36,19 +36,23 @@ CalmCraft reads an optional `calmcraft.json` containing `specVersion`, `specsRoo
 
 ### B7 — Support maintained Node releases 🟢 implemented
 
-The package declares Node 22 or newer and CI tests Node 22 and Node 24. An unsupported runtime fails before repository access with the supported range.
+The package supports the Node 22 and Node 24 LTS lines, and CI tests both. Any other major version fails before repository access with the supported range.
 
 ### B8 — Install without lifecycle scripts 🟢 implemented
 
 Installing the package runs no preinstall, install, postinstall, prepare, or repository script. The package uses no native compilation owned by CalmCraft.
 
-### B9 — Ship an explicit package surface 🔵 future
+### B9 — Ship an explicit package surface 🟡 partial
 
 The published package contains the executable bundle, self-contained browser assets, plugin manifests, skills, references, license, package manifest, and README. It excludes source fixtures, private content, reports, caches, and development configuration.
 
-### B10 — Publish with provenance 🔵 future
+Partial delivery: the pack contract, executable mode, release documentation, and clean-install smoke runner are implemented; registry inspection still waits for the first release candidate.
+
+### B10 — Publish with provenance 🟡 partial
 
 CalmCraft publishes through trusted CI with npm provenance, an MIT license, a version tag, and release notes. A clean environment can verify the package identity and run local and remote smoke tests.
+
+Partial delivery: stage-only trusted-publishing and cross-platform smoke workflows are implemented; npm scope ownership, the first-package bootstrap, release-candidate approval, and public promotion remain external release gates.
 
 ## Rules (Invariants)
 
@@ -87,9 +91,9 @@ _None._
 
 ## Open Questions
 
-- **Blocks B10:** Does Calm Tech Ltd control the `@calmcraft` npm scope, or should the first package use another available name?
+- **Blocks B10:** An npm scope owner must confirm control of `@calmcraft`, bootstrap the as-yet-unpublished package, and configure the stage-only trust relationship before CI can stage the first product release.
 - **Settled:** The repository and package use the existing MIT license.
-- **Settled:** Development uses Node 24 while runtime support starts at Node 22.
+- **Settled:** Development uses Node 24 and the runtime supports the Node 22 and Node 24 LTS lines.
 
 ## Future Considerations
 

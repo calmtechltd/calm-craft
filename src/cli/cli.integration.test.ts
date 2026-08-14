@@ -210,7 +210,13 @@ describe("CalmCraft CLI", () => {
         { command: "view", source: "/path/that/does/not/exist", diff: false, openBrowser: false },
         { nodeVersion: "v20.19.0", assetsRoot: await assets() },
       ),
-    ).rejects.toThrow(/Node\.js 22 or newer/u);
+    ).rejects.toThrow(/Node\.js 22 or 24/u);
+    await expect(
+      startViewCommand(
+        { command: "view", source: "/path/that/does/not/exist", diff: false, openBrowser: false },
+        { nodeVersion: "v26.0.0", assetsRoot: await assets() },
+      ),
+    ).rejects.toThrow(/Node\.js 22 or 24/u);
   });
 
   it("serves a remote branch review and removes its temporary clone on close", async () => {

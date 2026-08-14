@@ -24,8 +24,11 @@
   },
   "files": [
     ".claude-plugin",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md",
+    "SECURITY.md",
+    "SUPPORT.md",
     "dist",
     "plugin.json",
     "references",
@@ -42,6 +45,7 @@
     "license-check": "license-checker scan --failOn AGPL-1.0-or-later AGPL-3.0-or-later GPL-1.0-or-later GPL-2.0-or-later GPL-3.0-or-later SSPL-1.0 --ignoreRootPackageLicense --disableReport",
     "lint": "oxlint .",
     "pack:check": "pnpm build && pnpm pack --dry-run",
+    "release:check": "node scripts/verify-release-package.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test --pass-with-no-tests",
     "test:unit": "vitest run --exclude 'test/e2e/**'"
@@ -76,7 +80,7 @@
   },
   "packageManager": "pnpm@11.10.0",
   "engines": {
-    "node": ">=22"
+    "node": "^22.0.0 || ^24.0.0"
   },
   "publishConfig": {
     "access": "public",

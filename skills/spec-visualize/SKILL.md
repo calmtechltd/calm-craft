@@ -1,76 +1,78 @@
 ---
 name: spec-visualize
-description: Generate a single self-contained HTML dashboard of every spec in the estate — roll-up counts, status filtering, free-text search, module grouping, and filters for open questions and blocked behaviours. Use when the user says "show me all our specs", "spec dashboard", "give me a status overview of the estate", or wants a shareable snapshot.
+description: Open the local CalmCraft visualizer for a spec estate or branch review. Use when the user asks to browse, visualize, search, or review the specs in a checkout, worktree, or private Git remote.
 ---
 
-# Visualise Specs as a Dashboard
+# Open the CalmCraft Visualizer
 
-One self-contained HTML file showing the whole estate. Useful for browsing, for a status conversation with someone who won't read markdown, and for seeing shape — which modules are thin, which features are mostly 🔵.
+Use the packaged `calmcraft` command as the visual front door to the spec estate. It opens a loopback-only browser session and does not generate or commit an HTML dashboard.
 
-Format authority: [`references/spec-format.md`](../../references/spec-format.md). Spec root: `.engineering/config.yaml`.
+Format authority: [`references/spec-format.md`](../../references/spec-format.md). The CLI reads optional repository settings from `calmcraft.json`.
 
-## When to use
-
-- "Show me the state of our specs."
-- Preparing a status conversation with a stakeholder.
-- Getting a feel for the estate before planning.
-
-**Not this skill:** finding maintenance debt (`spec-gap-sweep` — same data, actionable output).
+Use `spec-gap-sweep` instead when the user wants an actionable maintenance report rather than an interactive view.
 
 ## Workflow
 
-### 1. Parse every spec
+### 1. Select the repository source
 
-Front matter, behaviours with badges and notes, invariants, decision tables, open questions with their prefixes, flow contracts and their transitions.
+Use the current checkout when the user names no source. Otherwise use the exact local path, linked worktree, or SSH/HTTPS remote they supplied. Do not infer a different private repository or copy its specs elsewhere.
 
-Report parse failures rather than dropping them silently. A spec the dashboard can't read is one nobody's tooling can read.
+For a remote, use the branch the user supplied. CalmCraft delegates authentication to the installed `git`; never request a provider token for the command or place credentials in the URL.
 
-### 2. Compute, don't trust
+### 2. Choose the view
 
-Recompute roll-up status from behaviour badges. Where the file's front matter disagrees, show the **computed** value and mark the discrepancy — a dashboard that repeats a wrong badge is worse than no dashboard.
+Open the estate:
 
-### 3. Generate one file
+```sh
+npx --yes @calmcraft/cli@0.1.0 view
+npx --yes @calmcraft/cli@0.1.0 view /path/to/repository
+```
 
-Write a single HTML file to `<specs root>/_site/index.html` with **no external dependencies** — no CDN scripts, no remote fonts, no network calls. It must open from disk and work when emailed to someone.
+Open Branch Review for a checkout or worktree:
 
-Include:
+```sh
+npx --yes @calmcraft/cli@0.1.0 view /path/to/worktree --diff --base origin/main
+```
 
-- **Estate summary** — specs by status, behaviours by badge, open questions by kind, flow transition count.
-- **Grouping by module and feature area**, collapsible.
-- **Per-spec cards** — title, area, status, behaviour badges, counts, and the discrepancy marker where relevant.
-- **Free-text search** across titles, behaviour text, and open questions. Behaviour text matters — that's where the answer usually is.
-- **Filters:** by status; *open questions only*; *blocked behaviours only*. The last one is the most useful view in the whole dashboard — it's the list of things a decision would unblock.
-- **Behaviour detail** on expand, including notes on 🟡 behaviours and the questions blocking a 🔵.
+Open a selected branch from a private remote:
 
-Link each spec to its source file with a relative path so the dashboard is a way in, not a replacement.
+```sh
+npx --yes @calmcraft/cli@0.1.0 view git@github.com:organisation/repository.git \
+  --branch feature/spec-review \
+  --diff \
+  --base main
+```
 
-### 4. Respect the theme, and the page
+If the pinned package is already installed globally, the equivalent `calmcraft view` command is fine. Use `--no-open` only when the user wants the URL or the environment cannot launch a browser. Never expose the session URL outside the local machine; it contains a short-lived secret.
 
-Readable in light and dark. Wide content scrolls within its own container rather than the page scrolling sideways. Nothing here needs a framework; keep the file small enough to open instantly.
+### 3. Keep the session owned
 
-### 5. Hand back
+Run the command in a terminal that can remain active while the user browses. The CLI owns its loopback server and any temporary remote clone. Stop it normally with `Ctrl-C` when the user is finished so handled cleanup runs.
 
-Path, estate counts, discrepancies found between recorded and computed status, and any spec that failed to parse.
+Do not background an orphan process, upload repository data, start a public listener, or replace the local session with a hosted preview.
+
+### 4. Hand back
+
+Tell the user which repository or redacted remote identity is open, whether the session is Atlas or Branch Review, and which base was requested. Do not repeat a tokenized session URL in durable notes, commits, issues, or chat logs.
 
 ## Quality gate
 
-- [ ] Single file, zero external requests, opens from disk.
-- [ ] Roll-ups recomputed; discrepancies shown, not hidden.
-- [ ] Parse failures reported.
-- [ ] Search covers behaviour text, not just titles.
-- [ ] Blocked-behaviours filter present and correct.
-- [ ] Readable in both light and dark; no horizontal page scroll.
-- [ ] No spec files modified.
+- [ ] The exact requested checkout, worktree, or remote branch is open.
+- [ ] Branch Review uses the requested base or reports that a base is still needed.
+- [ ] The server remains bound to loopback and no repository content was uploaded.
+- [ ] No repository file was generated or changed.
+- [ ] The CLI process remains owned while the session is in use and stops cleanly afterward.
 
 ## Anti-patterns
 
-- **External dependencies.** It stops working exactly when someone else opens it.
-- **Displaying front-matter status without checking it.** Propagates the error to an audience.
-- **Silently skipping specs that don't parse.**
-- **Searching titles only.** The behaviour text is the content.
-- **Rebuilding `spec-gap-sweep` in HTML.** This is for browsing; that one is for acting.
+- Generating a static dashboard in the selected repository.
+- Copying private specs into a fixture, report, or hosted service.
+- Opening a remote without an explicit branch when its default is ambiguous.
+- Treating staged, unstaged, or untracked work as committed branch history.
+- Sharing the tokenized local URL.
 
 ## Related skills
 
-- `spec-gap-sweep` — the actionable version of the same data
-- `spec-maintain-on-ship` — fix the discrepancies this surfaces
+- `spec-gap-sweep` — report estate-wide maintenance debt
+- `spec-maintain-on-ship` — update behaviour state when work ships
+- `branch-self-review` — review the complete code branch before submission

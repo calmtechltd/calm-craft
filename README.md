@@ -12,22 +12,111 @@ Portable by design: skills live in `skills/` per the Agent Plugins v1 spec, so t
 
 ## CalmCraft visualizer
 
-The repository also contains the source for the `calmcraft` command. The visualizer reads CalmCraft specs from a local checkout, worktree, or authorised SSH/HTTPS Git remote and opens a private browser session on the developer's machine. Branch review explains changes by behaviour, invariant, decision row, question, relationship, and flow transition.
+The `calmcraft` command reads CalmCraft specs from a local checkout, linked worktree, or authorised SSH/HTTPS Git remote and opens a private browser session on the developer's machine. Branch Review explains changes by behaviour, invariant, decision row, question, relationship, and flow transition.
 
-The CLI is under active development and has not been published to npm. Repository content stays on the developer's machine. CalmCraft has no telemetry transport and does not send spec content to a hosted service.
+Repository content stays on the developer's machine. CalmCraft has no telemetry transport and does not send spec content to a hosted service.
 
-CLI development usage:
+## Install the CLI
+
+CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version without installing it globally:
 
 ```sh
-pnpm build
-node dist/cli/index.js view
-node dist/cli/index.js view ../another-repository --diff
-node dist/cli/index.js view git@github.com:organisation/private-repository.git --branch feature/specs --diff --base main
+npx --yes @calmcraft/cli@0.1.0 view
 ```
 
-Remote sessions use the credentials already available to `git`, including an SSH agent or credential helper. CalmCraft does not ask for or store a provider token. It clones only the selected branch and comparison base into a unique operating-system temporary directory, disables repository hooks and submodules, and removes the clone on normal stop, cancellation, or a handled process signal. An uncatchable hard termination cannot run application cleanup; the operating system may remove any remaining temporary directory through its normal temporary-file policy.
+Or install the same pinned version:
 
-## Install
+```sh
+npm install --global @calmcraft/cli@0.1.0
+calmcraft view
+```
+
+The package contains no install-time lifecycle script or native build owned by CalmCraft. npm records provenance for public releases. To verify registry signatures and attestations in a clean project, install the exact version and run `npm audit signatures` with a current npm CLI.
+
+### Current repository
+
+From any checkout containing CalmCraft specs:
+
+```sh
+calmcraft view
+```
+
+The command discovers the Git root and `specs/` directory, starts a server on `127.0.0.1`, opens the Atlas, and keeps running until the terminal process stops. Use `--no-open` to print the private session URL without launching a browser.
+
+### Local path or worktree
+
+Pass a checkout or linked worktree explicitly:
+
+```sh
+calmcraft view ../another-repository
+calmcraft view /absolute/path/to/a-linked-worktree --diff --base origin/main
+```
+
+CalmCraft reads the selected worktree's filesystem and shared Git objects without switching branches, changing the index, fetching, or writing repository files.
+
+### Branch review
+
+Open the semantic review for the current branch and local work:
+
+```sh
+calmcraft view --diff
+calmcraft view --diff --base origin/main
+calmcraft view --diff --provenance committed,staged
+```
+
+Without `--base`, CalmCraft checks `calmcraft.json`, `origin/HEAD`, then common main-branch names. Provenance controls accept `committed`, `staged`, `unstaged`, and `untracked` as a comma-separated list.
+
+An optional `calmcraft.json` can set the spec root and default base without executing repository code:
+
+```json
+{
+  "specVersion": 1,
+  "specsRoot": "specs",
+  "defaultBase": "origin/main"
+}
+```
+
+### Private remote
+
+Use an SSH or HTTPS Git URL and select the branch to inspect:
+
+```sh
+calmcraft view git@github.com:organisation/private-repository.git \
+  --branch feature/specs \
+  --diff \
+  --base main
+```
+
+Remote sessions use the authentication already available to `git`, including an SSH agent or credential helper. CalmCraft does not ask for or store a provider token. It clones only the selected branch and comparison base into a unique operating-system temporary directory, disables repository hooks and submodules, and removes the clone on normal stop, cancellation, or a handled process signal.
+
+### Privacy
+
+The server accepts loopback requests only. Each session uses a random token, restrictive browser policy, bundled assets, sanitized Markdown, and bounded source-resource IDs. The browser cannot request an arbitrary path or write to the repository. CalmCraft has no hosted service, telemetry transport, analytics, or automatic update request.
+
+An uncatchable hard termination cannot run application cleanup. In that case, the operating system may retain a temporary remote clone until its normal temporary-file cleanup runs. Do not place credentials in a remote URL; use your SSH agent or Git credential helper.
+
+### Troubleshooting
+
+- `CalmCraft requires Node.js 22 or 24`: switch to one of the supported LTS lines.
+- `Not a Git repository`: run the command inside a checkout or pass its path.
+- Branch Review asks for a base: pass `--base <ref>` or set `defaultBase` in `calmcraft.json`.
+- A private remote cannot authenticate: run `git ls-remote` against that URL in the same terminal first. CalmCraft uses the same Git authentication and disables interactive credential prompts.
+- The browser does not open: rerun with `--no-open` and open the printed URL in a browser on the same machine.
+- A requested port is busy: omit `--port` for an available port or choose another explicit port.
+
+Run `calmcraft --help` for the complete option list. Errors redact URL credentials and session tokens; reports should still omit private repository paths and content.
+
+### Uninstall
+
+Remove a global installation with:
+
+```sh
+npm uninstall --global @calmcraft/cli
+```
+
+`npx` requires no global uninstall. Your package manager may retain its normal download cache; CalmCraft creates no repository cache or persistent user configuration.
+
+## Install the Agent Plugin
 
 **Agent Plugins clients** (VS Code, Cursor, Codex, Copilot) — install from source with `https://github.com/calmtechltd/calm-craft`.
 
@@ -70,7 +159,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | `spec-triage-bug-report` | Bug, expected behaviour, gap, drift, or out of scope? |
 | `spec-harvest-discussion` | Read an issue or PR thread and propose what the spec should absorb. Proposes only. |
 | `spec-gap-sweep` | Estate-wide maintenance debt. |
-| `spec-visualize` | Self-contained HTML dashboard of every spec. |
+| `spec-visualize` | Open the local visualizer or semantic Branch Review. |
 
 ### Delivery
 

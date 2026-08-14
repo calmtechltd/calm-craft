@@ -38,8 +38,8 @@ const DEFAULT_IO: CliIo = {
 
 function assertSupportedNode(version: string): void {
   const major = Number(version.replace(/^v/u, "").split(".")[0]);
-  if (!Number.isInteger(major) || major < 22) {
-    throw new Error(`CalmCraft requires Node.js 22 or newer; found ${version}.`);
+  if (major !== 22 && major !== 24) {
+    throw new Error(`CalmCraft requires Node.js 22 or 24; found ${version}.`);
   }
 }
 

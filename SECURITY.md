@@ -2,7 +2,7 @@
 
 ## Report a vulnerability
 
-Report a private security issue through GitHub's security advisory form for `calmtechltd/calm-craft`. Do not open a public issue with repository content, credentials, exploit details, or private paths.
+Report a private security issue through the [GitHub security advisory form](https://github.com/calmtechltd/calm-craft/security/advisories/new). Do not open a public issue with repository content, credentials, exploit details, or private paths.
 
 ## Local privacy contract
 
@@ -12,4 +12,4 @@ The browser receives only session-scoped, sanitized spec data and bounded source
 
 ## Supported versions
 
-Security fixes target the latest published minor release. The project will publish a clear advisory when a fix requires users to upgrade.
+Security fixes target the latest published minor release on supported Node.js versions. The project will publish an advisory when a fix requires users to upgrade. See [SUPPORT.md](SUPPORT.md) for the complete runtime and versioning policy.
