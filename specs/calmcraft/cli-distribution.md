@@ -1,7 +1,7 @@
 ---
 id: calmcraft-cli-distribution
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # CLI Distribution
@@ -10,7 +10,7 @@ A developer can install or invoke one npm package and run the `calmcraft` comman
 
 ## Behaviours
 
-### B1 — Run from the current repository 🔵 future
+### B1 — Run from the current repository 🟢 implemented
 
 `calmcraft view` and `npx @calmcraft/cli view` open the current checkout or worktree when no source argument is present.
 
@@ -22,23 +22,23 @@ The `view` command accepts one local repository path or supported Git remote URL
 
 `--diff` opens Branch Review, `--base <ref>` selects the comparison base, and local-work controls include or exclude staged, unstaged, and untracked content without changing it.
 
-### B4 — Control browser and port behaviour 🔵 future
+### B4 — Control browser and port behaviour 🟢 implemented
 
 `--no-open` leaves the browser closed and prints the URL. `--port <number>` requests an available loopback port and reports a conflict without selecting an unrelated port silently.
 
-### B5 — Load declarative configuration 🔵 future
+### B5 — Load declarative configuration 🟢 implemented
 
 CalmCraft reads an optional `calmcraft.json` containing `specVersion`, `specsRoot`, and `defaultBase`. It rejects unsupported fields or invalid values and never executes repository configuration code.
 
-### B6 — Provide useful command help and errors 🔵 future
+### B6 — Provide useful command help and errors 🟢 implemented
 
 `--help` documents commands, options, defaults, privacy, and examples. `--version` prints the package version. Invalid input and startup failure return a non-zero exit code with redacted repair guidance.
 
-### B7 — Support maintained Node releases 🔵 future
+### B7 — Support maintained Node releases 🟢 implemented
 
 The package declares Node 22 or newer and CI tests Node 22 and Node 24. An unsupported runtime fails before repository access with the supported range.
 
-### B8 — Install without lifecycle scripts 🔵 future
+### B8 — Install without lifecycle scripts 🟢 implemented
 
 Installing the package runs no preinstall, install, postinstall, prepare, or repository script. The package uses no native compilation owned by CalmCraft.
 

@@ -1,7 +1,7 @@
 ---
 id: calmcraft-spec-model
 area: CalmCraft
-status: partial
+status: implemented
 ---
 
 # Spec Model
@@ -50,7 +50,7 @@ An unreadable or malformed spec produces file-level findings. CalmCraft still ex
 
 CalmCraft renders supported Markdown tables, lists, links, code, and text. It removes scripts, event handlers, active embeds, remote media, and unsafe URL schemes before content reaches the browser.
 
-### B11 — Version the content contract 🔵 future
+### B11 — Version the content contract 🟢 implemented
 
 A repository can declare a supported `specVersion` in `calmcraft.json`. CalmCraft reports an unsupported version and does not guess how to reinterpret the content.
 

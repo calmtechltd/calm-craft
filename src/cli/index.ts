@@ -1,5 +1,3 @@
-import { CALMCRAFT_NAME, CALMCRAFT_VERSION } from "../meta";
+import { runCli } from "./command";
 
-const message = `${CALMCRAFT_NAME} ${CALMCRAFT_VERSION}\nThe visualizer is under development.`;
-
-process.stdout.write(`${message}\n`);
+process.exitCode = await runCli(process.argv.slice(2));

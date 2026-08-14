@@ -1,7 +1,7 @@
 ---
 id: calmcraft-local-session-security
 area: CalmCraft
-status: partial
+status: implemented
 ---
 
 # Local Session Security
@@ -10,27 +10,27 @@ CalmCraft opens private repository content in a browser without turning the deve
 
 ## Behaviours
 
-### B1 — Bind to loopback 🔵 future
+### B1 — Bind to loopback 🟢 implemented
 
 The local server listens on `127.0.0.1` and an available port, or a developer-supplied available loopback port. It does not listen on a LAN or public interface.
 
-### B2 — Require a session token 🔵 future
+### B2 — Require a session token 🟢 implemented
 
 Each process creates an unpredictable session token. The initial application URL and every data request must present that token; a missing or incorrect token receives no repository data.
 
-### B3 — Reject untrusted hosts 🔵 future
+### B3 — Reject untrusted hosts 🟢 implemented
 
 The server accepts loopback host headers for its active port and rejects other host values, including DNS rebinding attempts.
 
-### B4 — Restrict browser capabilities 🔵 future
+### B4 — Restrict browser capabilities 🟢 implemented
 
 Responses set a Content Security Policy and related security headers that allow the bundled application to run without remote scripts, styles, fonts, frames, media, or network destinations.
 
-### B5 — Keep assets self-contained 🔵 future
+### B5 — Keep assets self-contained 🟢 implemented
 
 The package supplies its application code, styles, icons, and fonts. Opening a private repository does not request a third-party asset or analytics endpoint.
 
-### B6 — Bound source access to known files 🔵 future
+### B6 — Bound source access to known files 🟢 implemented
 
 The browser can request source content only through identifiers created for parsed specs and flow contracts. The server resolves the identifier beneath the selected repository root and rejects traversal, absolute paths, links that escape the root, and unknown files.
 
@@ -38,19 +38,19 @@ The browser can request source content only through identifiers created for pars
 
 Repository Markdown cannot add scripts, event handlers, active embeds, unsafe links, remote images, or browser navigation that bypasses the session policy.
 
-### B8 — Expose no repository write path 🔵 future
+### B8 — Expose no repository write path 🟢 implemented
 
 The server and browser application provide no endpoint or control that stages, edits, deletes, checks out, fetches, commits, or otherwise changes the selected repository.
 
-### B9 — Send no telemetry 🔵 future
+### B9 — Send no telemetry 🟢 implemented
 
 The v1 package contains no telemetry transport. It does not send repository identity, paths, spec content, usage, performance, or failures to CalmCraft or another service.
 
-### B10 — Redact sensitive errors 🔵 future
+### B10 — Redact sensitive errors 🟢 implemented
 
 Terminal and browser errors remove credentials, tokens, and sensitive URL query values while retaining the repository operation and repair guidance a developer needs.
 
-### B11 — End the session cleanly 🔵 future
+### B11 — End the session cleanly 🟢 implemented
 
 Shutdown closes the listener, invalidates the token, releases the port, and removes owned temporary remote data. A request after shutdown receives no session data.
 

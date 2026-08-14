@@ -10,7 +10,7 @@ A developer can open a CalmCraft estate from the checkout or worktree they are u
 
 ## Behaviours
 
-### B1 — Open the current checkout 🔵 future
+### B1 — Open the current checkout 🟢 implemented
 
 Running `calmcraft view` inside a Git checkout opens the CalmCraft specs from that checkout. The session identifies the repository root, current branch or detached commit, and current filesystem.
 
@@ -54,7 +54,7 @@ CalmCraft removes a remote session's temporary clone after a normal stop, cancel
 
 An invalid local path, non-Git directory, unsupported URL, authentication failure, missing branch, or insufficient history produces a clear error. Logged URLs redact credentials and sensitive query values.
 
-### B12 — Control browser opening and shutdown 🔵 future
+### B12 — Control browser opening and shutdown 🟢 implemented
 
 CalmCraft opens the local application unless the developer disables browser opening. It always prints the session URL, keeps the server active until shutdown, and releases its port when the session ends.
 
