@@ -10,6 +10,12 @@ An [Agent Plugin](https://agent-plugins.org/) providing three things that make c
 
 Portable by design: skills live in `skills/` per the Agent Plugins v1 spec, so this works in Codex, Cursor, VS Code, Copilot, and anything else implementing the standard. `.claude-plugin/` sits alongside for Claude Code, which uses its own manifest location; both read the same skills.
 
+## CalmCraft visualizer
+
+The repository also contains the source for the `calmcraft` command. The visualizer will read CalmCraft specs from a local checkout or worktree and open a private browser session on the developer's machine. Branch review will explain changes by behaviour, invariant, decision row, question, relationship, and flow transition.
+
+The CLI is under active development and has not been published to npm. Repository content stays on the developer's machine. CalmCraft has no telemetry transport and does not send spec content to a hosted service.
+
 ## Install
 
 **Agent Plugins clients** (VS Code, Cursor, Codex, Copilot) — install from source with `https://github.com/calmtechltd/calm-craft`.
