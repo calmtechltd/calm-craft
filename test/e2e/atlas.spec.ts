@@ -78,7 +78,7 @@ test("packed Atlas opens, filters, selects, themes, and adapts at 300 specs", as
     page.getByRole("heading", { name: "Fixture Feature 299", exact: true }),
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Atlas", exact: true }).click();
+  await page.getByRole("link", { name: "Back to Atlas", exact: true }).click();
   await page.getByRole("button", { name: "Use dark theme" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.setViewportSize({ width: 680, height: 820 });

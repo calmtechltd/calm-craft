@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SpecDocument } from "../specs/model";
 import { CALMCRAFT_VERSION } from "../meta";
 import { Atlas } from "./atlas";
+import { BranchReviewNotStarted, BranchReviewView } from "./branch-review";
 import { FeatureView, type FeatureSelection } from "./feature";
 import { AtlasIcon, BranchIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
 import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
@@ -33,7 +34,10 @@ function openSpec(spec: SpecDocument): void {
   window.location.hash = `/feature/${encodeURIComponent(spec.id)}`;
 }
 
-type AppRoute = { view: "atlas" } | { view: "feature"; id: string; selection: FeatureSelection };
+type AppRoute =
+  | { view: "atlas" }
+  | { view: "review" }
+  | { view: "feature"; id: string; selection: FeatureSelection };
 
 function decodeRouteSegment(value: string): string | undefined {
   try {
@@ -46,6 +50,7 @@ function decodeRouteSegment(value: string): string | undefined {
 export function parseAppRoute(hash: string): AppRoute {
   const [path = "", query = ""] = hash.replace(/^#/u, "").split("?");
   const segments = path.split("/").filter(Boolean);
+  if (segments[0] === "review") return { view: "review" };
   if (segments[0] !== "feature" || !segments[1]) return { view: "atlas" };
   const id = decodeRouteSegment(segments[1]);
   if (!id) return { view: "atlas" };
@@ -71,8 +76,13 @@ export function CalmCraftApp({
   sources?: SessionSourceDescriptor[];
 }) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
-  const snapshot = session.mode === "estate" ? session.snapshot : undefined;
-  const [route, setRoute] = useState<AppRoute>(() => parseAppRoute(window.location.hash));
+  const review = session.mode === "review" ? session.review : undefined;
+  const snapshot = session.mode === "estate" ? session.snapshot : review?.target;
+  const [route, setRoute] = useState<AppRoute>(() =>
+    !window.location.hash && session.mode === "review"
+      ? { view: "review" }
+      : parseAppRoute(window.location.hash),
+  );
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -108,7 +118,8 @@ export function CalmCraftApp({
   const repository = snapshot.repository;
   const selectedSpec =
     route.view === "feature"
-      ? snapshot.estate.specs.find((spec) => spec.id === route.id)
+      ? (snapshot.estate.specs.find((spec) => spec.id === route.id) ??
+        review?.baseline?.estate.specs.find((spec) => spec.id === route.id))
       : undefined;
 
   return (
@@ -131,6 +142,7 @@ export function CalmCraftApp({
 
         <nav aria-label="Primary views">
           <a
+            aria-label="Atlas"
             aria-current={route.view === "atlas" ? "page" : undefined}
             className={`nav-item ${route.view === "atlas" ? "active" : ""}`}
             href="#/atlas"
@@ -139,12 +151,17 @@ export function CalmCraftApp({
             <span>Atlas</span>
             <kbd>A</kbd>
           </a>
-          <button className="nav-item" disabled type="button">
+          <a
+            aria-label="Branch Review"
+            aria-current={route.view === "review" ? "page" : undefined}
+            className={`nav-item ${route.view === "review" ? "active" : ""}`}
+            href="#/review"
+          >
             <BranchIcon />
             <span>Branch Review</span>
-            <small>Soon</small>
-          </button>
-          <button className="nav-item" disabled type="button">
+            <small>{review?.semanticChanges.length ?? "—"}</small>
+          </a>
+          <button aria-label="Health" className="nav-item" disabled type="button">
             <HealthIcon />
             <span>Health</span>
             <small>{health.findings}</small>
@@ -201,6 +218,15 @@ export function CalmCraftApp({
             onOpenSpec={openSpec}
             worktreeEntries={repository.worktreeEntries}
           />
+        ) : route.view === "review" ? (
+          review ? (
+            <BranchReviewView
+              initialProvenance={session.mode === "review" ? session.initialProvenance : []}
+              review={review}
+            />
+          ) : (
+            <BranchReviewNotStarted />
+          )
         ) : selectedSpec ? (
           <FeatureView
             estate={snapshot.estate}

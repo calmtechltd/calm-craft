@@ -1,3 +1,5 @@
+import type { Provenance } from "../diff/model";
+
 export type ViewArguments = {
   command: "view";
   source: string;
@@ -6,6 +8,7 @@ export type ViewArguments = {
   branch?: string;
   openBrowser: boolean;
   port?: number;
+  provenance?: Provenance[];
 };
 
 export type CliArguments = ViewArguments | { command: "help" } | { command: "version" };
@@ -23,6 +26,21 @@ function readValue(args: string[], index: number, option: string): string {
   return value;
 }
 
+export const ALL_PROVENANCE: Provenance[] = ["committed", "staged", "unstaged", "untracked"];
+
+function parseProvenance(value: string): Provenance[] {
+  const requested = [...new Set(value.split(",").map((item) => item.trim()))];
+  if (
+    requested.length === 0 ||
+    requested.some((item) => !ALL_PROVENANCE.includes(item as Provenance))
+  ) {
+    throw new CliArgumentError(
+      "--provenance accepts committed, staged, unstaged, and untracked as a comma-separated list.",
+    );
+  }
+  return ALL_PROVENANCE.filter((item) => requested.includes(item));
+}
+
 export function parseCliArguments(args: string[], cwd = process.cwd()): CliArguments {
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") return { command: "help" };
   if (args[0] === "--version" || args[0] === "-v") return { command: "version" };
@@ -35,6 +53,7 @@ export function parseCliArguments(args: string[], cwd = process.cwd()): CliArgum
   let branch: string | undefined;
   let openBrowser = true;
   let port: number | undefined;
+  let provenance: Provenance[] | undefined;
   for (let index = 1; index < args.length; index += 1) {
     const argument = args[index] ?? "";
     if (argument === "--diff") diff = true;
@@ -45,6 +64,10 @@ export function parseCliArguments(args: string[], cwd = process.cwd()): CliArgum
       index += 1;
     } else if (argument === "--branch") {
       branch = readValue(args, index, argument);
+      index += 1;
+    } else if (argument === "--provenance") {
+      provenance = parseProvenance(readValue(args, index, argument));
+      diff = true;
       index += 1;
     } else if (argument === "--port") {
       const value = readValue(args, index, argument);
@@ -61,7 +84,16 @@ export function parseCliArguments(args: string[], cwd = process.cwd()): CliArgum
       source = argument;
     }
   }
-  return { command: "view", source: source ?? cwd, diff, base, branch, openBrowser, port };
+  return {
+    command: "view",
+    source: source ?? cwd,
+    diff,
+    base,
+    branch,
+    openBrowser,
+    port,
+    provenance,
+  };
 }
 
 export const HELP_TEXT = `CalmCraft — local product-spec visualizer
@@ -74,6 +106,7 @@ Usage:
 Options:
   --diff              Open branch review against an inferred base
   --base <ref>        Compare against an explicit Git base
+  --provenance <list> Start with committed, staged, unstaged, and/or untracked work
   --no-open           Print the session URL without opening a browser
   --port <number>     Request one loopback port; conflicts fail
   --branch <name>     Select a branch for a remote source
@@ -86,4 +119,5 @@ Examples:
   calmcraft view
   calmcraft view ../another-project --no-open
   calmcraft view --diff --base origin/main
+  calmcraft view --diff --provenance committed,staged
 `;

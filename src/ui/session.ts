@@ -1,4 +1,5 @@
 import type { RepositorySnapshot } from "../git/model";
+import type { BranchReview, Provenance } from "../diff/model";
 
 export type EstateSession = {
   mode: "estate";
@@ -7,7 +8,8 @@ export type EstateSession = {
 
 export type ReviewSession = {
   mode: "review";
-  review: unknown;
+  review: BranchReview;
+  initialProvenance: Provenance[];
 };
 
 export type CalmCraftSession = EstateSession | ReviewSession;

@@ -305,7 +305,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
   return (
     <main className="feature-view" id="main-content">
       <header className="feature-hero">
-        <a className="back-link" href="#/atlas">
+        <a aria-label="Back to Atlas" className="back-link" href="#/atlas">
           <ArrowIcon /> Atlas
         </a>
         <div className="feature-kicker">

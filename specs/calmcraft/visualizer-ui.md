@@ -12,7 +12,7 @@ The local CalmCraft application gives developers and reviewers a clear route thr
 
 ### B1 — Orient the session 🟡 partial
 
-> Implemented for the Atlas session shell. Branch Review and Health become active destinations with their owning views.
+> Implemented for Atlas, Feature, and Branch Review. Health becomes active with its owning view.
 
 The application shows the repository, worktree or remote-session state, current branch or detached commit, selected comparison base when present, and session health. Navigation exposes Atlas, Branch Review, and Health from every view.
 
@@ -36,7 +36,7 @@ Each behaviour has an addressable anchor with its stable key, status, blocker st
 
 Feature view shows outgoing relationships, backlinks, and authoritative user flows. Selecting a flow state or transition reveals its event, guard, outcome, and covered behaviours.
 
-### B7 — Review branch changes by feature 🔵 future
+### B7 — Review branch changes by feature 🟢 implemented
 
 Branch Review groups changed features by module, change type, or provenance. It shows the base and merge-base and lets the reviewer include or exclude committed, staged, unstaged, and untracked work.
 
@@ -60,7 +60,7 @@ View, feature, behaviour, change, filter, and finding selection are represented 
 
 ### B12 — Work with keyboard and assistive technology 🟡 partial
 
-> The application shell, Atlas, full feature contract, relationship navigation, flow explorer, decision tables, and bounded source evidence are keyboard operable with names and visible focus. Later review and health views own their controls.
+> The application shell, Atlas, Branch Review, full feature contract, relationship navigation, flow explorer, decision tables, and bounded source evidence are keyboard operable with names and visible focus. The later Health view owns its controls.
 
 All navigation, filters, commands, tables, and comparison controls work by keyboard, expose useful names and state to screen readers, preserve visible focus, and honour reduced-motion preferences.
 

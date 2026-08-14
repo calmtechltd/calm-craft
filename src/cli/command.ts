@@ -6,7 +6,7 @@ import { createBranchReview } from "../diff";
 import { discoverRepository, loadFilesystemSnapshot, redactSensitiveText } from "../git";
 import { CALMCRAFT_VERSION } from "../meta";
 import { startLocalSession, type LocalSession, type SessionSource } from "../server";
-import { HELP_TEXT, parseCliArguments, type ViewArguments } from "./arguments";
+import { ALL_PROVENANCE, HELP_TEXT, parseCliArguments, type ViewArguments } from "./arguments";
 import { openBrowser, type BrowserOpener } from "./browser";
 
 export type CliIo = {
@@ -96,6 +96,7 @@ export async function startViewCommand(
           configuredBase: config.defaultBase,
           specsRoot: config.specsRoot,
         }),
+        initialProvenance: arguments_.provenance ?? ALL_PROVENANCE,
       }
     : {
         mode: "estate",

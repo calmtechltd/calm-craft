@@ -1,7 +1,7 @@
 ---
 id: calmcraft-branch-review
 area: CalmCraft
-status: partial
+status: implemented
 ---
 
 # Branch Review
@@ -18,7 +18,7 @@ Branch review compares the current target with the merge-base between `HEAD` and
 
 CalmCraft classifies branch commits, staged changes, unstaged changes, deleted paths, and untracked spec files. A reviewer can include or exclude local work without changing the repository.
 
-### B3 — Summarize changed features 🔵 future
+### B3 — Summarize changed features 🟢 implemented
 
 The review groups changes by module and feature, then states which semantic elements changed. Unchanged features remain available in estate views but do not crowd the branch summary.
 

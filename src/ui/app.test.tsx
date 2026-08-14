@@ -124,6 +124,7 @@ describe("CalmCraft Atlas", () => {
   afterEach(() => cleanup());
 
   it("parses durable feature context and rejects malformed route encoding", () => {
+    expect(parseAppRoute("#/review")).toEqual({ view: "review" });
     expect(parseAppRoute("#/feature/example/behaviour/B2a")).toEqual({
       view: "feature",
       id: "example",
@@ -189,7 +190,7 @@ describe("CalmCraft Atlas", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByRole("heading", { name: /^Feature 2$/u })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("link", { name: "Atlas" }));
+    await user.click(screen.getByRole("link", { name: "Back to Atlas" }));
     await user.click(screen.getByRole("button", { name: /Feature 4/i }));
     expect(screen.getByRole("heading", { name: /^Feature 4$/u })).toBeInTheDocument();
     expect(window.location.hash).toContain("/feature/billing-operations-feature-4");

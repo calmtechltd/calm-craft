@@ -18,7 +18,7 @@ A developer can install or invoke one npm package and run the `calmcraft` comman
 
 The `view` command accepts one local repository path or supported Git remote URL. Remote branch selection uses `--branch`.
 
-### B3 — Configure branch review 🔵 future
+### B3 — Configure branch review 🟢 implemented
 
 `--diff` opens Branch Review, `--base <ref>` selects the comparison base, and local-work controls include or exclude staged, unstaged, and untracked content without changing it.
 

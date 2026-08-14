@@ -4,7 +4,13 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createGitFixture, removeGitFixture } from "../../test/helpers/git-fixture";
+import {
+  canonicalSpec,
+  createGitFixture,
+  fixtureGit,
+  removeGitFixture,
+  writeFixtureFile,
+} from "../../test/helpers/git-fixture";
 import type { LocalSession } from "../server";
 import { HELP_TEXT, parseCliArguments } from "./arguments";
 import { runCli, startViewCommand } from "./command";
@@ -46,6 +52,8 @@ describe("CalmCraft CLI", () => {
         "--diff",
         "--base",
         "main",
+        "--provenance",
+        "committed,staged",
         "--no-open",
         "--port",
         "4312",
@@ -57,6 +65,7 @@ describe("CalmCraft CLI", () => {
       base: "main",
       openBrowser: false,
       port: 4312,
+      provenance: ["committed", "staged"],
     });
     const stdout: string[] = [];
     const stderr: string[] = [];
@@ -69,6 +78,9 @@ describe("CalmCraft CLI", () => {
     await expect(runCli(["--version"], { io })).resolves.toBe(0);
     await expect(runCli(["unknown"], { io })).resolves.toBe(1);
     expect(stderr.join("")).toContain("Unknown command");
+    expect(() => parseCliArguments(["view", "--provenance", "committed,unknown"])).toThrow(
+      /committed, staged, unstaged, and untracked/u,
+    );
   });
 
   it("starts a no-open local session, prints its URL, and exposes parsed estate data", async () => {
@@ -98,6 +110,51 @@ describe("CalmCraft CLI", () => {
       `http://127.0.0.1:${active.port}/api/session?token=${active.token}`,
     );
     expect(await response.text()).toContain("fixture-original");
+  });
+
+  it("starts a branch review with an explicit base and initial provenance controls", async () => {
+    const root = await repository();
+    await fixtureGit(root, ["switch", "-c", "feature/cli-review"]);
+    await writeFixtureFile(
+      root,
+      "specs/core/original.md",
+      canonicalSpec("fixture-original", "Reviewed", "Committed review source"),
+    );
+    await fixtureGit(root, ["add", "specs/core/original.md"]);
+    await fixtureGit(root, ["commit", "-m", "Change the reviewed feature"]);
+
+    const active = await startViewCommand(
+      {
+        command: "view",
+        source: root,
+        diff: true,
+        base: "main",
+        provenance: ["committed"],
+        openBrowser: false,
+      },
+      {
+        assetsRoot: await assets(),
+        io: { stdout: () => undefined, stderr: () => undefined },
+      },
+    );
+    sessions.push(active);
+
+    const response = await fetch(
+      `http://127.0.0.1:${active.port}/api/session?token=${active.token}`,
+    );
+    const session = (await response.json()) as {
+      data: {
+        mode: string;
+        initialProvenance: string[];
+        review: { available: boolean; base: { selectedBase?: string }; semanticChanges: unknown[] };
+      };
+    };
+    expect(session.data).toMatchObject({
+      mode: "review",
+      initialProvenance: ["committed"],
+      review: { available: true, base: { selectedBase: "main" } },
+    });
+    expect(session.data.review.semanticChanges.length).toBeGreaterThan(0);
   });
 
   it("uses an injected browser opener and rejects unsupported Node before repository access", async () => {
