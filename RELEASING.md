@@ -26,7 +26,7 @@ On npmjs.com, require two-factor authentication, disallow token publishing, and 
 4. Review the tarball file list and the complete Git diff. Do not publish from a developer checkout.
 5. Create a GitHub prerelease whose tag is exactly `v<package-version>`. Publishing the GitHub release starts `.github/workflows/release.yml` against that tag.
 
-The workflow uses a GitHub-hosted runner, no dependency cache, npm 11.18.0, an OIDC identity token, and the protected `npm` environment. It repeats the release gates and submits the tarball with `npm stage publish --tag next`. It has no npm token.
+The workflow uses a GitHub-hosted runner, no dependency cache, npm 11.18.0, pnpm 11.10.0, an OIDC identity token, and the protected `npm` environment. The exact package-manager CLIs install with lifecycle scripts disabled, so the OIDC job needs no third-party setup action. It repeats the release gates and submits the tarball with `npm stage publish --tag next`. It has no npm token.
 
 ## Approve and test the candidate
 

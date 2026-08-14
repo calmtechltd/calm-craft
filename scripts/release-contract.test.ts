@@ -87,7 +87,10 @@ describe("npm release contract", () => {
     expect(release).toMatch(/id-token: write/u);
     expect(release).toMatch(/environment: npm/u);
     expect(release).toMatch(/npm@11\.18\.0/u);
+    expect(release).toMatch(/pnpm@11\.10\.0/u);
+    expect(release).toContain("--ignore-scripts");
     expect(release).toMatch(/npm stage publish --tag next/u);
+    expect(release).not.toContain("pnpm/action-setup");
     expect(release).not.toMatch(/NODE_AUTH_TOKEN|NPM_TOKEN|npm publish(?:\s|$)/u);
 
     const smoke = read(".github/workflows/package-smoke.yml");
