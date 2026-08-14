@@ -1,7 +1,7 @@
 ---
 id: calmcraft-spec-model
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # Spec Model
@@ -10,11 +10,11 @@ CalmCraft turns a repository's Markdown specs and flow contracts into one stable
 
 ## Behaviours
 
-### B1 — Discover the spec estate deterministically 🔵 future
+### B1 — Discover the spec estate deterministically 🟢 implemented
 
 CalmCraft reads Markdown specs beneath the configured specs root, excluding the format guide, template, generated output, and non-spec supporting files. Repeated reads of unchanged sources produce the same ordered estate.
 
-### B2 — Read spec identity and sections 🔵 future
+### B2 — Read spec identity and sections 🟢 implemented
 
 Each spec exposes its stable ID, area, roll-up status, title, description, behaviours, invariants, decision tables, user flows, open questions, future considerations, and out-of-scope statements.
 
@@ -30,7 +30,7 @@ CalmCraft checks the spec roll-up status against its behaviour statuses. A misma
 
 Open questions retain their text, resolved state, source location, and any behaviour keys they block. A blocker that points at no behaviour produces a finding.
 
-### B6 — Model decision rows 🔵 future
+### B6 — Model decision rows 🟢 implemented
 
 Decision tables retain headers, rows, source locations, and stable row fingerprints so branch review can distinguish added, removed, and changed outcomes.
 
@@ -42,7 +42,7 @@ Links between specs produce forward relationships and backlinks. Missing targets
 
 CalmCraft reads sibling `.flow.yaml` contracts, validates their states and transitions, and links transition coverage to real behaviour keys. Mermaid is a generated view; a mismatch appears as a finding and YAML wins.
 
-### B9 — Preserve healthy specs around errors 🔵 future
+### B9 — Preserve healthy specs around errors 🟢 implemented
 
 An unreadable or malformed spec produces file-level findings. CalmCraft still exposes every spec and section it can read safely, and it marks incomplete data instead of silently omitting it.
 

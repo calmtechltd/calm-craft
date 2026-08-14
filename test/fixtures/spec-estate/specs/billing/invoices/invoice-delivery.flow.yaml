@@ -1,0 +1,30 @@
+version: 1
+flows:
+  - id: F1
+    name: Invoice Delivery
+    start: ready
+    states:
+      - id: ready
+        kind: screen
+        label: Ready to Send
+      - id: delivered
+        kind: terminal
+        label: Delivered
+        outcome: The customer receives the invoice.
+      - id: correction
+        kind: terminal
+        label: Correction Required
+        outcome: The customer sees which address needs correction.
+    transitions:
+      - id: F1.T1
+        from: ready
+        event: Send
+        to: delivered
+        guard: The address is valid and the provider is available.
+        covers: [B1]
+      - id: F1.T2
+        from: ready
+        event: Send
+        to: correction
+        guard: The address is invalid.
+        covers: [B2a]

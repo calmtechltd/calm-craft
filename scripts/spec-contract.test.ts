@@ -30,7 +30,7 @@ function readSpec(name: string): string {
 }
 
 describe("CalmCraft v1 product contracts", () => {
-  it("contains the six scoped future specs", () => {
+  it("contains the six scoped specs", () => {
     const names = readdirSync(SPECS_ROOT)
       .filter((name) => name.endsWith(".md") && !name.endsWith(".flow.mmd"))
       .toSorted();
@@ -38,7 +38,9 @@ describe("CalmCraft v1 product contracts", () => {
     expect(names).toEqual(EXPECTED_SPECS);
     for (const name of names) {
       const source = readSpec(name);
-      expect(source).toMatch(/^---\nid: calmcraft-[a-z-]+\narea: CalmCraft\nstatus: future\n---\n/);
+      expect(source).toMatch(
+        /^---\nid: calmcraft-[a-z-]+\narea: CalmCraft\nstatus: (implemented|partial|future)\n---\n/,
+      );
       expect(source).not.toMatch(/^ticket:/m);
 
       let previousIndex = -1;
@@ -48,9 +50,11 @@ describe("CalmCraft v1 product contracts", () => {
         previousIndex = index;
       }
 
-      const behaviourHeadings = source.match(/^### B\d+[a-z]? .+ 🔵 future$/gmu) ?? [];
-      expect(behaviourHeadings.length, `${name} must contain future behaviours`).toBeGreaterThan(0);
-      expect(source).not.toMatch(/^### B\d+[a-z]? .+ (🟢 implemented|🟡 partial)$/gmu);
+      const behaviourHeadings = source.match(/^### B\d+[a-z]? .+$/gmu) ?? [];
+      const validBehaviourHeadings =
+        source.match(/^### B\d+[a-z]? .+ (🟢 implemented|🟡 partial|🔵 future)$/gmu) ?? [];
+      expect(behaviourHeadings.length, `${name} must contain behaviours`).toBeGreaterThan(0);
+      expect(validBehaviourHeadings).toHaveLength(behaviourHeadings.length);
     }
   });
 
