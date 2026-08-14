@@ -1,13 +1,45 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { CALMCRAFT_VERSION } from "../meta";
+import { CalmCraftApp, SessionError } from "./app";
+import { loadSession, type CalmCraftSession } from "./session";
+import "./styles.css";
 
-function FoundationScreen() {
+function SessionRoot() {
+  const [state, setState] = useState<
+    | { status: "loading" }
+    | { status: "ready"; session: CalmCraftSession }
+    | { status: "error"; message: string }
+  >({ status: "loading" });
+
+  useEffect(() => {
+    let active = true;
+    void loadSession()
+      .then((response) => {
+        if (active) setState({ status: "ready", session: response.data });
+      })
+      .catch((error: unknown) => {
+        if (active)
+          setState({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error),
+          });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (state.status === "error") return <SessionError message={state.message} />;
+  if (state.status === "ready") return <CalmCraftApp session={state.session} />;
   return (
-    <main>
-      <h1>CalmCraft</h1>
-      <p>Visualizer foundation {CALMCRAFT_VERSION}</p>
+    <main aria-busy="true" className="session-loading">
+      <span aria-hidden="true" className="brand-mark large">
+        <i />
+        <i />
+        <i />
+      </span>
+      <p>Reading product intent…</p>
     </main>
   );
 }
@@ -20,6 +52,6 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <FoundationScreen />
+    <SessionRoot />
   </StrictMode>,
 );

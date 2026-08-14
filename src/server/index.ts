@@ -220,9 +220,11 @@ export async function startLocalSession(options: StartLocalSessionOptions): Prom
     if (!active) return closed;
     active = false;
     resources.clear();
-    await new Promise<void>((resolveClose, reject) => {
+    const closing = new Promise<void>((resolveClose, reject) => {
       server.close((error) => (error ? reject(error) : resolveClose()));
     });
+    server.closeAllConnections();
+    await closing;
     return closed;
   };
   return {

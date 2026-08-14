@@ -1,7 +1,7 @@
 ---
 id: calmcraft-visualizer-ui
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # Visualizer Interface
@@ -10,15 +10,17 @@ The local CalmCraft application gives developers and reviewers a clear route thr
 
 ## Behaviours
 
-### B1 — Orient the session 🔵 future
+### B1 — Orient the session 🟡 partial
+
+> Implemented for the Atlas session shell. Branch Review and Health become active destinations with their owning views.
 
 The application shows the repository, worktree or remote-session state, current branch or detached commit, selected comparison base when present, and session health. Navigation exposes Atlas, Branch Review, and Health from every view.
 
-### B2 — Browse the Atlas 🔵 future
+### B2 — Browse the Atlas 🟢 implemented
 
 Atlas groups specs by module and feature area in a dense list and matrix. Each feature shows status, behaviour count, blocker count, findings, and changed state without requiring a wall of repeated cards.
 
-### B3 — Search and filter the estate 🔵 future
+### B3 — Search and filter the estate 🟢 implemented
 
 A user can search titles, IDs, descriptions, behaviours, and paths. Filters cover status, module, blockers, findings, and branch changes, and they can be cleared without losing the current repository session.
 
@@ -50,19 +52,23 @@ Reviewers can move to the next or previous change, change provenance filters, op
 
 Health lists findings by severity, code, feature, source, and introduced or resolved state. Selecting a finding opens its feature and exact source context when available.
 
-### B11 — Use browser history and durable local URLs 🔵 future
+### B11 — Use browser history and durable local URLs 🟡 partial
+
+> Feature selection has a token-free local URL and restores on reload. View, filter, change, and finding state remains for the owning view cards.
 
 View, feature, behaviour, change, filter, and finding selection are represented in the session URL. Reload, back, and forward restore valid state without exposing the repository path or session token in copied content URLs.
 
-### B12 — Work with keyboard and assistive technology 🔵 future
+### B12 — Work with keyboard and assistive technology 🟡 partial
+
+> The application shell, Atlas controls, search shortcut, roving feature navigation, and selected-feature preview are keyboard operable with names and visible focus. Later views own their controls.
 
 All navigation, filters, commands, tables, and comparison controls work by keyboard, expose useful names and state to screen readers, preserve visible focus, and honour reduced-motion preferences.
 
-### B13 — Read status without relying on colour 🔵 future
+### B13 — Read status without relying on colour 🟢 implemented
 
 Status and diff meaning use text, shape, and iconography alongside colour. Light and dark themes meet contrast requirements for body text, controls, focus, status, and additions or removals.
 
-### B14 — Stay usable across estate size and viewport 🔵 future
+### B14 — Stay usable across estate size and viewport 🟢 implemented
 
 The interface remains usable on narrow desktop viewports and large displays. Atlas search and filtering stay responsive at 1,000 specs, while a 300-spec estate reaches its first usable screen within the product budget.
 
