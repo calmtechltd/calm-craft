@@ -17,7 +17,6 @@ const REQUIRED_SECTIONS = [
   "Behaviours",
   "Rules (Invariants)",
   "Decision Tables",
-  "User Flows",
   "Open Questions",
   "Future Considerations",
   "Out of Scope",
@@ -224,7 +223,10 @@ function validateSpec(spec: SpecDocument): void {
   }
 }
 
-function buildRelationships(estate: SpecEstate): SpecRelationship[] {
+function buildRelationships(
+  estate: SpecEstate,
+  supportingPaths: ReadonlySet<string>,
+): SpecRelationship[] {
   const byPath = new Map(estate.specs.map((spec) => [spec.path, spec]));
   const relationships: SpecRelationship[] = [];
 
@@ -269,17 +271,23 @@ function buildRelationships(estate: SpecEstate): SpecRelationship[] {
       }
       const targetPath = posix.normalize(posix.join(posix.dirname(spec.path), pathPart));
       if (targetPath === ".." || targetPath.startsWith("../")) {
-        addFinding(spec, {
-          code: "link.path.outside-root",
-          severity: "error",
-          message: `Spec link escapes the specs root: ${target}`,
-          location: link.location,
-          hint: "Link only to specs beneath the configured specs root.",
-        });
+        const repositoryTarget = posix.normalize(
+          posix.join(estate.specsRoot, posix.dirname(spec.path), pathPart),
+        );
+        if (repositoryTarget === ".." || repositoryTarget.startsWith("../")) {
+          addFinding(spec, {
+            code: "link.path.outside-root",
+            severity: "error",
+            message: `Markdown link escapes the repository: ${target}`,
+            location: link.location,
+            hint: "Link only to content inside the selected repository.",
+          });
+        }
         continue;
       }
       const targetSpec = byPath.get(targetPath);
       if (!targetSpec) {
+        if (supportingPaths.has(targetPath)) continue;
         addFinding(spec, {
           code: "link.target.missing",
           severity: "error",
@@ -309,7 +317,10 @@ function buildRelationships(estate: SpecEstate): SpecRelationship[] {
   );
 }
 
-export function validateSpecEstate(estate: SpecEstate): SpecEstate {
+export function validateSpecEstate(
+  estate: SpecEstate,
+  options: { supportingPaths?: string[] } = {},
+): SpecEstate {
   for (const spec of estate.specs) validateSpec(spec);
 
   const specsById = new Map<string, SpecDocument[]>();
@@ -328,7 +339,7 @@ export function validateSpecEstate(estate: SpecEstate): SpecEstate {
     }
   }
 
-  const relationships = buildRelationships(estate);
+  const relationships = buildRelationships(estate, new Set(options.supportingPaths ?? []));
   for (const spec of estate.specs) {
     spec.forwardLinks = relationships.filter((relationship) => relationship.sourceId === spec.id);
     spec.backlinks = relationships.filter((relationship) => relationship.targetId === spec.id);

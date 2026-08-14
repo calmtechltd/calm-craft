@@ -30,5 +30,12 @@ describe("CalmCraft spec estate", () => {
     expect(estate.findings).toContainEqual(
       expect.objectContaining({ code: "behaviour.heading.invalid" }),
     );
+    expect(estate.specs.map((spec) => spec.id)).not.toContain("support-glossary");
+    expect(
+      estate.findings.some(
+        (finding) =>
+          finding.code === "link.target.missing" && finding.message.includes("glossary.md"),
+      ),
+    ).toBe(false);
   });
 });

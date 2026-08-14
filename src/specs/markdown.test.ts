@@ -27,6 +27,16 @@ describe("safe Markdown rendering", () => {
     const unsafe = renderMarkdown("[Remote](//tracker.example/path)");
 
     expect(safe.html).toContain('href="../related/spec.md#behaviour"');
+    expect(safe.changed).toBe(false);
     expect(unsafe.html).not.toContain("href=");
+    expect(unsafe.changed).toBe(true);
+  });
+
+  it("does not mistake harmless entity normalization for removed content", () => {
+    const rendered = renderMarkdown("A site's apostrophe remains ordinary prose.");
+
+    expect(rendered.changed).toBe(false);
+    expect(rendered.html).toContain("site's apostrophe");
+    expect(renderMarkdown("[Documentation](https://example.com)").changed).toBe(false);
   });
 });

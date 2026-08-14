@@ -15,6 +15,7 @@ import {
 } from "../helpers/git-fixture";
 
 let repositoryRoot: string;
+let primaryRepositoryRoot: string;
 let reviewSession: LocalSession;
 let missingBaseSession: LocalSession;
 
@@ -100,16 +101,23 @@ async function writeDetailFixture(root: string, changed: boolean): Promise<void>
 }
 
 test.beforeAll(async () => {
-  repositoryRoot = await createGitFixture();
-  await writeDetailFixture(repositoryRoot, false);
+  primaryRepositoryRoot = await createGitFixture();
+  await writeDetailFixture(primaryRepositoryRoot, false);
   await writeFixtureFile(
-    repositoryRoot,
+    primaryRepositoryRoot,
     "specs/core/rename-old.md",
     canonicalSpec("fixture-rename-old", "Rename Evidence", "The same rename evidence remains"),
   );
-  await fixtureGit(repositoryRoot, ["add", "specs"]);
-  await fixtureGit(repositoryRoot, ["commit", "-m", "Add semantic detail fixtures"]);
-  await fixtureGit(repositoryRoot, ["switch", "-c", "feature/mixed-review"]);
+  await fixtureGit(primaryRepositoryRoot, ["add", "specs"]);
+  await fixtureGit(primaryRepositoryRoot, ["commit", "-m", "Add semantic detail fixtures"]);
+  repositoryRoot = `${primaryRepositoryRoot}-linked`;
+  await fixtureGit(primaryRepositoryRoot, [
+    "worktree",
+    "add",
+    "-b",
+    "feature/mixed-review",
+    repositoryRoot,
+  ]);
   await writeDetailFixture(repositoryRoot, true);
   await unlink(join(repositoryRoot, "specs/core/rename-old.md"));
   await writeFixtureFile(
@@ -167,6 +175,7 @@ test.afterAll(async () => {
   await reviewSession?.close();
   await missingBaseSession?.close();
   if (repositoryRoot) await removeGitFixture(repositoryRoot);
+  if (primaryRepositoryRoot) await removeGitFixture(primaryRepositoryRoot);
 });
 
 test("packaged Branch Review isolates provenance, groups intent, and opens affected features", async ({

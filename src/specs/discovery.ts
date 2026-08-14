@@ -1,5 +1,7 @@
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
+
+import { isFeatureSpecSource } from "./parser";
 
 function toPosixPath(path: string): string {
   return path.split(sep).join("/");
@@ -16,7 +18,10 @@ export function isSpecMarkdownPath(path: string): boolean {
   );
 }
 
-export async function discoverSpecFiles(specsRoot: string): Promise<string[]> {
+export async function discoverSpecFiles(
+  specsRoot: string,
+  options: { includeSupporting?: boolean } = {},
+): Promise<string[]> {
   async function walk(directory: string): Promise<string[]> {
     const entries = await readdir(directory, { withFileTypes: true });
     const discovered = await Promise.all(
@@ -28,7 +33,10 @@ export async function discoverSpecFiles(specsRoot: string): Promise<string[]> {
           if (entry.isDirectory()) return walk(fullPath);
           const relativePath = toPosixPath(relative(specsRoot, fullPath));
           if (entry.isFile() && isSpecMarkdownPath(relativePath)) {
-            return [relativePath];
+            return options.includeSupporting ||
+              isFeatureSpecSource(await readFile(fullPath, "utf8"))
+              ? [relativePath]
+              : [];
           }
           return [];
         }),

@@ -43,6 +43,22 @@ export type ParseSpecInput = {
   source: string;
 };
 
+export function isFeatureSpecSource(source: string): boolean {
+  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u);
+  if (!match) return true;
+  try {
+    const frontmatter: unknown = parse(match[1] ?? "");
+    return !(
+      frontmatter &&
+      typeof frontmatter === "object" &&
+      !Array.isArray(frontmatter) &&
+      (frontmatter as Record<string, unknown>).type === "glossary"
+    );
+  } catch {
+    return true;
+  }
+}
+
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }

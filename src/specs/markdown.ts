@@ -44,9 +44,22 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   nonTextTags: ["script", "style", "textarea", "option", "noscript"],
 };
 
+// Comparison only: normalize entity and tag serialization before asking whether the restrictive pass removed content.
+const NORMALIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: false,
+  allowedAttributes: false,
+  allowedSchemes: false,
+  allowedSchemesByTag: false,
+  allowedSchemesAppliedToAttributes: [],
+  allowProtocolRelative: true,
+  allowVulnerableTags: true,
+  nonBooleanAttributes: [],
+};
+
 export function renderMarkdown(markdown: string): RenderedMarkdown {
   const rendered = marked.parse(markdown, { async: false, gfm: true });
   const sanitized = sanitizeHtml(rendered, SANITIZE_OPTIONS);
+  const normalized = sanitizeHtml(rendered, NORMALIZE_OPTIONS);
   const html = sanitizeHtml(rendered, {
     ...SANITIZE_OPTIONS,
     transformTags: {
@@ -60,5 +73,5 @@ export function renderMarkdown(markdown: string): RenderedMarkdown {
       },
     },
   });
-  return { html, changed: sanitized !== rendered };
+  return { html, changed: sanitized !== normalized };
 }

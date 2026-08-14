@@ -35,7 +35,7 @@ status: ${status}
 
 # Test Spec
 
-A test spec with [missing](./missing.md), [escape](../../outside.md), and [unsafe](javascript:alert(1)).
+A test spec with [missing](./missing.md), [repository docs](../../docs/reference.md), [escape](../../../outside.md), and [unsafe](javascript:alert(1)).
 
 ## Behaviours
 
@@ -100,7 +100,7 @@ function invalidEstate(): SpecEstate {
   });
   return {
     root: "/fixture",
-    specsRoot: "/fixture/specs",
+    specsRoot: "specs",
     specs: [first, second],
     relationships: [],
     findings: [],
@@ -153,5 +153,23 @@ describe("spec estate validation", () => {
     const second = validateSpecEstate(invalidEstate()).findings.map((finding) => finding.id);
 
     expect(second).toEqual(first);
+  });
+
+  it("keeps User Flows optional for an otherwise canonical spec", () => {
+    const withoutFlowSection = source(
+      "### B1 — Valid 🟢 implemented\n\nThe behaviour works.",
+    ).replace(/\n## User Flows\n[\s\S]*?(?=\n## Open Questions)/u, "");
+    const spec = parseSpecDocument({ path: "module/optional-flow.md", source: withoutFlowSection });
+    const estate = validateSpecEstate({
+      root: "/fixture",
+      specsRoot: "specs",
+      specs: [spec],
+      relationships: [],
+      findings: [],
+    });
+
+    expect(estate.findings.map((finding) => finding.message)).not.toContain(
+      "Required section User Flows is missing.",
+    );
   });
 });

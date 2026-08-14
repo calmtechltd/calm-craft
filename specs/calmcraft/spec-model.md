@@ -36,7 +36,7 @@ Decision tables retain headers, rows, source locations, and stable row fingerpri
 
 ### B7 — Build relationships and backlinks 🟢 implemented
 
-Links between specs produce forward relationships and backlinks. Missing targets, paths outside the repository, and unsupported link schemes produce findings.
+Links between specs produce forward relationships and backlinks. Links to supporting Markdown inside the repository remain ordinary references. Missing spec targets, paths outside the repository, and unsupported link schemes produce findings.
 
 ### B8 — Treat flow YAML as authority 🟢 implemented
 
@@ -74,6 +74,7 @@ Each parser or validation finding has a stable code, severity, source path, sour
 | Source state                                            | Model result                           | Finding result                                  |
 | ------------------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
 | Canonical spec                                          | Complete normalized spec               | No parser finding                               |
+| Supporting glossary with `type: glossary`               | Excluded from the feature estate       | No parser finding                               |
 | Canonical sections with one malformed behaviour heading | Remaining safe sections and behaviours | Heading finding at the source line              |
 | Missing frontmatter                                     | Safe body sections when readable       | Identity finding                                |
 | Unsupported `specVersion`                               | Estate metadata only                   | Unsupported-version error                       |

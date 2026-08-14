@@ -25,7 +25,7 @@ afterEach(async () => {
 });
 
 describe("branch review", () => {
-  it("separates committed, staged, unstaged, and untracked changes with overlap", async () => {
+  it("separates every provenance from a linked worktree without changing it", async () => {
     const root = await fixture();
     await writeFixtureFile(
       root,
@@ -34,32 +34,37 @@ describe("branch review", () => {
     );
     await fixtureGit(root, ["add", "specs/core/deleted.md"]);
     await fixtureGit(root, ["commit", "-m", "Add deletable spec"]);
-    await fixtureGit(root, ["switch", "-c", "feature/review"]);
-    await fixtureGit(root, ["mv", "specs/core/original.md", "specs/core/moved.md"]);
-    await fixtureGit(root, ["commit", "-m", "Move the feature spec"]);
+    const linkedRoot = `${root}-linked`;
+    fixtureRoots.push(linkedRoot);
+    await fixtureGit(root, ["worktree", "add", "-b", "feature/review", linkedRoot]);
+    await fixtureGit(linkedRoot, ["mv", "specs/core/original.md", "specs/core/moved.md"]);
+    await fixtureGit(linkedRoot, ["commit", "-m", "Move the feature spec"]);
 
     await writeFixtureFile(
-      root,
+      linkedRoot,
       "specs/core/moved.md",
       canonicalSpec("fixture-original", "Staged title", "Committed source"),
     );
-    await fixtureGit(root, ["add", "specs/core/moved.md"]);
+    await fixtureGit(linkedRoot, ["add", "specs/core/moved.md"]);
     await writeFixtureFile(
-      root,
+      linkedRoot,
       "specs/core/moved.md",
       canonicalSpec("fixture-original", "Staged title", "Unstaged source"),
     );
     await writeFixtureFile(
-      root,
+      linkedRoot,
       "specs/core/untracked.md",
       canonicalSpec("fixture-untracked", "Untracked", "Untracked source"),
     );
-    await unlink(join(root, "specs/core/deleted.md"));
-    const beforeStatus = await fixtureGit(root, ["status", "--porcelain=v2", "-z"]);
-    const beforeHead = await fixtureGit(root, ["rev-parse", "HEAD"]);
-    const beforeIndex = await readFile(join(root, ".git/index"));
+    await unlink(join(linkedRoot, "specs/core/deleted.md"));
+    const beforeStatus = await fixtureGit(linkedRoot, ["status", "--porcelain=v2", "-z"]);
+    const beforeHead = await fixtureGit(linkedRoot, ["rev-parse", "HEAD"]);
+    const indexPath = (
+      await fixtureGit(linkedRoot, ["rev-parse", "--path-format=absolute", "--git-path", "index"])
+    ).trim();
+    const beforeIndex = await readFile(indexPath);
 
-    const review = await createBranchReview(root);
+    const review = await createBranchReview(linkedRoot);
 
     expect(review.available).toBe(true);
     expect(review.base).toMatchObject({ selectedBase: "main", source: "conventional" });
@@ -91,9 +96,10 @@ describe("branch review", () => {
     expect(review.patches.find((patch) => patch.provenance === "committed")?.patch).toContain(
       "similarity index",
     );
-    expect(await fixtureGit(root, ["status", "--porcelain=v2", "-z"])).toBe(beforeStatus);
-    expect(await fixtureGit(root, ["rev-parse", "HEAD"])).toBe(beforeHead);
-    expect(await readFile(join(root, ".git/index"))).toEqual(beforeIndex);
+    expect(review.repository.gitDir).not.toBe(review.repository.commonDir);
+    expect(await fixtureGit(linkedRoot, ["status", "--porcelain=v2", "-z"])).toBe(beforeStatus);
+    expect(await fixtureGit(linkedRoot, ["rev-parse", "HEAD"])).toBe(beforeHead);
+    expect(await readFile(indexPath)).toEqual(beforeIndex);
   });
 
   it("returns an estate-only result when no comparison base exists", async () => {

@@ -6,7 +6,7 @@ import { discoverSpecFiles, isSpecMarkdownPath } from "./discovery";
 import { findingAt } from "./findings";
 import { parseFlowContract } from "./flow-contract";
 import type { ParsedFlowContract, SpecEstate, SpecFinding } from "./model";
-import { parseSpecDocument, resolveSpecSiblingPath } from "./parser";
+import { isFeatureSpecSource, parseSpecDocument, resolveSpecSiblingPath } from "./parser";
 import { validateSpecEstate } from "./validator";
 
 type SourceReader = (path: string) => Promise<string>;
@@ -58,6 +58,7 @@ async function buildSpecEstate(
     paths.toSorted().map(async (path) => {
       try {
         const source = await readSource(path);
+        if (!isFeatureSpecSource(source)) return { supportingPath: path };
         const spec = parseSpecDocument({ path, source });
         await Promise.all(
           spec.flowReferences.map(async (reference) => {
@@ -124,13 +125,20 @@ async function buildSpecEstate(
     .flatMap((result) => (result.spec ? [result.spec] : []))
     .toSorted((left, right) => left.path.localeCompare(right.path));
   const estateFindings = results.flatMap((result) => (result.finding ? [result.finding] : []));
-  return validateSpecEstate({
-    root,
-    specsRoot,
-    specs: orderedSpecs,
-    relationships: [],
-    findings: estateFindings,
-  });
+  return validateSpecEstate(
+    {
+      root,
+      specsRoot,
+      specs: orderedSpecs,
+      relationships: [],
+      findings: estateFindings,
+    },
+    {
+      supportingPaths: results.flatMap((result) =>
+        result.supportingPath ? [result.supportingPath] : [],
+      ),
+    },
+  );
 }
 
 export async function loadSpecEstate(
@@ -139,8 +147,8 @@ export async function loadSpecEstate(
 ): Promise<SpecEstate> {
   const root = resolve(repositoryRoot);
   const specsRoot = resolve(root, specsRootName);
-  const paths = await discoverSpecFiles(specsRoot);
-  return buildSpecEstate(root, specsRoot, paths, async (path) => {
+  const paths = await discoverSpecFiles(specsRoot, { includeSupporting: true });
+  return buildSpecEstate(root, specsRootName, paths, async (path) => {
     const absolutePath = safePath(specsRoot, path);
     if (!absolutePath) throw new Error(`Source path escapes the specs root: ${path}`);
     return readFile(absolutePath, "utf8");
