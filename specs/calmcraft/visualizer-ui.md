@@ -40,11 +40,11 @@ Feature view shows outgoing relationships, backlinks, and authoritative user flo
 
 Branch Review groups changed features by module, change type, or provenance. It shows the base and merge-base and lets the reviewer include or exclude committed, staged, unstaged, and untracked work.
 
-### B8 — Inspect semantic before and after 🔵 future
+### B8 — Inspect semantic before and after 🟢 implemented
 
 Selecting a change shows the typed before-and-after comparison for behaviours, invariants, decision rows, questions, relationships, or flows. Raw source evidence remains available on demand.
 
-### B9 — Move through a review without losing context 🔵 future
+### B9 — Move through a review without losing context 🟢 implemented
 
 Reviewers can move to the next or previous change, change provenance filters, open source evidence, and return to the summary while retaining the selected feature.
 
@@ -54,13 +54,13 @@ Health lists findings by severity, code, feature, source, and introduced or reso
 
 ### B11 — Use browser history and durable local URLs 🟡 partial
 
-> Feature, behaviour, flow state, and transition selection have token-free local URLs and restore across reload, back, and forward. Filter, change, and finding state remains for the owning view cards.
+> Feature, behaviour, flow state, transition, review change, provenance, grouping, and source-evidence selection have token-free local URLs and restore across reload, back, and forward. Atlas filter and Health finding state remain for their owning view cards.
 
 View, feature, behaviour, change, filter, and finding selection are represented in the session URL. Reload, back, and forward restore valid state without exposing the repository path or session token in copied content URLs.
 
 ### B12 — Work with keyboard and assistive technology 🟡 partial
 
-> The application shell, Atlas, Branch Review, full feature contract, relationship navigation, flow explorer, decision tables, and bounded source evidence are keyboard operable with names and visible focus. The later Health view owns its controls.
+> The application shell, Atlas, Branch Review summary and semantic detail, full feature contract, relationship navigation, flow explorer, decision tables, provenance controls, and bounded source evidence are keyboard operable with names and visible focus. The later Health view owns its controls.
 
 All navigation, filters, commands, tables, and comparison controls work by keyboard, expose useful names and state to screen readers, preserve visible focus, and honour reduced-motion preferences.
 

@@ -7,6 +7,7 @@ export type SessionSource = {
   path: string;
   content: string;
   mediaType?: string;
+  contexts?: string[];
 };
 
 export type StartLocalSessionOptions = {
@@ -144,7 +145,11 @@ export async function startLocalSession(options: StartLocalSessionOptions): Prom
   );
   const sessionPayload = serializeData({
     data: options.data,
-    sources: [...resources].map(([id, source]) => ({ id, path: source.path })),
+    sources: [...resources].flatMap(([id, source]) =>
+      source.contexts && source.contexts.length > 0
+        ? source.contexts.map((context) => ({ id, path: source.path, context }))
+        : [{ id, path: source.path }],
+    ),
   });
   let active = true;
   let activePort = 0;

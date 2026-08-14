@@ -14,7 +14,7 @@ export type ReviewSession = {
 
 export type CalmCraftSession = EstateSession | ReviewSession;
 
-export type SessionSourceDescriptor = { id: string; path: string };
+export type SessionSourceDescriptor = { id: string; path: string; context?: string };
 
 export type SessionResponse = {
   data: CalmCraftSession;

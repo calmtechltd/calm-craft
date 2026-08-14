@@ -2,14 +2,14 @@
 
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { BranchReview, Provenance, SemanticChange } from "../diff/model";
 import type { RepositorySnapshot } from "../git/model";
 import type { SpecEstate } from "../specs/model";
 import { loadSpecEstateFromSources } from "../specs/estate";
+import { CalmCraftApp } from "./app";
 import { BranchReviewView, groupReviewChanges, semanticChangeLabel } from "./branch-review";
-import { featureHref } from "./feature";
 
 const SPEC = `---
 id: fixture-review
@@ -131,6 +131,10 @@ describe("Branch Review", () => {
     );
   });
 
+  beforeEach(() => {
+    window.history.replaceState({}, "", "/");
+  });
+
   afterEach(() => cleanup());
 
   it("shows comparison identity, stable semantic labels, and affected feature links", () => {
@@ -138,6 +142,7 @@ describe("Branch Review", () => {
       <BranchReviewView
         initialProvenance={["committed", "staged", "unstaged", "untracked"]}
         review={review()}
+        selection={{}}
       />,
     );
 
@@ -148,7 +153,7 @@ describe("Branch Review", () => {
     expect(screen.getByText("B1 · Behaviours Content Changed")).toBeVisible();
     expect(screen.getByRole("link", { name: /Review Changes/u })).toHaveAttribute(
       "href",
-      featureHref("fixture-review"),
+      expect.stringMatching(/^#\/review\/change\//u),
     );
     expect(semanticChangeLabel(change("committed", "flow.transition.guard-changed", "F1.T1"))).toBe(
       "F1.T1 · User flows Transition Guard Changed",
@@ -163,10 +168,18 @@ describe("Branch Review", () => {
 
   it("isolates provenance and groups changes by type or provenance", async () => {
     const user = userEvent.setup();
+    window.history.replaceState(
+      {},
+      "",
+      "/#/review?provenance=committed,staged,unstaged,untracked&group=module",
+    );
     render(
-      <BranchReviewView
-        initialProvenance={["committed", "staged", "unstaged", "untracked"]}
-        review={review()}
+      <CalmCraftApp
+        session={{
+          mode: "review",
+          review: review(),
+          initialProvenance: ["committed", "staged", "unstaged", "untracked"],
+        }}
       />,
     );
 
@@ -186,6 +199,7 @@ describe("Branch Review", () => {
       <BranchReviewView
         initialProvenance={["committed", "staged", "unstaged", "untracked"]}
         review={review({ semanticChanges: [] })}
+        selection={{}}
       />,
     );
     expect(screen.getByRole("heading", { name: "No product intent changed" })).toBeVisible();
@@ -206,6 +220,7 @@ describe("Branch Review", () => {
       <BranchReviewView
         initialProvenance={["committed", "staged", "unstaged", "untracked"]}
         review={unavailable}
+        selection={{}}
       />,
     );
     expect(screen.getByRole("heading", { name: /Choose a comparison base/u })).toBeVisible();

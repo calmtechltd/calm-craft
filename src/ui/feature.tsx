@@ -277,7 +277,10 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
     spec.flows
       .flatMap((contract) => contract.contract.flows)
       .find((flow) => flow.id === selection.flow) ?? spec.flows[0]?.contract.flows[0];
-  const sourceByPath = useMemo(() => new Map(sources.map((item) => [item.path, item])), [sources]);
+  const sourceByPath = useMemo(
+    () => new Map(sources.filter((item) => !item.context).map((item) => [item.path, item])),
+    [sources],
+  );
   const specsById = useMemo(
     () => new Map(estate.specs.map((item) => [item.id, item])),
     [estate.specs],

@@ -148,6 +148,7 @@ describe("CalmCraft CLI", () => {
         initialProvenance: string[];
         review: { available: boolean; base: { selectedBase?: string }; semanticChanges: unknown[] };
       };
+      sources: Array<{ id: string; path: string; context?: string }>;
     };
     expect(session.data).toMatchObject({
       mode: "review",
@@ -155,6 +156,8 @@ describe("CalmCraft CLI", () => {
       review: { available: true, base: { selectedBase: "main" } },
     });
     expect(session.data.review.semanticChanges.length).toBeGreaterThan(0);
+    expect(session.sources.some((source) => source.context?.endsWith(":before"))).toBe(true);
+    expect(session.sources.some((source) => source.context?.endsWith(":after"))).toBe(true);
   });
 
   it("uses an injected browser opener and rejects unsupported Node before repository access", async () => {

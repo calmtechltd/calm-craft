@@ -1,11 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import type { BranchReview, Provenance, SemanticChange } from "../diff/model";
 import type { SpecDocument } from "../specs/model";
 import { BranchIcon, ArrowIcon } from "./icons";
-import { featureHref } from "./feature";
-
-type GroupMode = "module" | "type" | "provenance";
+import {
+  effectiveProvenance,
+  REVIEW_PROVENANCE,
+  reviewHref,
+  type ReviewGroupMode,
+  type ReviewSelection,
+} from "./review-route";
 
 type ReviewFeature = {
   spec: SpecDocument;
@@ -20,18 +24,6 @@ type ReviewGroup = {
   changeCount: number;
 };
 
-const PROVENANCE: Array<{
-  id: Provenance;
-  label: string;
-  shortLabel: string;
-  symbol: string;
-}> = [
-  { id: "committed", label: "Branch commits", shortLabel: "Committed", symbol: "◆" },
-  { id: "staged", label: "Staged changes", shortLabel: "Staged", symbol: "▣" },
-  { id: "unstaged", label: "Unstaged changes", shortLabel: "Unstaged", symbol: "◒" },
-  { id: "untracked", label: "Untracked specs", shortLabel: "Untracked", symbol: "+" },
-];
-
 const CATEGORY_LABELS: Record<string, string> = {
   spec: "Specification",
   behaviour: "Behaviours",
@@ -43,7 +35,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-function titleCase(value: string): string {
+export function titleCase(value: string): string {
   return value
     .split(/[-._]+/u)
     .map((part) => `${part.slice(0, 1).toLocaleUpperCase()}${part.slice(1)}`)
@@ -66,9 +58,9 @@ export function semanticChangeLabel(change: SemanticChange): string {
   return `${elementId ? `${elementId} · ` : ""}${categoryLabel} ${detailLabel}${typeof findingCode === "string" ? ` · ${titleCase(findingCode)}` : ""}`;
 }
 
-function groupLabel(mode: GroupMode, key: string): string {
+function groupLabel(mode: ReviewGroupMode, key: string): string {
   if (mode === "provenance")
-    return PROVENANCE.find((item) => item.id === key)?.label ?? titleCase(key);
+    return REVIEW_PROVENANCE.find((item) => item.id === key)?.label ?? titleCase(key);
   if (mode === "type") return CATEGORY_LABELS[key] ?? titleCase(key);
   return key;
 }
@@ -76,7 +68,7 @@ function groupLabel(mode: GroupMode, key: string): string {
 export function groupReviewChanges(
   review: BranchReview,
   selected: ReadonlySet<Provenance>,
-  mode: GroupMode,
+  mode: ReviewGroupMode,
 ): ReviewGroup[] {
   const targetSpecs = new Map(review.estate.specs.map((spec) => [spec.id, spec]));
   const baselineSpecs = new Map(review.baseline?.estate.specs.map((spec) => [spec.id, spec]) ?? []);
@@ -144,32 +136,48 @@ function BaseUnavailable({ review }: { review: BranchReview }) {
 export function BranchReviewView({
   initialProvenance,
   review,
+  selection,
 }: {
   initialProvenance: Provenance[];
   review: BranchReview;
+  selection: ReviewSelection;
 }) {
-  const [selected, setSelected] = useState<Set<Provenance>>(() => new Set(initialProvenance));
-  const [groupMode, setGroupMode] = useState<GroupMode>("module");
+  const selected = useMemo(
+    () => new Set(effectiveProvenance(selection, initialProvenance)),
+    [initialProvenance, selection],
+  );
+  const groupMode = selection.group ?? "module";
   const groups = useMemo(
     () => groupReviewChanges(review, selected, groupMode),
     [groupMode, review, selected],
   );
   const counts = useMemo(() => {
-    const result = new Map<Provenance, number>(PROVENANCE.map((item) => [item.id, 0]));
+    const result = new Map<Provenance, number>(REVIEW_PROVENANCE.map((item) => [item.id, 0]));
     for (const change of review.semanticChanges)
       result.set(change.provenance, (result.get(change.provenance) ?? 0) + 1);
     return result;
   }, [review.semanticChanges]);
   const visibleChanges = groups.reduce((total, group) => total + group.changeCount, 0);
 
+  useEffect(() => {
+    if (!selection.feature) return;
+    const target = document.getElementById(`review-feature-${selection.feature}`);
+    target?.scrollIntoView?.({ block: "center" });
+    target?.focus({ preventScroll: true });
+  }, [selection.feature]);
+
   if (!review.available) return <BaseUnavailable review={review} />;
 
   const toggleProvenance = (provenance: Provenance): void => {
-    setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(provenance)) next.delete(provenance);
-      else next.add(provenance);
-      return next;
+    const next = new Set(selected);
+    if (next.has(provenance)) next.delete(provenance);
+    else next.add(provenance);
+    window.location.hash = reviewHref({
+      ...selection,
+      change: undefined,
+      provenance: REVIEW_PROVENANCE.map((item) => item.id).filter((item) => next.has(item)),
+      group: groupMode,
+      sourceDiff: false,
     });
   };
 
@@ -218,7 +226,7 @@ export function BranchReviewView({
 
       <section aria-label="Review controls" className="review-controls">
         <div className="provenance-controls">
-          {PROVENANCE.map((item) => (
+          {REVIEW_PROVENANCE.map((item) => (
             <button
               aria-pressed={selected.has(item.id)}
               className={`provenance-toggle provenance-${item.id}`}
@@ -240,7 +248,15 @@ export function BranchReviewView({
             <button
               aria-pressed={groupMode === mode}
               key={mode}
-              onClick={() => setGroupMode(mode)}
+              onClick={() => {
+                window.location.hash = reviewHref({
+                  ...selection,
+                  change: undefined,
+                  provenance: [...selected],
+                  group: mode,
+                  sourceDiff: false,
+                });
+              }}
               type="button"
             >
               {titleCase(mode)}
@@ -285,7 +301,15 @@ export function BranchReviewView({
                   return (
                     <a
                       className="review-feature"
-                      href={featureHref(feature.spec.id)}
+                      href={reviewHref({
+                        ...selection,
+                        change: feature.changes[0]?.id,
+                        feature: feature.spec.id,
+                        provenance: [...selected],
+                        group: groupMode,
+                        sourceDiff: false,
+                      })}
+                      id={`review-feature-${feature.spec.id}`}
                       key={feature.spec.id}
                     >
                       <span className="review-feature-identity">

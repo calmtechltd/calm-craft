@@ -124,7 +124,21 @@ describe("CalmCraft Atlas", () => {
   afterEach(() => cleanup());
 
   it("parses durable feature context and rejects malformed route encoding", () => {
-    expect(parseAppRoute("#/review")).toEqual({ view: "review" });
+    expect(parseAppRoute("#/review")).toEqual({ view: "review", selection: {} });
+    expect(
+      parseAppRoute(
+        "#/review/change/change%3A123?feature=fixture&provenance=committed,staged&group=type&source=1",
+      ),
+    ).toEqual({
+      view: "review",
+      selection: {
+        change: "change:123",
+        feature: "fixture",
+        provenance: ["committed", "staged"],
+        group: "type",
+        sourceDiff: true,
+      },
+    });
     expect(parseAppRoute("#/feature/example/behaviour/B2a")).toEqual({
       view: "feature",
       id: "example",

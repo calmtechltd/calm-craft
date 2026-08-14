@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { SpecDocument } from "../specs/model";
 import { CALMCRAFT_VERSION } from "../meta";
 import { Atlas } from "./atlas";
+import { BranchChangeDetail } from "./branch-change";
 import { BranchReviewNotStarted, BranchReviewView } from "./branch-review";
 import { FeatureView, type FeatureSelection } from "./feature";
 import { AtlasIcon, BranchIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
+import { parseReviewSelection, reviewHref, type ReviewSelection } from "./review-route";
 import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
 
 type Theme = "light" | "dark";
@@ -36,7 +38,7 @@ function openSpec(spec: SpecDocument): void {
 
 type AppRoute =
   | { view: "atlas" }
-  | { view: "review" }
+  | { view: "review"; selection: ReviewSelection }
   | { view: "feature"; id: string; selection: FeatureSelection };
 
 function decodeRouteSegment(value: string): string | undefined {
@@ -50,7 +52,11 @@ function decodeRouteSegment(value: string): string | undefined {
 export function parseAppRoute(hash: string): AppRoute {
   const [path = "", query = ""] = hash.replace(/^#/u, "").split("?");
   const segments = path.split("/").filter(Boolean);
-  if (segments[0] === "review") return { view: "review" };
+  if (segments[0] === "review")
+    return {
+      view: "review",
+      selection: parseReviewSelection(segments, new URLSearchParams(query)),
+    };
   if (segments[0] !== "feature" || !segments[1]) return { view: "atlas" };
   const id = decodeRouteSegment(segments[1]);
   if (!id) return { view: "atlas" };
@@ -80,7 +86,10 @@ export function CalmCraftApp({
   const snapshot = session.mode === "estate" ? session.snapshot : review?.target;
   const [route, setRoute] = useState<AppRoute>(() =>
     !window.location.hash && session.mode === "review"
-      ? { view: "review" }
+      ? {
+          view: "review",
+          selection: { provenance: session.initialProvenance, group: "module" },
+        }
       : parseAppRoute(window.location.hash),
   );
 
@@ -98,6 +107,13 @@ export function CalmCraftApp({
     window.addEventListener("hashchange", restore);
     return () => window.removeEventListener("hashchange", restore);
   }, []);
+
+  useEffect(() => {
+    if (session.mode !== "review" || window.location.hash) return;
+    const href = reviewHref({ provenance: session.initialProvenance, group: "module" });
+    window.history.replaceState(window.history.state, "", href);
+    setRoute(parseAppRoute(href));
+  }, [session]);
 
   const health = useMemo(() => {
     const findings = snapshot?.estate.findings ?? [];
@@ -121,6 +137,17 @@ export function CalmCraftApp({
       ? (snapshot.estate.specs.find((spec) => spec.id === route.id) ??
         review?.baseline?.estate.specs.find((spec) => spec.id === route.id))
       : undefined;
+  const reviewNavigationHref =
+    route.view === "review"
+      ? reviewHref({
+          ...route.selection,
+          change: undefined,
+          sourceDiff: false,
+        })
+      : reviewHref({
+          provenance: session.mode === "review" ? session.initialProvenance : undefined,
+          group: "module",
+        });
 
   return (
     <div className="app-frame">
@@ -155,7 +182,7 @@ export function CalmCraftApp({
             aria-label="Branch Review"
             aria-current={route.view === "review" ? "page" : undefined}
             className={`nav-item ${route.view === "review" ? "active" : ""}`}
-            href="#/review"
+            href={reviewNavigationHref}
           >
             <BranchIcon />
             <span>Branch Review</span>
@@ -220,10 +247,20 @@ export function CalmCraftApp({
           />
         ) : route.view === "review" ? (
           review ? (
-            <BranchReviewView
-              initialProvenance={session.mode === "review" ? session.initialProvenance : []}
-              review={review}
-            />
+            route.selection.change ? (
+              <BranchChangeDetail
+                initialProvenance={session.mode === "review" ? session.initialProvenance : []}
+                review={review}
+                selection={route.selection}
+                sources={sources}
+              />
+            ) : (
+              <BranchReviewView
+                initialProvenance={session.mode === "review" ? session.initialProvenance : []}
+                review={review}
+                selection={route.selection}
+              />
+            )
           ) : (
             <BranchReviewNotStarted />
           )

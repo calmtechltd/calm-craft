@@ -39,13 +39,17 @@ function isRemoteSource(source: string): boolean {
 
 function collectSources(data: unknown): SessionSource[] {
   const sources = new Map<string, SessionSource>();
-  const visit = (value: unknown): void => {
+  const visit = (value: unknown, parentChangeId?: string): void => {
     if (!value || typeof value !== "object") return;
     if (Array.isArray(value)) {
-      for (const item of value) visit(item);
+      for (const item of value) visit(item, parentChangeId);
       return;
     }
     const record = value as Record<string, unknown>;
+    const changeId =
+      typeof record.id === "string" && typeof record.provenance === "string" && record.evidence
+        ? record.id
+        : parentChangeId;
     for (const [key, item] of Object.entries(record)) {
       if (
         (["beforeSource", "afterSource", "diagramSource"].includes(key) ||
@@ -61,9 +65,16 @@ function collectSources(data: unknown): SessionSource[] {
                 ? record.diagramPath
                 : record.path;
         const path = typeof pathKey === "string" ? pathKey : "source";
-        sources.set(`${path}\u0000${item}`, { path, content: item });
+        const sourceKey = `${path}\u0000${item}`;
+        const source = sources.get(sourceKey) ?? { path, content: item };
+        const context =
+          changeId && (key === "beforeSource" || key === "afterSource")
+            ? `${changeId}:${key === "beforeSource" ? "before" : "after"}`
+            : undefined;
+        if (context) source.contexts = [...new Set([...(source.contexts ?? []), context])];
+        sources.set(sourceKey, source);
       } else {
-        visit(item);
+        visit(item, changeId);
       }
     }
   };

@@ -34,7 +34,13 @@ async function session(port?: number): Promise<LocalSession> {
         source: "must not appear in JSON",
       },
     },
-    sources: [{ path: "specs/fixture.md", content: "bounded source" }],
+    sources: [
+      {
+        path: "specs/fixture.md",
+        content: "bounded source",
+        contexts: ["change:fixture:before", "change:fixture:after"],
+      },
+    ],
     port,
   });
   sessions.push(created);
@@ -101,7 +107,7 @@ describe("loopback session server", () => {
     );
     const payload = (await response.json()) as {
       data: Record<string, unknown>;
-      sources: Array<{ id: string; path: string }>;
+      sources: Array<{ id: string; path: string; context?: string }>;
     };
 
     expect(payload.data).toEqual({
@@ -110,7 +116,11 @@ describe("loopback session server", () => {
       document: { path: "specs/fixture.md", sourceHash: "fixture-hash" },
     });
     expect(JSON.stringify(payload)).not.toContain("must not appear");
-    expect(payload.sources).toEqual([expect.objectContaining({ path: "specs/fixture.md" })]);
+    expect(payload.sources).toEqual([
+      expect.objectContaining({ path: "specs/fixture.md", context: "change:fixture:before" }),
+      expect.objectContaining({ path: "specs/fixture.md", context: "change:fixture:after" }),
+    ]);
+    expect(new Set(payload.sources.map((item) => item.id)).size).toBe(1);
     const source = await fetch(
       `http://127.0.0.1:${active.port}/api/source/${payload.sources[0]?.id}?token=${active.token}`,
     );
