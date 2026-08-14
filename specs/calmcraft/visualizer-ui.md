@@ -24,15 +24,15 @@ Atlas groups specs by module and feature area in a dense list and matrix. Each f
 
 A user can search titles, IDs, descriptions, behaviours, and paths. Filters cover status, module, blockers, findings, and branch changes, and they can be cleared without losing the current repository session.
 
-### B4 — Read one feature as a contract 🔵 future
+### B4 — Read one feature as a contract 🟢 implemented
 
 Feature view shows identity, description, behaviours, invariants, decision tables, open and resolved questions, future considerations, out-of-scope statements, and source paths in the spec's canonical order.
 
-### B5 — Navigate behaviour anchors 🔵 future
+### B5 — Navigate behaviour anchors 🟢 implemented
 
 Each behaviour has an addressable anchor with its stable key, status, blocker state, partial note, and content. Copying or reloading that URL returns to the same feature and behaviour.
 
-### B6 — Explore relationships and flows 🔵 future
+### B6 — Explore relationships and flows 🟢 implemented
 
 Feature view shows outgoing relationships, backlinks, and authoritative user flows. Selecting a flow state or transition reveals its event, guard, outcome, and covered behaviours.
 
@@ -54,13 +54,13 @@ Health lists findings by severity, code, feature, source, and introduced or reso
 
 ### B11 — Use browser history and durable local URLs 🟡 partial
 
-> Feature selection has a token-free local URL and restores on reload. View, filter, change, and finding state remains for the owning view cards.
+> Feature, behaviour, flow state, and transition selection have token-free local URLs and restore across reload, back, and forward. Filter, change, and finding state remains for the owning view cards.
 
 View, feature, behaviour, change, filter, and finding selection are represented in the session URL. Reload, back, and forward restore valid state without exposing the repository path or session token in copied content URLs.
 
 ### B12 — Work with keyboard and assistive technology 🟡 partial
 
-> The application shell, Atlas controls, search shortcut, roving feature navigation, and selected-feature preview are keyboard operable with names and visible focus. Later views own their controls.
+> The application shell, Atlas, full feature contract, relationship navigation, flow explorer, decision tables, and bounded source evidence are keyboard operable with names and visible focus. Later review and health views own their controls.
 
 All navigation, filters, commands, tables, and comparison controls work by keyboard, expose useful names and state to screen readers, preserve visible focus, and honour reduced-motion preferences.
 

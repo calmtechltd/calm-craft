@@ -60,6 +60,14 @@ function safeToken(expected: string, actual: string | undefined): boolean {
   );
 }
 
+function cookieValue(cookieHeader: string | undefined, name: string): string | undefined {
+  return cookieHeader
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`))
+    ?.slice(name.length + 1);
+}
+
 function serializeData(data: unknown): string {
   return JSON.stringify(data, function replacer(key, value: unknown) {
     if (["beforeSource", "afterSource", "diagramSource"].includes(key)) return undefined;
@@ -158,9 +166,11 @@ export async function startLocalSession(options: StartLocalSessionOptions): Prom
         return;
       }
       const requestUrl = new URL(request.url ?? "/", `http://${host}`);
+      const cookieName = `calmcraft_session_${activePort}`;
       const suppliedToken =
         request.headers["x-calmcraft-token"]?.toString() ??
         requestUrl.searchParams.get("token") ??
+        cookieValue(request.headers.cookie, cookieName) ??
         undefined;
       const isAsset =
         requestUrl.pathname.startsWith("/assets/") || requestUrl.pathname === "/favicon.svg";
@@ -202,7 +212,18 @@ export async function startLocalSession(options: StartLocalSessionOptions): Prom
       }
       try {
         const asset = await readFile(assetPath);
-        response.writeHead(200, { ...SECURITY_HEADERS, "Content-Type": contentType(assetPath) });
+        const establishBrowserSession =
+          assetRequest === "/index.html" &&
+          safeToken(token, requestUrl.searchParams.get("token") ?? undefined);
+        response.writeHead(200, {
+          ...SECURITY_HEADERS,
+          "Content-Type": contentType(assetPath),
+          ...(establishBrowserSession
+            ? {
+                "Set-Cookie": `${cookieName}=${token}; HttpOnly; SameSite=Strict; Path=/`,
+              }
+            : {}),
+        });
         response.end(request.method === "HEAD" ? undefined : asset);
       } catch {
         send(response, 404, "Not found.", "text/plain; charset=utf-8");

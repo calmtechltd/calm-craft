@@ -8,7 +8,11 @@ import "./styles.css";
 function SessionRoot() {
   const [state, setState] = useState<
     | { status: "loading" }
-    | { status: "ready"; session: CalmCraftSession }
+    | {
+        status: "ready";
+        session: CalmCraftSession;
+        sources: Awaited<ReturnType<typeof loadSession>>["sources"];
+      }
     | { status: "error"; message: string }
   >({ status: "loading" });
 
@@ -16,7 +20,8 @@ function SessionRoot() {
     let active = true;
     void loadSession()
       .then((response) => {
-        if (active) setState({ status: "ready", session: response.data });
+        if (active)
+          setState({ status: "ready", session: response.data, sources: response.sources });
       })
       .catch((error: unknown) => {
         if (active)
@@ -31,7 +36,8 @@ function SessionRoot() {
   }, []);
 
   if (state.status === "error") return <SessionError message={state.message} />;
-  if (state.status === "ready") return <CalmCraftApp session={state.session} />;
+  if (state.status === "ready")
+    return <CalmCraftApp session={state.session} sources={state.sources} />;
   return (
     <main aria-busy="true" className="session-loading">
       <span aria-hidden="true" className="brand-mark large">

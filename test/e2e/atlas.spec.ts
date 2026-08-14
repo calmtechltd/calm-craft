@@ -74,11 +74,11 @@ test("packed Atlas opens, filters, selects, themes, and adapts at 300 specs", as
   await expect(result).toBeVisible();
   await result.focus();
   await result.press("Enter");
-  await expect(page.getByRole("complementary", { name: "Selected specification" })).toContainText(
-    "Fixture Feature 299",
-  );
+  await expect(
+    page.getByRole("heading", { name: "Fixture Feature 299", exact: true }),
+  ).toBeVisible();
 
-  await page.getByRole("button", { name: "Close selected specification" }).click();
+  await page.getByRole("link", { name: "Atlas", exact: true }).click();
   await page.getByRole("button", { name: "Use dark theme" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.setViewportSize({ width: 680, height: 820 });

@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import type { SpecDocument } from "../specs/model";
 import { CALMCRAFT_VERSION } from "../meta";
 import { Atlas } from "./atlas";
-import { AtlasIcon, BranchIcon, CloseIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
-import type { CalmCraftSession } from "./session";
-import { StatusBadge } from "./status";
+import { FeatureView, type FeatureSelection } from "./feature";
+import { AtlasIcon, BranchIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
+import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
 
 type Theme = "light" | "dark";
 
@@ -29,19 +29,50 @@ function repositoryName(root: string): string {
   );
 }
 
-function selectedFromHash(specs: SpecDocument[]): SpecDocument | undefined {
-  const match = window.location.hash.match(/^#\/feature\/(.+)$/u);
-  if (!match?.[1]) return undefined;
-  const id = decodeURIComponent(match[1]);
-  return specs.find((spec) => spec.id === id);
+function openSpec(spec: SpecDocument): void {
+  window.location.hash = `/feature/${encodeURIComponent(spec.id)}`;
 }
 
-export function CalmCraftApp({ session }: { session: CalmCraftSession }) {
+type AppRoute = { view: "atlas" } | { view: "feature"; id: string; selection: FeatureSelection };
+
+function decodeRouteSegment(value: string): string | undefined {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return undefined;
+  }
+}
+
+export function parseAppRoute(hash: string): AppRoute {
+  const [path = "", query = ""] = hash.replace(/^#/u, "").split("?");
+  const segments = path.split("/").filter(Boolean);
+  if (segments[0] !== "feature" || !segments[1]) return { view: "atlas" };
+  const id = decodeRouteSegment(segments[1]);
+  if (!id) return { view: "atlas" };
+  const parameters = new URLSearchParams(query);
+  return {
+    view: "feature",
+    id,
+    selection: {
+      behaviour:
+        segments[2] === "behaviour" && segments[3] ? decodeRouteSegment(segments[3]) : undefined,
+      flow: parameters.get("flow") ?? undefined,
+      state: parameters.get("state") ?? undefined,
+      transition: parameters.get("transition") ?? undefined,
+    },
+  };
+}
+
+export function CalmCraftApp({
+  session,
+  sources = [],
+}: {
+  session: CalmCraftSession;
+  sources?: SessionSourceDescriptor[];
+}) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const snapshot = session.mode === "estate" ? session.snapshot : undefined;
-  const [selected, setSelected] = useState<SpecDocument | undefined>(() =>
-    snapshot ? selectedFromHash(snapshot.estate.specs) : undefined,
-  );
+  const [route, setRoute] = useState<AppRoute>(() => parseAppRoute(window.location.hash));
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -53,11 +84,10 @@ export function CalmCraftApp({ session }: { session: CalmCraftSession }) {
   }, [theme]);
 
   useEffect(() => {
-    if (!snapshot) return;
-    const restore = (): void => setSelected(selectedFromHash(snapshot.estate.specs));
+    const restore = (): void => setRoute(parseAppRoute(window.location.hash));
     window.addEventListener("hashchange", restore);
     return () => window.removeEventListener("hashchange", restore);
-  }, [snapshot]);
+  }, []);
 
   const health = useMemo(() => {
     const findings = snapshot?.estate.findings ?? [];
@@ -76,18 +106,10 @@ export function CalmCraftApp({ session }: { session: CalmCraftSession }) {
   }
 
   const repository = snapshot.repository;
-  const openSpec = (spec: SpecDocument): void => {
-    setSelected(spec);
-    window.location.hash = `/feature/${encodeURIComponent(spec.id)}`;
-  };
-  const closePreview = (): void => {
-    setSelected(undefined);
-    window.history.pushState(
-      window.history.state,
-      "",
-      `${window.location.pathname}${window.location.search}`,
-    );
-  };
+  const selectedSpec =
+    route.view === "feature"
+      ? snapshot.estate.specs.find((spec) => spec.id === route.id)
+      : undefined;
 
   return (
     <div className="app-frame">
@@ -108,7 +130,11 @@ export function CalmCraftApp({ session }: { session: CalmCraftSession }) {
         </div>
 
         <nav aria-label="Primary views">
-          <a aria-current="page" className="nav-item active" href="#">
+          <a
+            aria-current={route.view === "atlas" ? "page" : undefined}
+            className={`nav-item ${route.view === "atlas" ? "active" : ""}`}
+            href="#/atlas"
+          >
             <AtlasIcon />
             <span>Atlas</span>
             <kbd>A</kbd>
@@ -169,45 +195,27 @@ export function CalmCraftApp({ session }: { session: CalmCraftSession }) {
           </div>
         </header>
 
-        <Atlas
-          estate={snapshot.estate}
-          onOpenSpec={openSpec}
-          selectedId={selected?.id}
-          worktreeEntries={repository.worktreeEntries}
-        />
+        {route.view === "atlas" ? (
+          <Atlas
+            estate={snapshot.estate}
+            onOpenSpec={openSpec}
+            worktreeEntries={repository.worktreeEntries}
+          />
+        ) : selectedSpec ? (
+          <FeatureView
+            estate={snapshot.estate}
+            selection={route.selection}
+            sources={sources}
+            spec={selectedSpec}
+          />
+        ) : (
+          <main className="route-not-found" id="main-content">
+            <p className="eyebrow">Unknown feature</p>
+            <h1>This specification is not part of the active estate.</h1>
+            <a href="#/atlas">Return to Atlas</a>
+          </main>
+        )}
       </div>
-
-      {selected ? (
-        <aside aria-label="Selected specification" className="selection-panel">
-          <button aria-label="Close selected specification" onClick={closePreview} type="button">
-            <CloseIcon />
-          </button>
-          <p className="eyebrow">Selected contract</p>
-          <StatusBadge status={selected.status} />
-          <h2>{selected.title}</h2>
-          <p>
-            {selected.descriptionMarkdown || "No description is present in this specification."}
-          </p>
-          <dl>
-            <div>
-              <dt>Feature ID</dt>
-              <dd>{selected.id}</dd>
-            </div>
-            <div>
-              <dt>Behaviours</dt>
-              <dd>{selected.behaviours.length}</dd>
-            </div>
-            <div>
-              <dt>Findings</dt>
-              <dd>{selected.findings.length}</dd>
-            </div>
-          </dl>
-          <code>{selected.path}</code>
-          <p className="preview-note">
-            Full contract reading and flow exploration land in Feature view.
-          </p>
-        </aside>
-      ) : null}
     </div>
   );
 }

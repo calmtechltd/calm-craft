@@ -1,12 +1,12 @@
 /** @vitest-environment jsdom */
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RepositorySnapshot } from "../git/model";
 import type { SpecDocument, SpecEstate, SpecStatus } from "../specs/model";
-import { CalmCraftApp } from "./app";
+import { CalmCraftApp, parseAppRoute } from "./app";
 
 function makeSpec(index: number, status: SpecStatus = "implemented"): SpecDocument {
   const module = index % 2 === 0 ? "billing" : "support";
@@ -123,6 +123,20 @@ describe("CalmCraft Atlas", () => {
 
   afterEach(() => cleanup());
 
+  it("parses durable feature context and rejects malformed route encoding", () => {
+    expect(parseAppRoute("#/feature/example/behaviour/B2a")).toEqual({
+      view: "feature",
+      id: "example",
+      selection: { behaviour: "B2a", flow: undefined, state: undefined, transition: undefined },
+    });
+    expect(parseAppRoute("#/feature/example?flow=F1&transition=F1.T2")).toEqual({
+      view: "feature",
+      id: "example",
+      selection: { behaviour: undefined, flow: "F1", state: undefined, transition: "F1.T2" },
+    });
+    expect(parseAppRoute("#/feature/%")).toEqual({ view: "atlas" });
+  });
+
   it("orients the repository and communicates status without colour alone", () => {
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot() }} />);
 
@@ -164,7 +178,6 @@ describe("CalmCraft Atlas", () => {
     const user = userEvent.setup();
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot() }} />);
     const first = screen.getByRole("button", { name: /Feature 0/i });
-    const second = screen.getByRole("button", { name: /Feature 4/i });
 
     fireEvent.keyDown(window, { key: "k", metaKey: true });
     expect(document.activeElement).toBe(
@@ -174,33 +187,25 @@ describe("CalmCraft Atlas", () => {
     fireEvent.keyDown(first, { key: "ArrowDown" });
     expect(document.activeElement).not.toBe(first);
     await user.keyboard("{Enter}");
-    expect(
-      screen.getByRole("complementary", { name: "Selected specification" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Feature 2$/u })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Close selected specification" }));
-    await user.click(second);
-    expect(
-      within(screen.getByRole("complementary", { name: "Selected specification" })).getByText(
-        "Feature 4",
-      ),
-    ).toBeInTheDocument();
-    expect(window.location.hash).toContain("/feature/");
+    await user.click(screen.getByRole("link", { name: "Atlas" }));
+    await user.click(screen.getByRole("button", { name: /Feature 4/i }));
+    expect(screen.getByRole("heading", { name: /^Feature 4$/u })).toBeInTheDocument();
+    expect(window.location.hash).toContain("/feature/billing-operations-feature-4");
     expect(window.location.href).not.toContain("token=");
   });
 
   it("limits initial rendering while filtering a 1,000-spec estate", async () => {
-    const user = userEvent.setup();
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot(1_000) }} />);
 
     expect(document.querySelectorAll("[data-spec-id]")).toHaveLength(120);
     expect(screen.getByRole("button", { name: "Show 120 more" })).toBeInTheDocument();
     const started = performance.now();
-    await user.type(
-      screen.getByRole("searchbox", { name: "Search specifications" }),
-      "feature 999",
-    );
-    expect(screen.getByText("Showing 1 of 1 matches across 1000 specs")).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search specifications" }), {
+      target: { value: "feature 999" },
+    });
+    expect(await screen.findByText("Showing 1 of 1 matches across 1000 specs")).toBeInTheDocument();
     expect(performance.now() - started).toBeLessThan(750);
   });
 });

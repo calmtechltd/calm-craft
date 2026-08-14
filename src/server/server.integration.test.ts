@@ -83,6 +83,12 @@ describe("loopback session server", () => {
     expect(initial.status).toBe(200);
     expect(initial.headers.get("content-security-policy")).toContain("default-src 'none'");
     expect(initial.headers.get("x-content-type-options")).toBe("nosniff");
+    const sessionCookie = initial.headers.get("set-cookie")?.split(";")[0];
+    expect(sessionCookie).toMatch(/^calmcraft_session_\d+=/u);
+    const durableDocument = await fetch(`http://127.0.0.1:${active.port}/`, {
+      headers: { Cookie: sessionCookie ?? "" },
+    });
+    expect(durableDocument.status).toBe(200);
     expect(asset.status).toBe(200);
     expect(missingToken.status).toBe(401);
     expect(untrustedHost).toEqual({ status: 421, body: "Untrusted host." });
