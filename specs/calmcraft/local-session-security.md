@@ -1,7 +1,7 @@
 ---
 id: calmcraft-local-session-security
 area: CalmCraft
-status: future
+status: partial
 ---
 
 # Local Session Security
@@ -34,7 +34,7 @@ The package supplies its application code, styles, icons, and fonts. Opening a p
 
 The browser can request source content only through identifiers created for parsed specs and flow contracts. The server resolves the identifier beneath the selected repository root and rejects traversal, absolute paths, links that escape the root, and unknown files.
 
-### B7 — Sanitize rendered content 🔵 future
+### B7 — Sanitize rendered content 🟢 implemented
 
 Repository Markdown cannot add scripts, event handlers, active embeds, unsafe links, remote images, or browser navigation that bypasses the session policy.
 

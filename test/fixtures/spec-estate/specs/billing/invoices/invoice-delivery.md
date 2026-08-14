@@ -6,7 +6,7 @@ status: partial
 
 # Invoice Delivery
 
-Customers receive an invoice through their chosen delivery channel and can recover from a failed address.
+Customers receive an invoice through their chosen delivery channel and can recover from a failed address. [Case routing](../../support/cases/case-routing.md) handles any follow-up.
 
 ## Behaviours
 

@@ -25,6 +25,8 @@ describe("CalmCraft spec estate", () => {
       "support-cases-case-routing",
     ]);
     expect(estate.specs[0]?.flows[0]?.contract.flows[0]?.transitions).toHaveLength(2);
+    expect(estate.specs[0]?.flows[0]?.diagramSource).toContain("flowchart TD");
+    expect(estate.relationships).toHaveLength(1);
     expect(estate.findings).toContainEqual(
       expect.objectContaining({ code: "behaviour.heading.invalid" }),
     );

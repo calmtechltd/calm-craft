@@ -18,15 +18,15 @@ CalmCraft reads Markdown specs beneath the configured specs root, excluding the 
 
 Each spec exposes its stable ID, area, roll-up status, title, description, behaviours, invariants, decision tables, user flows, open questions, future considerations, and out-of-scope statements.
 
-### B3 — Address behaviours by stable key 🔵 future
+### B3 — Address behaviours by stable key 🟢 implemented
 
 Behaviours retain their `B<n><suffix>` key, title, status, partial note, body, and source location. Duplicate keys and malformed headings produce findings.
 
-### B4 — Explain status consistency 🔵 future
+### B4 — Explain status consistency 🟢 implemented
 
 CalmCraft checks the spec roll-up status against its behaviour statuses. A mismatch appears as a finding and does not rewrite the source.
 
-### B5 — Model questions and blockers 🔵 future
+### B5 — Model questions and blockers 🟢 implemented
 
 Open questions retain their text, resolved state, source location, and any behaviour keys they block. A blocker that points at no behaviour produces a finding.
 
@@ -34,11 +34,11 @@ Open questions retain their text, resolved state, source location, and any behav
 
 Decision tables retain headers, rows, source locations, and stable row fingerprints so branch review can distinguish added, removed, and changed outcomes.
 
-### B7 — Build relationships and backlinks 🔵 future
+### B7 — Build relationships and backlinks 🟢 implemented
 
 Links between specs produce forward relationships and backlinks. Missing targets, paths outside the repository, and unsupported link schemes produce findings.
 
-### B8 — Treat flow YAML as authority 🔵 future
+### B8 — Treat flow YAML as authority 🟢 implemented
 
 CalmCraft reads sibling `.flow.yaml` contracts, validates their states and transitions, and links transition coverage to real behaviour keys. Mermaid is a generated view; a mismatch appears as a finding and YAML wins.
 
@@ -46,7 +46,7 @@ CalmCraft reads sibling `.flow.yaml` contracts, validates their states and trans
 
 An unreadable or malformed spec produces file-level findings. CalmCraft still exposes every spec and section it can read safely, and it marks incomplete data instead of silently omitting it.
 
-### B10 — Render safe Markdown 🔵 future
+### B10 — Render safe Markdown 🟢 implemented
 
 CalmCraft renders supported Markdown tables, lists, links, code, and text. It removes scripts, event handlers, active embeds, remote media, and unsafe URL schemes before content reaches the browser.
 
@@ -54,7 +54,7 @@ CalmCraft renders supported Markdown tables, lists, links, code, and text. It re
 
 A repository can declare a supported `specVersion` in `calmcraft.json`. CalmCraft reports an unsupported version and does not guess how to reinterpret the content.
 
-### B12 — Give findings stable identities 🔵 future
+### B12 — Give findings stable identities 🟢 implemented
 
 Each parser or validation finding has a stable code, severity, source path, source location when known, and repair guidance. Re-reading unchanged invalid content produces the same finding identity.
 

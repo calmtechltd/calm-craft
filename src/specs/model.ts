@@ -7,6 +7,7 @@ export type SourceLocation = {
 };
 
 export type SpecFinding = {
+  id: string;
   code: string;
   severity: FindingSeverity;
   path: string;
@@ -23,11 +24,13 @@ export type Behaviour = {
   status: SpecStatus;
   partialNote?: string;
   markdown: string;
+  renderedHtml: string;
   location: SourceLocation;
 };
 
 export type Invariant = {
   markdown: string;
+  renderedHtml: string;
   fingerprint: string;
   location: SourceLocation;
 };
@@ -47,6 +50,7 @@ export type DecisionTable = {
 
 export type OpenQuestion = {
   markdown: string;
+  renderedHtml: string;
   resolved: boolean;
   blocks: string[];
   location: SourceLocation;
@@ -55,6 +59,16 @@ export type OpenQuestion = {
 export type SpecLink = {
   label: string;
   target: string;
+  location: SourceLocation;
+};
+
+export type SpecRelationship = {
+  id: string;
+  sourceId: string;
+  sourcePath: string;
+  targetId: string;
+  targetPath: string;
+  label: string;
   location: SourceLocation;
 };
 
@@ -101,6 +115,8 @@ export type ParsedFlowContract = {
   path: string;
   diagramPath: string;
   sourceHash: string;
+  diagramSource?: string;
+  diagramSourceHash?: string;
   contract: FlowContract;
 };
 
@@ -114,6 +130,8 @@ export type SpecDocument = {
   name: string;
   title: string;
   descriptionMarkdown: string;
+  descriptionHtml: string;
+  sectionNames: string[];
   behaviours: Behaviour[];
   invariants: Invariant[];
   decisionTables: DecisionTable[];
@@ -121,8 +139,12 @@ export type SpecDocument = {
   flows: ParsedFlowContract[];
   openQuestions: OpenQuestion[];
   futureConsiderationsMarkdown: string;
+  futureConsiderationsHtml: string;
   outOfScopeMarkdown: string;
+  outOfScopeHtml: string;
   links: SpecLink[];
+  forwardLinks: SpecRelationship[];
+  backlinks: SpecRelationship[];
   sourceHash: string;
   source: string;
   findings: SpecFinding[];
@@ -132,5 +154,6 @@ export type SpecEstate = {
   root: string;
   specsRoot: string;
   specs: SpecDocument[];
+  relationships: SpecRelationship[];
   findings: SpecFinding[];
 };

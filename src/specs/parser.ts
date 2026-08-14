@@ -3,6 +3,8 @@ import { basename, dirname, extname, posix } from "node:path";
 
 import { parse } from "yaml";
 
+import { findingAt } from "./findings";
+import { renderMarkdown } from "./markdown";
 import type {
   Behaviour,
   DecisionRow,
@@ -49,32 +51,44 @@ function location(line: number, column = 1): SourceLocation {
   return { line, column };
 }
 
-function finding(
+function renderContent(
   path: string,
-  code: string,
-  severity: SpecFinding["severity"],
-  message: string,
-  line?: number,
-  hint?: string,
-): SpecFinding {
-  return {
-    code,
-    severity,
-    path,
-    message,
-    location: line === undefined ? undefined : location(line),
-    hint,
-  };
+  markdown: string,
+  line: number,
+  findings: SpecFinding[],
+): string {
+  const rendered = renderMarkdown(markdown);
+  if (rendered.changed) {
+    findings.push(
+      findingAt(
+        path,
+        "content.unsafe-removed",
+        "warning",
+        "Unsafe or unsupported Markdown content was removed before rendering.",
+        location(line),
+        "Remove active HTML, remote assets, event handlers, or unsafe URL schemes.",
+      ),
+    );
+  }
+  return rendered.html;
 }
 
 function splitFrontmatter(path: string, source: string, findings: SpecFinding[]) {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/u);
   if (!match) {
     findings.push(
-      finding(path, "frontmatter.missing", "error", "The spec has no YAML frontmatter.", 1),
+      findingAt(
+        path,
+        "frontmatter.missing",
+        "error",
+        "The spec has no YAML frontmatter.",
+        location(1),
+        "Add YAML frontmatter with id, area, and status fields.",
+      ),
     );
     return { body: source, bodyStartLine: 1, frontmatter: {} as Record<string, unknown> };
   }
+
   let frontmatter: Record<string, unknown> = {};
   try {
     const parsed: unknown = parse(match[1] ?? "");
@@ -82,23 +96,34 @@ function splitFrontmatter(path: string, source: string, findings: SpecFinding[])
       frontmatter = parsed as Record<string, unknown>;
     } else {
       findings.push(
-        finding(path, "frontmatter.invalid", "error", "Frontmatter must be a YAML object.", 2),
+        findingAt(
+          path,
+          "frontmatter.invalid",
+          "error",
+          "Frontmatter must be a YAML object.",
+          location(2),
+          "Replace the frontmatter value with id, area, and status fields.",
+        ),
       );
     }
   } catch (error) {
     findings.push(
-      finding(
+      findingAt(
         path,
         "frontmatter.invalid",
         "error",
         `Frontmatter could not be parsed: ${String(error)}`,
-        2,
+        location(2),
+        "Repair the YAML frontmatter before relying on its metadata.",
       ),
     );
   }
-  const body = source.slice(match[0].length);
-  const bodyStartLine = match[0].split(/\r?\n/u).length;
-  return { body, bodyStartLine, frontmatter };
+
+  return {
+    body: source.slice(match[0].length),
+    bodyStartLine: match[0].split(/\r?\n/u).length,
+    frontmatter,
+  };
 }
 
 function splitSections(body: string, bodyStartLine: number) {
@@ -149,12 +174,13 @@ function parseBehaviours(
     if (!match) {
       if (/^###\s+B\d+/u.test(line)) {
         findings.push(
-          finding(
+          findingAt(
             path,
             "behaviour.heading.invalid",
             "error",
             `Behaviour heading does not match the CalmCraft format: ${line}`,
-            section.contentLine + index,
+            location(section.contentLine + index),
+            "Use `### B<n><suffix> — Title <status emoji> <status>`.",
           ),
         );
       }
@@ -180,18 +206,19 @@ function parseBehaviours(
       index += 1;
     }
     const status = statusWord as SpecStatus;
-    const emojiStatus = STATUS_FROM_EMOJI[emoji];
-    if (emojiStatus !== status) {
+    if (STATUS_FROM_EMOJI[emoji] !== status) {
       findings.push(
-        finding(
+        findingAt(
           path,
           "behaviour.status-symbol-mismatch",
           "warning",
           `${key} uses ${emoji} with the ${status} status.`,
-          headingLine,
+          location(headingLine),
+          "Use 🟢 for implemented, 🟡 for partial, or 🔵 for future.",
         ),
       );
     }
+    const markdown = bodyLines.join("\n").trim();
     behaviours.push({
       key,
       number: Number(number),
@@ -199,7 +226,8 @@ function parseBehaviours(
       title: title.trim(),
       status,
       partialNote: noteLines.length > 0 ? noteLines.join(" ") : undefined,
-      markdown: bodyLines.join("\n").trim(),
+      markdown,
+      renderedHtml: renderContent(path, markdown, headingLine + 1, findings),
       location: location(headingLine),
     });
   }
@@ -224,9 +252,14 @@ function parseTopLevelList(section: Section | undefined) {
   return items;
 }
 
-function parseInvariants(section: Section | undefined): Invariant[] {
+function parseInvariants(
+  path: string,
+  section: Section | undefined,
+  findings: SpecFinding[],
+): Invariant[] {
   return parseTopLevelList(section).map((item) => ({
     markdown: item.markdown,
+    renderedHtml: renderContent(path, item.markdown, item.line, findings),
     fingerprint: hash(item.markdown.trim().toLocaleLowerCase()),
     location: location(item.line),
   }));
@@ -246,7 +279,11 @@ function isSeparatorRow(line: string): boolean {
   return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/u.test(cell));
 }
 
-function parseDecisionTables(section: Section | undefined): DecisionTable[] {
+function parseDecisionTables(
+  path: string,
+  section: Section | undefined,
+  findings: SpecFinding[],
+): DecisionTable[] {
   if (!section || section.markdown === "_None._") return [];
   const tables: DecisionTable[] = [];
   let title: string | undefined;
@@ -260,6 +297,20 @@ function parseDecisionTables(section: Section | undefined): DecisionTable[] {
     }
     const separator = section.lines[index + 1] ?? "";
     if (!line.includes("|") || !isSeparatorRow(separator)) {
+      if (line.startsWith("|") && separator.startsWith("|")) {
+        findings.push(
+          findingAt(
+            path,
+            "decision-table.separator.invalid",
+            "warning",
+            "A Markdown table has an invalid separator row.",
+            location(section.contentLine + index + 1),
+            "Use at least three hyphens in every separator cell.",
+          ),
+        );
+        index += 2;
+        continue;
+      }
       index += 1;
       continue;
     }
@@ -281,14 +332,18 @@ function parseDecisionTables(section: Section | undefined): DecisionTable[] {
   return tables;
 }
 
-function parseQuestions(section: Section | undefined): OpenQuestion[] {
+function parseQuestions(
+  path: string,
+  section: Section | undefined,
+  findings: SpecFinding[],
+): OpenQuestion[] {
   return parseTopLevelList(section).map((item) => {
     const blocksMatch = item.markdown.match(BLOCKS_MARKER);
-    const blocks = blocksMatch?.[1]?.split(",").map((value) => value.trim()) ?? [];
     return {
       markdown: item.markdown,
+      renderedHtml: renderContent(path, item.markdown, item.line, findings),
       resolved: RESOLVED_QUESTION.test(item.markdown),
-      blocks,
+      blocks: blocksMatch?.[1]?.split(",").map((value) => value.trim()) ?? [],
       location: location(item.line),
     };
   });
@@ -296,8 +351,7 @@ function parseQuestions(section: Section | undefined): OpenQuestion[] {
 
 function parseLinks(source: string): SpecLink[] {
   const links: SpecLink[] = [];
-  const lines = source.split(/\r?\n/u);
-  for (const [index, line] of lines.entries()) {
+  for (const [index, line] of source.split(/\r?\n/u).entries()) {
     for (const match of line.matchAll(/\[([^\]]+)\]\(([^)]+)\)/gu)) {
       links.push({
         label: match[1] ?? "",
@@ -339,12 +393,13 @@ function stringField(
   const value = frontmatter[key];
   if (typeof value === "string" && value.trim()) return value.trim();
   findings.push(
-    finding(
+    findingAt(
       path,
       `frontmatter.${key}.missing`,
       "error",
       `Frontmatter field ${key} is required.`,
-      2,
+      location(2),
+      `Add a non-empty ${key} field to the YAML frontmatter.`,
     ),
   );
   return fallback;
@@ -375,20 +430,31 @@ export function parseSpecDocument(input: ParseSpecInput): SpecDocument {
     : "future";
   if (status !== rawStatus) {
     findings.push(
-      finding(
+      findingAt(
         input.path,
         "frontmatter.status.invalid",
         "error",
         `Unsupported spec status ${rawStatus}.`,
-        2,
+        location(2),
+        "Use implemented, partial, or future.",
       ),
     );
   }
-  if (!title)
+  if (!title) {
     findings.push(
-      finding(input.path, "title.missing", "error", "The spec has no level-one title."),
+      findingAt(
+        input.path,
+        "title.missing",
+        "error",
+        "The spec has no level-one title.",
+        undefined,
+        "Add one `# Title` heading before the spec sections.",
+      ),
     );
+  }
 
+  const futureConsiderationsMarkdown = sections.get("Future Considerations")?.markdown ?? "";
+  const outOfScopeMarkdown = sections.get("Out of Scope")?.markdown ?? "";
   return {
     id,
     area,
@@ -399,15 +465,31 @@ export function parseSpecDocument(input: ParseSpecInput): SpecDocument {
     name: identity.name,
     title: title || identity.name,
     descriptionMarkdown,
+    descriptionHtml: renderContent(input.path, descriptionMarkdown, bodyStartLine + 1, findings),
+    sectionNames: [...sections.keys()],
     behaviours: parseBehaviours(input.path, sections.get("Behaviours"), findings),
-    invariants: parseInvariants(sections.get("Rules (Invariants)")),
-    decisionTables: parseDecisionTables(sections.get("Decision Tables")),
+    invariants: parseInvariants(input.path, sections.get("Rules (Invariants)"), findings),
+    decisionTables: parseDecisionTables(input.path, sections.get("Decision Tables"), findings),
     flowReferences: parseFlowReferences(sections.get("User Flows")),
     flows: [],
-    openQuestions: parseQuestions(sections.get("Open Questions")),
-    futureConsiderationsMarkdown: sections.get("Future Considerations")?.markdown ?? "",
-    outOfScopeMarkdown: sections.get("Out of Scope")?.markdown ?? "",
+    openQuestions: parseQuestions(input.path, sections.get("Open Questions"), findings),
+    futureConsiderationsMarkdown,
+    futureConsiderationsHtml: renderContent(
+      input.path,
+      futureConsiderationsMarkdown,
+      sections.get("Future Considerations")?.contentLine ?? 1,
+      findings,
+    ),
+    outOfScopeMarkdown,
+    outOfScopeHtml: renderContent(
+      input.path,
+      outOfScopeMarkdown,
+      sections.get("Out of Scope")?.contentLine ?? 1,
+      findings,
+    ),
     links: parseLinks(input.source),
+    forwardLinks: [],
+    backlinks: [],
     sourceHash: hash(input.source),
     source: input.source,
     findings,

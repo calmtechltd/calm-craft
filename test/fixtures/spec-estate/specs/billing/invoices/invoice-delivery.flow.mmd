@@ -1,0 +1,9 @@
+%% Generated from invoice-delivery.flow.yaml. Do not edit directly.
+flowchart TD
+  subgraph F1["F1: Invoice Delivery"]
+    F1_ready["Ready to Send"]
+    F1_delivered(["Delivered"])
+    F1_correction(["Correction Required"])
+    F1_ready -->|"F1.T1: Send [The address is valid and the provider is available.]"| F1_delivered
+    F1_ready -->|"F1.T2: Send [The address is invalid.]"| F1_correction
+  end
