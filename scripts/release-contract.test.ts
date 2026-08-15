@@ -77,7 +77,8 @@ describe("npm release contract", () => {
     expect(releasing).toContain(`npm dist-tag add @calmcraft/cli@${manifest.version} latest`);
     const visualizerSkill = read("skills/spec-visualize/SKILL.md");
     expect(visualizerSkill).toContain(`@calmcraft/cli@${manifest.version}`);
-    expect(visualizerSkill).toContain("does not generate or commit an HTML dashboard");
+    expect(visualizerSkill).toContain("outside the repository");
+    expect(visualizerSkill).toContain("never inside their repository");
     expect(visualizerSkill).not.toContain("<specs root>/_site/index.html");
   });
 

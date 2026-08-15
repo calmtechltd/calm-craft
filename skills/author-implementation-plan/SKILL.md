@@ -7,7 +7,7 @@ description: Turn a design document and its specs into a chunked implementation 
 
 Turn a design into **chunks sized for one agent session**. This skill plans; `run-implementation-plan` executes.
 
-Keeping those separate matters: a skill that plans *and* builds will always plan just far enough ahead to justify what it already wants to build.
+Keeping those separate matters: a skill that plans _and_ builds will always plan just far enough ahead to justify what it already wants to build.
 
 Plan location and commands: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md).
 
@@ -29,11 +29,11 @@ Restate in 5–10 bullets before chunking, and flag ambiguities. **Honour deferr
 
 ### 2. Choose a strategy and say which
 
-| Strategy | When | First phase |
-| --- | --- | --- |
-| **Specs first** | Large or compliance-sensitive; alignment with non-engineers matters | Author specs as 🔵, then vertical slices |
-| **Vertical slices** | Medium; design stable; specs can trail slightly | Each chunk ships observable behaviour plus tests |
-| **Foundation then UI** | Heavy schema or permission groundwork | Backend chunks first, UI from chunk N |
+| Strategy               | When                                                                | First phase                                      |
+| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| **Specs first**        | Large or compliance-sensitive; alignment with non-engineers matters | Author specs as 🔵, then vertical slices         |
+| **Vertical slices**    | Medium; design stable; specs can trail slightly                     | Each chunk ships observable behaviour plus tests |
+| **Foundation then UI** | Heavy schema or permission groundwork                               | Backend chunks first, UI from chunk N            |
 
 ### 3. Define phases as demo-able milestones
 

@@ -333,14 +333,19 @@ describe("CalmCraft CLI", () => {
     expect(html).toContain("Original");
   });
 
-  it("defaults the generated file to the repository root", async () => {
+  it("keeps the generated file out of the repository unless asked", async () => {
     const root = await repository();
+    let stdout = "";
     await runCli(["generate", root, "--no-open"], {
       assetsRoot: await browserAssets(),
-      io: { stdout: () => {}, stderr: () => {} },
+      io: { stdout: (value: string) => (stdout += value), stderr: () => {} },
     });
 
-    await expect(access(join(root, "calmcraft-estate.html"))).resolves.toBeUndefined();
+    const written = stdout.split("\n").find((line) => line.endsWith(".html")) ?? "";
+    expect(written).not.toContain(root);
+    expect(written.startsWith(tmpdir())).toBe(true);
+    await expect(access(written)).resolves.toBeUndefined();
+    await expect(access(join(root, "calmcraft-estate.html"))).rejects.toThrow();
   });
 
   it("rejects session options that mean nothing to a generated file", () => {

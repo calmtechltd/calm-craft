@@ -107,7 +107,7 @@ Omit keys that don't apply rather than filling them with placeholders. A missing
 
 ### 4. Verify every command actually runs
 
-Run each command in `commands`. A config full of commands that don't work is worse than no config, because skills will report their failures as *your code's* failures.
+Run each command in `commands`. A config full of commands that don't work is worse than no config, because skills will report their failures as _your code's_ failures.
 
 If a command fails, fix it or drop it — and say which you did.
 

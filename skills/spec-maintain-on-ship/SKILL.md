@@ -28,7 +28,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 **A closed ticket is not evidence.** It means someone marked a card done. Verify the code and the test yourself before promoting anything — the tracker owns scheduling, the spec owns intent.
 
-**Verify before flipping.** 🟢 means built *and* tested. If the tests aren't there, either write them or the badge stays 🟡 with an updated note. Flipping a badge because a pull request merged is how an estate stops being trustworthy.
+**Verify before flipping.** 🟢 means built _and_ tested. If the tests aren't there, either write them or the badge stays 🟡 with an updated note. Flipping a badge because a pull request merged is how an estate stops being trustworthy.
 
 ### A future behaviour was prioritised
 

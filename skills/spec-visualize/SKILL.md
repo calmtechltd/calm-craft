@@ -5,7 +5,7 @@ description: Open the local CalmCraft visualizer for a spec estate or branch rev
 
 # Open the CalmCraft Visualizer
 
-Use the packaged `calmcraft` command as the visual front door to the spec estate. It opens a loopback-only browser session and does not generate or commit an HTML dashboard.
+Use the packaged `calmcraft` command as the visual front door to the spec estate. It writes a single self-contained HTML file outside the repository and opens it. Nothing is served, nothing keeps running, and nothing is added to the user's working tree.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). The CLI reads optional repository settings from `calmcraft.json`.
 
@@ -19,35 +19,20 @@ Use the current checkout when the user names no source. Otherwise use the exact 
 
 For a remote, use the branch the user supplied. CalmCraft delegates authentication to the installed `git`; never request a provider token for the command or place credentials in the URL.
 
-### 2. Choose the view
-
-Open the estate:
+### 2. Generate and open
 
 ```sh
-npx --yes @calmcraft/cli@0.1.0 view
-npx --yes @calmcraft/cli@0.1.0 view /path/to/repository
+npx --yes @calmcraft/cli@0.2.0 generate
+npx --yes @calmcraft/cli@0.2.0 generate /path/to/repository
 ```
 
-Open Branch Review for a checkout or worktree:
+The file lands in a temporary directory and opens in the default browser. Pass `--out <file>` only when the user wants to keep or share it, and put it where they ask — never inside their repository unless they say so, because it is several megabytes and easy to commit by accident.
 
-```sh
-npx --yes @calmcraft/cli@0.1.0 view /path/to/worktree --diff --base origin/main
-```
+Use `--no-open` when the environment cannot launch a browser; report the path instead.
 
-Open a selected branch from a private remote:
+### 3. Regenerate rather than refresh
 
-```sh
-npx --yes @calmcraft/cli@0.1.0 view git@github.com:organisation/repository.git \
-  --branch feature/spec-review \
-  --diff \
-  --base main
-```
-
-If the pinned package is already installed globally, the equivalent `calmcraft view` command is fine. Use `--no-open` only when the user wants the URL or the environment cannot launch a browser. Never expose the session URL outside the local machine; it contains a short-lived secret.
-
-### 3. Keep the session owned
-
-Run the command in a terminal that can remain active while the user browses. The CLI owns its loopback server and any temporary remote clone. Stop it normally with `Ctrl-C` when the user is finished so handled cleanup runs.
+The file is a snapshot. When the user edits a spec and wants to see the change, run the command again. There is no session to restart and nothing to stop.
 
 Do not background an orphan process, upload repository data, start a public listener, or replace the local session with a hosted preview.
 

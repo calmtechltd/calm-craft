@@ -1,4 +1,6 @@
-import { dirname, resolve } from "node:path";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { loadConfig } from "../config";
@@ -216,7 +218,9 @@ export async function runGenerateCommand(
   assertSupportedNode(dependencies.nodeVersion ?? process.version);
   const io = dependencies.io ?? DEFAULT_IO;
   const repository = await discoverRepository(arguments_.source);
-  const out = arguments_.out ?? resolve(repository.root, "calmcraft-estate.html");
+  const out =
+    arguments_.out ??
+    join(await mkdtemp(join(tmpdir(), "calmcraft-estate-")), "calmcraft-estate.html");
   const result = await buildStaticEstate({
     source: repository.root,
     out,

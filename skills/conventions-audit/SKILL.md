@@ -52,11 +52,11 @@ Drop anything already handled. **Fewer verified findings beat a long speculative
 
 Each finding: severity, `file:line`, the **decision `id`** it violates, what's wrong, and a suggested direction. Citing the id matters — it lets me argue with the decision rather than with you.
 
-| Severity | When |
-| --- | --- |
-| **Major** | Violates a `decided` convention in new or modified code |
+| Severity  | When                                                                         |
+| --------- | ---------------------------------------------------------------------------- |
+| **Major** | Violates a `decided` convention in new or modified code                      |
 | **Minor** | Violates a `defaulted` convention, or pre-existing code touched incidentally |
-| **Note** | Pre-existing violation in untouched code, found in passing |
+| **Note**  | Pre-existing violation in untouched code, found in passing                   |
 
 Also report, separately:
 

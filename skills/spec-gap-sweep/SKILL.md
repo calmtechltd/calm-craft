@@ -30,7 +30,7 @@ Recompute every front-matter `status` from the behaviour badges and report misma
 
 Every 🟡 requires a one-line note on what's missing. A 🟡 without one is work nobody is tracking, described nowhere else. **The note is the requirement**; a ticket reference is optional, and absent entirely when `tickets.provider` is `none`.
 
-Where a provider *is* configured, also flag 🟡 behaviours whose ticket is closed. With `provider: github`, resolve it properly — `gh` is authenticated, so this is a real check rather than a guess. With `linear`, `jira`, or `custom`, attempt it only if credentials exist and **say plainly when you couldn't**; an unresolvable ticket is evidence of nothing.
+Where a provider _is_ configured, also flag 🟡 behaviours whose ticket is closed. With `provider: github`, resolve it properly — `gh` is authenticated, so this is a real check rather than a guess. With `linear`, `jira`, or `custom`, attempt it only if credentials exist and **say plainly when you couldn't**; an unresolvable ticket is evidence of nothing.
 
 A closed ticket means the badge is **worth verifying** and nothing more. Report it as such and hand to `spec-maintain-on-ship`, which requires the code and the test before promoting anything. Never infer a badge from tracker state — the spec owns intent, the tracker owns scheduling, and collapsing the two puts the estate back to being optimistic.
 

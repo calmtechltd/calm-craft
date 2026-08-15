@@ -31,14 +31,14 @@ Use the search discipline from `spec-plan-gap`: several vocabularies, behaviour 
 
 ### 3. Classify
 
-| Verdict | Meaning | Next |
-| --- | --- | --- |
-| **Confirmed bug** | Spec says X, code does Y, spec is right | `bug-regression-red-green` |
+| Verdict                | Meaning                                                 | Next                                                                                       |
+| ---------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Confirmed bug**      | Spec says X, code does Y, spec is right                 | `bug-regression-red-green`                                                                 |
 | **Expected behaviour** | Code matches the spec; the user expected something else | Reply explaining, citing the behaviour ID. Consider whether the design is worth revisiting |
-| **Spec gap** | Spec is silent on this case | Decide the intended behaviour first, then `spec-plan-gap` or `spec-maintain-on-ship` |
-| **Spec drift** | Code changed deliberately, spec never updated | `spec-maintain-on-ship` |
-| **Out of scope** | Named in Out of Scope or Future Considerations | Reply with the reasoning. Not a defect |
-| **No spec** | Nothing governs this feature | `spec-author-from-impl` before deciding anything |
+| **Spec gap**           | Spec is silent on this case                             | Decide the intended behaviour first, then `spec-plan-gap` or `spec-maintain-on-ship`       |
+| **Spec drift**         | Code changed deliberately, spec never updated           | `spec-maintain-on-ship`                                                                    |
+| **Out of scope**       | Named in Out of Scope or Future Considerations          | Reply with the reasoning. Not a defect                                                     |
+| **No spec**            | Nothing governs this feature                            | `spec-author-from-impl` before deciding anything                                           |
 
 The distinction between **confirmed bug** and **spec gap** is the one that matters most. A gap means nobody ever decided what should happen — so "fixing" it is really making a product decision, and it should be made deliberately rather than by whoever picks up the ticket.
 

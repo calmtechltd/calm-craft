@@ -2,6 +2,14 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.2.0 — pending
+
+- Add `calmcraft generate`, which writes the estate as one self-contained HTML file that opens from the filesystem with no server, port, or token.
+- Add Flows and Questions as first-class views, and stop counting unresolved questions as findings.
+- Read flow references that wrap across several lines; they previously parsed as no flow at all.
+- Rebuild the interface on bundled Geist with a single type scale and reserved semantic colour.
+- Render every matching specification instead of the first 120.
+
 ## 0.1.0 — pending
 
 - Add the local Atlas, Feature, Branch Review, and Health views.
