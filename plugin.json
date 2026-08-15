@@ -8,7 +8,14 @@
     "url": "https://github.com/calmtechltd"
   },
   "license": "MIT",
-  "keywords": ["specs", "conventions", "code-review", "implementation-plan", "testing", "linting"],
+  "keywords": [
+    "specs",
+    "conventions",
+    "code-review",
+    "implementation-plan",
+    "testing",
+    "linting"
+  ],
   "repository": "https://github.com/calmtechltd/calm-craft",
   "homepage": "https://github.com/calmtechltd/calm-craft"
 }
