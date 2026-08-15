@@ -45,6 +45,7 @@ Restate in three lines — chunk ID, goal, Done when — then implement. Don't w
 - Implement only the states, events, guards, and outcomes the flow contract allows. Preserve documented back, cancel, retry, failure, and resumable paths. **If the code seems to need an undeclared transition, stop and change the contract first** — implementing it and reconciling later is how a contract becomes fiction.
 - Foundation chunks may be backend-only; UI chunks ship their routes in the same change.
 - Follow the repo's conventions. If `conventions-audit` exists and the chunk is substantial, running it beats discovering violations at review.
+- If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Honour the install-script allowlist and release cooldown if those decisions exist. Do not commit `.env` or put a real secret in `.env.example`.
 - **Do not start the next chunk.** Not even if it's small. Especially if it's small.
 
 ### 4. Verify before marking complete

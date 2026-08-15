@@ -42,6 +42,7 @@ Permission and tenancy checks usually live outside the changed lines — in midd
 | **Functional** | Edge cases, null and undefined, async and error handling, partial failure, idempotency |
 | **Permissions** | Authorisation checked; nothing trusting a client-supplied identity |
 | **Tenancy** | Scoping applied on reads *and* writes |
+| **Secrets** | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret |
 | **Code paths** | Unreachable branches, missing returns, swallowed errors |
 | **Conventions** | Whatever `review.always_check` lists in the config |
 | **Tests and specs** | Changed behaviour with no test, or a spec that now disagrees |

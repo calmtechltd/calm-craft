@@ -46,8 +46,9 @@ Repeat until everything passes.
 Once gates pass, look at what's actually staged and changed. Flag:
 
 - Edits unrelated to the branch's purpose
-- Secrets or environment files
-- Debug logging left behind
+- Secrets or environment files — `.env`, `.env.local`, `.env.*.local`, key files, credentials. A new `.env.example` is expected; a value in it that looks real is not
+- A tracked `.env` that this branch did not mean to add
+- Debug logging left behind, including printed env values or tokens
 - Large or accidental files
 
 **Do not commit or push** unless I ask.

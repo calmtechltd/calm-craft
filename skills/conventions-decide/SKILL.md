@@ -29,6 +29,7 @@ Before asking anything:
 - Where the codebase is **consistent** — that behaviour becomes the recommended default.
 - Where it's **inconsistent** — count it ("62 named exports, 19 default, mostly in routes"). These matter most; drift already happened.
 - Any existing convention doc that **contradicts** the actual code.
+- **`package_manager` in `.engineering/config.yaml`**, and the install-time security the manager already has on (cooldown, script allowlist, exotic-source block, trust policy). Axis 10.1 is settled if a manager is recorded. 10.7–10.10 are settled if the manager's default or the repo's config already implements the recommended answer.
 
 Report this before the first question.
 
@@ -42,6 +43,9 @@ Work through the question bank, instantiated for the languages in `config.yaml`.
 - **Say what each answer costs** before I answer it. "Banning this means changing 40 files" is information I need up front, not after.
 - Target **twenty questions**. Drop axes that don't apply. Do not pad.
 - If an answer contradicts an earlier one, say so and ask which wins.
+- **Do not ask which package manager to switch to.** 10.1 pins the one `engineering-setup` recorded. Instantiating 10.7–10.10 means writing *that* manager's config, from *that* manager's current docs — not a favourite's, and not a table copied from an older interview. If the manager cannot enforce a question (trust downgrade is the usual case), mark it N/A and skip it.
+- **Offer 10.7–10.10 as a heads-up, not a gauntlet.** Most people do not know a release cooldown or a script allowlist exists. One sentence each on what they do, the recommended pair (cooldown + allowlist), and "off" / "manager default" as ordinary answers. Do not walk every sub-flag. Do not upsell trust policy or a week-long gate.
+- **Secrets (S.1–S.5)** belong in the same interview when the repo has env files, a client bundle, or neither and you still need the ignore rule. Skip S.5 if there is no client bundle. Skip S.3's local-scanner option if they already have platform push protection and no appetite for a hook. S.1 and S.2 are the ones that matter; the rest are optional.
 
 ### 3. Sort into tiers, and push everything down
 
@@ -75,6 +79,22 @@ decisions:
 
 **Enforcement config** — real rules in the repo's existing linter. Don't introduce a new linter unless there is none, and ask first.
 
+**Package-manager config** — for Axis 10.7–10.10, write the recorded manager's native settings (and the matching update-bot cooldown, if a bot is already configured). Look up the current key names before writing; they have moved. The shape, as of 2026, so you know what to search for:
+
+| Policy | npm | pnpm | Yarn Berry | Bun |
+| --- | --- | --- | --- | --- |
+| Cooldown | `min-release-age` in `.npmrc` (days; 11.10+) | `minimumReleaseAge` in `pnpm-workspace.yaml` (minutes; v11 default `1440`) | `npmMinimalAgeGate` in `.yarnrc.yml` | `install.minimumReleaseAge` in `bunfig.toml` (seconds) |
+| Excludes | `min-release-age-exclude` | `minimumReleaseAgeExclude` | `npmPreapprovedPackages` | `install.minimumReleaseAgeExcludes` |
+| Script allowlist | `allowScripts` in `package.json` (11.16+; advisory until v12) | `allowBuilds` + `strictDepBuilds` | `dependenciesMeta.<pkg>.built` (`enableScripts: false` is the default) | `trustedDependencies` |
+| Exotic subdeps | git/remote opt-in on npm 12 | `blockExoticSubdeps` | partial | — |
+| Trust downgrade | install-time: no. `npm audit signatures` is manual | `trustPolicy: no-downgrade` | — | — |
+
+Python's closest cooldown is uv `exclude-newer`. If the manager is not in this table, look it up or skip.
+
+A one-day cooldown is the recommended default because it matches what several managers now ship and does not sit on security patches. Do not set a seven-day window, a global `ignore-scripts`, or a trust policy that fails the install, unless I chose that option. Show the exact file and keys before writing them.
+
+**Secrets** — add ignore rules and an example env file only after I confirm. Never put a real value in the example file. Never delete a tracked `.env` without saying that history may still contain it.
+
 **Verify each rule fires.** Write a deliberate violation, run the linter, confirm it's caught, remove it. Report any decision you couldn't enforce — that's a result, not a failure to hide.
 
 Set severity to error where the codebase already complies. Where violations exist, ask: start at warning, scope an ignore to legacy paths, or run `conventions-migrate` now.
@@ -95,6 +115,7 @@ Set severity to error where the codebase already complies. Where violations exis
 - [ ] No question asked that the toolchain already settles.
 - [ ] Every decision carries `status`, `tier`, and — if enforced — the rule implementing it.
 - [ ] Every generated lint rule was verified to fire on a deliberate violation.
+- [ ] Axis 10.7–10.10 written in the recorded manager's config, or skipped as N/A — never as a prose rule pretending to be enforcement.
 - [ ] No enforced rule is also written as prose.
 - [ ] Existing rule files merged, not clobbered.
 
@@ -105,6 +126,9 @@ Set severity to error where the codebase already complies. Where violations exis
 - **Recommending a default that breaks most of the codebase** without saying so first.
 - **Recording defaults as decisions.** It destroys the ability to revisit them honestly later.
 - **A long always-on rule file.** Glob-scope it, or accept that it gets skimmed.
+- **Prescribing a package manager, or copying another manager's keys into this one.** Detected manager, that manager's docs.
+- **Turning on every supply-chain flag at once.** Cooldown plus an allowlist is the useful pair. Trust policy and a week-long gate are how you break the next install.
+- **Treating this as a security framework.** The job is to name a switch most people have never heard of, and turn it on if they want it. A lecture, a scanner they did not ask for, or a fourth follow-up question is the opposite.
 
 ## Related skills
 

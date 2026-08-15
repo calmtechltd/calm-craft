@@ -47,6 +47,8 @@ Where they don't, the usual cause is someone hand-editing a generated file. Repo
 
 Patterns the codebase follows consistently that aren't in `conventions.yaml` at all. Sample across modules; consistency above roughly 90% with nothing recorded means the team has a convention nobody wrote down. Those are cheap wins — propose them as new decisions with the existing behaviour as the recommended answer.
 
+Include the supply-chain and secrets questions if they are absent: a manager that now ships a release cooldown or a script allowlist by default, a `.env` ignore rule everyone follows but nobody recorded, an example env file that exists but isn't a decision. These are Axis 10.7–10.10 and S.1–S.5 — propose them, do not enable them here.
+
 ## Report
 
 Group by the five categories above. For each item: the decision id (or "unrecorded"), the evidence with counts, and the specific next action — `conventions-decide` to change an answer, `conventions-migrate` to fix code, or a lint config change.
