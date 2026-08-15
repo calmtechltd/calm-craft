@@ -31,6 +31,7 @@ function expectedPath(path) {
   return (
     exact.has(path) ||
     /^package\/dist\/ui\/assets\/index-[A-Za-z0-9_-]+\.(?:css|js)$/u.test(path) ||
+    /^package\/dist\/ui\/assets\/geist(?:-mono)?-[A-Za-z0-9_-]+\.woff2$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/SKILL\.md$/u.test(path)
   );
 }
@@ -54,6 +55,10 @@ try {
   assert(unexpected.length === 0, `Unexpected package paths:\n${unexpected.join("\n")}`);
   assert(paths.includes("package/dist/cli/index.js"), "The package has no CLI bundle.");
   assert(paths.includes("package/dist/ui/index.html"), "The package has no browser entry point.");
+  assert(
+    paths.filter((path) => /package\/dist\/ui\/assets\/geist.+\.woff2$/u.test(path)).length === 2,
+    "The package must bundle both Geist faces so it renders without a network.",
+  );
   assert(
     paths.filter((path) => /package\/dist\/ui\/assets\/index-.+\.js$/u.test(path)).length === 1,
     "The package must contain exactly one current browser JavaScript asset.",
