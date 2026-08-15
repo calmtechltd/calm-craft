@@ -184,8 +184,8 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | Skill                        | Job                                                                 |
 | ---------------------------- | ------------------------------------------------------------------- |
 | `author-implementation-plan` | Design doc → chunks sized for one reviewable pass.                  |
-| `run-implementation-plan`    | Implement the plan, one chunk per pass, until it is done.           |
-| `goal`                       | `/goal` wrapper — supplementary scope, then the same loop.          |
+| `run-implementation-plan`    | Complete in-scope behaviours, one card at a time, until done.       |
+| `goal`                       | `/goal` — default objective, then the same loop.                    |
 | `bug-regression-red-green`   | Failing test first, then the fix, and the test stays.               |
 | `branch-self-review`         | Review your own diff before anyone else does. Reports; never fixes. |
 | `ready-for-pr`               | Run the gates CI runs; fix what fails.                              |
