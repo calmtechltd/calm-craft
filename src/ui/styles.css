@@ -76,6 +76,9 @@
   /* Tracking for the small caps labels. */
   --track-caps: 0.06em;
 
+  /* Select chevron. Redeclared per theme so it tracks the muted foreground. */
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+
   --radius: 6px;
   --radius-lg: 8px;
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 8%), 0 4px 6px -4px rgb(0 0 0 / 8%);
@@ -112,6 +115,7 @@
   --danger-line: #4a1d1f;
 
   --focus: #d4d4d8;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   --shadow: 0 10px 15px -3px rgb(0 0 0 / 50%), 0 4px 6px -4px rgb(0 0 0 / 50%);
 }
 
@@ -153,6 +157,24 @@ h4 {
   text-wrap: balance;
 }
 
+select {
+  height: var(--control-h);
+  padding: 0 30px 0 var(--control-px);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background:
+    var(--chevron) no-repeat right 9px center / 13px,
+    var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  appearance: none;
+}
+
+select:hover {
+  border-color: var(--ink-faint);
+}
+
 button,
 a,
 input,
@@ -179,7 +201,9 @@ select:focus-visible,
     0 0 0 4px var(--focus);
 }
 
-.sr-only {
+.sr-only,
+.filter-row label > span,
+.health-controls label > span {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -643,7 +667,6 @@ select:focus-visible,
 
 .filter-row label {
   display: grid;
-  gap: 5px;
 }
 
 .filter-row label > span {
@@ -654,7 +677,6 @@ select:focus-visible,
   text-transform: uppercase;
 }
 
-.filter-row select,
 .filter-toggle,
 .clear-filters {
   height: var(--control-h);
@@ -667,7 +689,7 @@ select:focus-visible,
 }
 
 .filter-row select {
-  min-width: 145px;
+  min-width: 140px;
 }
 
 .filter-toggle {
@@ -2353,37 +2375,15 @@ select:focus-visible,
 }
 
 .health-totals span {
-  display: grid;
-  min-height: 68px;
-  place-content: center;
   color: var(--ink-muted);
-  font-size: var(--text-2xs);
-  gap: 4px;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.health-totals span + span {
-  border-left: 1px solid var(--line);
-}
-
-.health-totals strong {
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: var(--text-xl);
-  font-weight: 400;
 }
 
 .health-controls {
   display: grid;
-  align-items: end;
-  margin-top: 38px;
-  padding: 11px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface);
-  grid-template-columns: minmax(260px, 1fr) 180px 180px;
-  gap: 9px;
+  align-items: center;
+  margin-top: 4px;
+  grid-template-columns: minmax(260px, 1fr) 170px 170px;
+  gap: 7px;
 }
 
 .health-controls > label:not(.search-field) {
@@ -2400,12 +2400,6 @@ select:focus-visible,
 
 .health-controls select {
   width: 100%;
-  height: 38px;
-  padding: 0 9px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--surface-raised);
-  font-size: var(--text-xs);
 }
 
 .health-layout {
