@@ -10,13 +10,28 @@ import { CommandPalette } from "./command-palette";
 import { featureHref, FeatureView, type FeatureSelection } from "./feature";
 import { flowsHref, FlowsView, parseFlowsSelection, type FlowsSelection } from "./flows";
 import {
+  buildEstateQuestions,
+  parseQuestionsSelection,
+  questionsHref,
+  QuestionsView,
+  type QuestionsSelection,
+} from "./questions";
+import {
   buildHealthItems,
   healthHref,
   HealthView,
   parseHealthSelection,
   type HealthSelection,
 } from "./health";
-import { AtlasIcon, BranchIcon, FlowIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
+import {
+  AtlasIcon,
+  BranchIcon,
+  FlowIcon,
+  HealthIcon,
+  MoonIcon,
+  QuestionIcon,
+  SunIcon,
+} from "./icons";
 import { parseReviewSelection, reviewHref, type ReviewSelection } from "./review-route";
 import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
 
@@ -49,6 +64,7 @@ function openSpec(spec: SpecDocument): void {
 type AppRoute =
   | { view: "atlas"; selection: AtlasSelection }
   | { view: "flows"; selection: FlowsSelection }
+  | { view: "questions"; selection: QuestionsSelection }
   | { view: "review"; selection: ReviewSelection }
   | { view: "health"; selection: HealthSelection }
   | { view: "feature"; id: string; selection: FeatureSelection };
@@ -70,6 +86,9 @@ export function parseAppRoute(hash: string): AppRoute {
   }
   if (segments[0] === "flows") {
     return { view: "flows", selection: parseFlowsSelection(parameters) };
+  }
+  if (segments[0] === "questions") {
+    return { view: "questions", selection: parseQuestionsSelection(parameters) };
   }
   if (segments[0] === "review")
     return {
@@ -174,6 +193,11 @@ export function CalmCraftApp({
     [snapshot],
   );
 
+  const openQuestions = useMemo(
+    () => (snapshot ? buildEstateQuestions(snapshot.estate).length : 0),
+    [snapshot],
+  );
+
   const health = useMemo(() => {
     const items = snapshot ? buildHealthItems(snapshot.estate, review) : [];
     const errors = items.filter((item) => item.finding.severity === "error").length;
@@ -249,6 +273,16 @@ export function CalmCraftApp({
             <small>{flowCount}</small>
           </a>
           <a
+            aria-label="Questions"
+            aria-current={route.view === "questions" ? "page" : undefined}
+            className={`nav-item ${route.view === "questions" ? "active" : ""}`}
+            href={route.view === "questions" ? questionsHref(route.selection) : questionsHref()}
+          >
+            <QuestionIcon />
+            <span>Questions</span>
+            <small>{openQuestions}</small>
+          </a>
+          <a
             aria-label="Branch Review"
             aria-current={route.view === "review" ? "page" : undefined}
             className={`nav-item ${route.view === "review" ? "active" : ""}`}
@@ -280,7 +314,9 @@ export function CalmCraftApp({
               <strong>
                 {health.errors > 0 ? `${health.errors} contract errors` : "Session healthy"}
               </strong>
-              <small>{health.findings} total findings</small>
+              <small>
+                {health.findings} findings · {openQuestions} open questions
+              </small>
             </span>
           </a>
           <span className="version">Local · v{CALMCRAFT_VERSION}</span>
@@ -345,6 +381,8 @@ export function CalmCraftApp({
           />
         ) : route.view === "flows" ? (
           <FlowsView estate={snapshot.estate} selection={route.selection} />
+        ) : route.view === "questions" ? (
+          <QuestionsView estate={snapshot.estate} selection={route.selection} />
         ) : route.view === "review" ? (
           review ? (
             route.selection.change ? (

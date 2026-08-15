@@ -91,34 +91,6 @@ export function buildHealthItems(estate: SpecEstate, review?: BranchReview): Hea
     });
   }
 
-  for (const spec of estate.specs) {
-    spec.openQuestions.forEach((question, index) => {
-      if (question.resolved) return;
-      const finding: SpecFinding = {
-        id: `question.unresolved:${spec.id}:${question.location.line}:${index}`,
-        code: "question.unresolved",
-        severity: "info",
-        path: spec.path,
-        location: question.location,
-        message:
-          question.blocks.length > 0
-            ? `An open question blocks ${question.blocks.join(", ")}.`
-            : "An open question remains unresolved.",
-        hint:
-          question.blocks.length > 0
-            ? `Open the feature context and resolve the question before delivering ${question.blocks.join(", ")}.`
-            : "Open the feature context, record a decision, or mark the question as settled.",
-      };
-      items.push({
-        key: `question:${finding.id}`,
-        finding,
-        state: "current",
-        specId: spec.id,
-        question,
-      });
-    });
-  }
-
   return items.toSorted(
     (left, right) =>
       SEVERITY_ORDER[left.finding.severity] - SEVERITY_ORDER[right.finding.severity] ||
@@ -240,7 +212,6 @@ export function HealthView({
     () => ({
       errors: items.filter((item) => item.finding.severity === "error").length,
       warnings: items.filter((item) => item.finding.severity === "warning").length,
-      questions: items.filter((item) => item.finding.code === "question.unresolved").length,
     }),
     [items],
   );
@@ -279,9 +250,6 @@ export function HealthView({
           </span>
           <span>
             <strong>{counts.warnings}</strong> warnings
-          </span>
-          <span>
-            <strong>{counts.questions}</strong> open questions
           </span>
         </div>
       </header>

@@ -170,12 +170,17 @@ describe("Health and command navigation", () => {
 
   afterEach(() => cleanup());
 
-  it("combines current, introduced, resolved, and open-question health", () => {
+  /*
+   * Health used to fold every unresolved question into the findings list, so
+   * its count answered two different questions at once. Questions moved to
+   * their own view; Health now counts only what is actually wrong.
+   */
+  it("combines current, introduced, and resolved findings without open questions", () => {
     const items = buildHealthItems(review().target.estate, review());
     expect(items.map((item) => item.state)).toEqual(
       expect.arrayContaining(["current", "introduced", "resolved"]),
     );
-    expect(items.map((item) => item.finding.code)).toContain("question.unresolved");
+    expect(items.map((item) => item.finding.code)).not.toContain("question.unresolved");
     expect(items.filter((item) => item.finding.id === introducedFinding.id)).toHaveLength(1);
   });
 
@@ -193,18 +198,18 @@ describe("Health and command navigation", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Health" })).toBeVisible();
-    expect(screen.getByLabelText("4 health items")).toBeVisible();
+    expect(screen.getByLabelText("3 health items")).toBeVisible();
     const search = screen.getByRole("searchbox", { name: "Search findings" });
     await user.type(search, "missing state");
-    expect(await screen.findByText("Showing 1 of 4 health items")).toBeVisible();
+    expect(await screen.findByText("Showing 1 of 3 health items")).toBeVisible();
     expect(window.location.hash).toContain("search=missing+state");
     await user.clear(search);
-    expect(await screen.findByText("Showing 4 of 4 health items")).toBeVisible();
+    expect(await screen.findByText("Showing 3 of 3 health items")).toBeVisible();
     await user.selectOptions(
       screen.getByRole("combobox", { name: "Filter findings by review state" }),
       "introduced",
     );
-    expect(await screen.findByText("Showing 1 of 4 health items")).toBeVisible();
+    expect(await screen.findByText("Showing 1 of 3 health items")).toBeVisible();
     await user.click(screen.getByRole("link", { name: /transition points to a missing state/u }));
     expect(screen.getByRole("heading", { name: introducedFinding.message })).toHaveFocus();
     expect(screen.getByLabelText("Finding detail")).toHaveTextContent("Line 18, column 5");

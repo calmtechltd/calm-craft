@@ -18,6 +18,15 @@ export function AtlasIcon(props: IconProps) {
   );
 }
 
+export function QuestionIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.7.3-1 .8-1 1.6M12 17h.01" />
+    </Icon>
+  );
+}
+
 export function FlowIcon(props: IconProps) {
   return (
     <Icon {...props}>
