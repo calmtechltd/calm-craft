@@ -1,59 +1,100 @@
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/geist-sans.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/geist-mono.woff2") format("woff2");
+}
+
+/*
+ * Visual tokens. Names on the right of each declaration follow shadcn's token
+ * vocabulary on a zinc base; the names on the left are CalmCraft's existing
+ * variables, so the whole surface re-skins without touching component CSS.
+ * Semantic colour is reserved: green implemented or resolved, amber partial or
+ * warning, red error or blocker, slate future or informational.
+ */
 :root {
   color-scheme: light;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
-  --ink: #171815;
-  --ink-muted: #686961;
-  --ink-faint: #696a63;
-  --canvas: #f3f1eb;
-  --surface: #faf9f5;
-  --surface-raised: #fffefa;
-  --line: #dcd9cf;
-  --line-strong: #c4c0b5;
-  --nav: #20221f;
-  --nav-ink: #f5f2e9;
-  --nav-muted: #aeb0a8;
-  --moss: #536955;
-  --moss-soft: #dfe6db;
-  --ochre: #68430f;
-  --ochre-soft: #f3e3c6;
-  --violet: #715878;
-  --violet-soft: #eadfec;
-  --danger: #9a3f31;
-  --danger-soft: #f3dcd5;
-  --focus: #4072d6;
-  --shadow: 0 18px 50px rgb(38 37 31 / 10%);
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-prose: ui-serif, Charter, Georgia, serif;
+
+  --ink: #09090b; /* foreground */
+  --ink-muted: #71717a; /* muted-foreground */
+  --ink-faint: #a1a1aa; /* subtle-foreground */
+  --canvas: #fafafa; /* page ground */
+  --surface: #ffffff; /* card */
+  --surface-raised: #ffffff; /* popover */
+  --line: #e4e4e7; /* border */
+  --line-strong: #d4d4d8; /* input */
+  --nav: #fafafa; /* sidebar */
+  --nav-ink: #09090b; /* sidebar-foreground */
+  --nav-muted: #71717a; /* sidebar-muted */
+  --nav-accent: #f4f4f5; /* sidebar-accent */
+  --primary: #18181b;
+  --primary-ink: #fafafa;
+
+  --moss: #15803d; /* implemented, resolved */
+  --moss-soft: #f0fdf4;
+  --moss-line: #bbf7d0;
+  --ochre: #b45309; /* partial, warning */
+  --ochre-soft: #fffbeb;
+  --ochre-line: #fde68a;
+  --violet: #475569; /* future, informational */
+  --violet-soft: #f8fafc;
+  --violet-line: #e2e8f0;
+  --danger: #dc2626; /* error, blocker */
+  --danger-soft: #fef2f2;
+  --danger-line: #fecaca;
+
+  --focus: #18181b;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 8%), 0 4px 6px -4px rgb(0 0 0 / 8%);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f2f0e9;
-  --ink-muted: #b5b4ad;
-  --ink-faint: #aaa9a2;
-  --canvas: #161815;
-  --surface: #1c1e1b;
-  --surface-raised: #252723;
-  --line: #373a34;
-  --line-strong: #51544d;
-  --nav: #0e100e;
-  --nav-ink: #f5f2e9;
-  --nav-muted: #9ea099;
-  --moss: #a6c0a4;
-  --moss-soft: #273429;
-  --ochre: #e0b272;
-  --ochre-soft: #3e3020;
-  --violet: #c6a9ce;
-  --violet-soft: #382c3b;
-  --danger: #f0a294;
-  --danger-soft: #442722;
-  --focus: #8eb2ff;
-  --shadow: 0 20px 55px rgb(0 0 0 / 28%);
+  --ink: #fafafa;
+  --ink-muted: #a1a1aa;
+  --ink-faint: #71717a;
+  --canvas: #09090b;
+  --surface: #101012;
+  --surface-raised: #131316;
+  --line: #27272a;
+  --line-strong: #3f3f46;
+  --nav: #0c0c0e;
+  --nav-ink: #fafafa;
+  --nav-muted: #a1a1aa;
+  --nav-accent: #1c1c1f;
+  --primary: #fafafa;
+  --primary-ink: #18181b;
+
+  --moss: #4ade80;
+  --moss-soft: #0d1f14;
+  --moss-line: #1a3a25;
+  --ochre: #fbbf24;
+  --ochre-soft: #231a08;
+  --ochre-line: #453109;
+  --violet: #94a3b8;
+  --violet-soft: #14171c;
+  --violet-line: #2a303a;
+  --danger: #f87171;
+  --danger-soft: #260f11;
+  --danger-line: #4a1d1f;
+
+  --focus: #d4d4d8;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 50%), 0 4px 6px -4px rgb(0 0 0 / 50%);
 }
 
 * {
@@ -79,6 +120,21 @@ select {
   font: inherit;
 }
 
+/*
+ * Geist carries far more weight and width than the Georgia this scale was cut
+ * for, so headings need a normal line height and a lighter default weight than
+ * a browser bold.
+ */
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
 button,
 a,
 input,
@@ -86,10 +142,23 @@ select {
   outline: none;
 }
 
-:focus-visible {
+/*
+ * Headings, cards, and questions take focus programmatically so a reader lands
+ * on the right place after navigating. That is not a focus the browser should
+ * ring — only things you can actually operate get a visible ring.
+ */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
   box-shadow:
-    0 0 0 3px var(--canvas),
-    0 0 0 5px var(--focus);
+    0 0 0 2px var(--canvas),
+    0 0 0 4px var(--focus);
 }
 
 .sr-only {
@@ -133,9 +202,9 @@ select {
   display: flex;
   height: 100vh;
   flex-direction: column;
-  padding: 24px 18px 18px;
-  background:
-    radial-gradient(circle at 80% 0%, rgb(111 137 107 / 18%), transparent 34%), var(--nav);
+  padding: 14px 10px 12px;
+  border-right: 1px solid var(--line);
+  background: var(--nav);
   color: var(--nav-ink);
 }
 
@@ -155,7 +224,7 @@ select {
 }
 
 .brand strong {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -185,7 +254,7 @@ select {
   position: absolute;
   width: 21px;
   height: 7px;
-  border: 1.5px solid #d8e0ce;
+  border: 1.5px solid var(--moss);
   border-radius: 999px;
   transform: rotate(calc(var(--i, 0) * 60deg));
 }
@@ -217,11 +286,11 @@ select {
 .nav-item {
   display: grid;
   width: 100%;
-  min-height: 44px;
+  min-height: 32px;
   align-items: center;
-  padding: 0 11px;
+  padding: 0 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--nav-muted);
   cursor: pointer;
@@ -233,7 +302,7 @@ select {
 
 .nav-item svg,
 .branch-identity svg {
-  width: 18px;
+  width: 15px;
   stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -241,7 +310,7 @@ select {
 }
 
 .nav-item.active {
-  background: rgb(255 255 255 / 9%);
+  background: var(--nav-accent);
   color: var(--nav-ink);
 }
 
@@ -252,10 +321,12 @@ select {
 
 .nav-item kbd,
 .nav-item small {
-  color: var(--nav-muted);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .nav-item kbd {
@@ -332,7 +403,7 @@ select {
   border-radius: 7px;
   background: var(--surface-raised);
   color: var(--moss);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 700;
 }
@@ -358,7 +429,7 @@ select {
   padding-left: 20px;
   border-left: 1px solid var(--line);
   color: var(--ink-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
@@ -430,10 +501,10 @@ select {
 
 .eyebrow {
   margin: 0 0 9px;
-  color: var(--moss);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  color: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -444,21 +515,20 @@ select {
 .unsupported-view h1,
 .route-not-found h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   letter-spacing: -0.035em;
 }
 
 .view-heading h1 {
-  font-size: clamp(44px, 5vw, 68px);
-  line-height: 0.95;
+  font-size: 28px;
 }
 
 .view-intro {
   max-width: 590px;
   margin: 18px 0 0;
   color: var(--ink-muted);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -471,8 +541,8 @@ select {
 }
 
 .estate-count strong {
-  font-family: Georgia, serif;
-  font-size: 31px;
+  font-family: var(--font-sans);
+  font-size: 24px;
   font-weight: 400;
 }
 
@@ -516,7 +586,7 @@ select {
   width: 100%;
   border: 0;
   background: transparent;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 16px;
 }
 
@@ -629,7 +699,7 @@ select {
 
 .module-group > header h2 {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 500;
   text-transform: capitalize;
@@ -711,7 +781,7 @@ select {
 
 .spec-title {
   overflow: hidden;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -721,7 +791,7 @@ select {
 .spec-id {
   overflow: hidden;
   color: var(--ink-faint);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -778,7 +848,7 @@ select {
 
 .metric strong {
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 400;
 }
@@ -834,13 +904,13 @@ select {
 
 .empty-state > span {
   color: var(--ink-faint);
-  font-family: Georgia, serif;
-  font-size: 38px;
+  font-family: var(--font-sans);
+  font-size: 26px;
 }
 
 .empty-state h2 {
   margin: 10px 0 7px;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-weight: 400;
 }
 
@@ -918,16 +988,15 @@ select {
 
 .feature-hero h1 {
   max-width: 900px;
-  margin-top: 20px;
-  font-size: clamp(45px, 6.2vw, 82px);
-  line-height: 0.98;
+  margin-top: 12px;
+  font-size: 30px;
 }
 
 .feature-description {
   max-width: 760px;
   margin-top: 24px;
   color: var(--ink-muted);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-prose);
   font-size: 18px;
   line-height: 1.62;
 }
@@ -1058,7 +1127,7 @@ select {
 }
 
 .contract-index nav span {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 11px;
 }
 
@@ -1090,7 +1159,7 @@ select {
 
 .behaviour-index a span {
   color: var(--moss);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-weight: 700;
 }
 
@@ -1118,7 +1187,7 @@ select {
 .section-heading h2,
 .contract-section.compact h2 {
   margin: 0;
-  font-size: 35px;
+  font-size: 19px;
 }
 
 .section-heading > span {
@@ -1129,7 +1198,7 @@ select {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 12px;
 }
 
@@ -1167,7 +1236,7 @@ select {
   border: 1px solid var(--moss);
   border-radius: 5px;
   color: var(--moss);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   text-decoration: none;
@@ -1175,7 +1244,7 @@ select {
 
 .behaviour-card h3 {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 500;
 }
@@ -1183,7 +1252,7 @@ select {
 .behaviour-card > .prose {
   margin: 19px 0 0 54px;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-prose);
   font-size: 14px;
 }
 
@@ -1236,12 +1305,12 @@ select {
 .invariant-list li::before {
   color: var(--moss);
   content: "0" counter(invariant);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
 }
 
 .invariant-list .prose {
-  font-family: Georgia, serif;
+  font-family: var(--font-prose);
   font-size: 14px;
 }
 
@@ -1371,7 +1440,7 @@ select {
 }
 
 .flow-state strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
 }
@@ -1416,7 +1485,7 @@ select {
 
 .transition-id {
   color: var(--moss);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
 }
@@ -1428,7 +1497,7 @@ select {
 }
 
 .transition-route strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 500;
 }
@@ -1455,7 +1524,7 @@ select {
   border: 1px solid var(--line-strong);
   border-radius: 4px;
   color: var(--ink-muted);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 8px;
   text-decoration: none;
 }
@@ -1468,7 +1537,7 @@ select {
 
 .transition-detail h4 {
   margin: 0 0 16px;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
 }
@@ -1554,7 +1623,7 @@ select {
 }
 
 .question-list .prose {
-  font-family: Georgia, serif;
+  font-family: var(--font-prose);
   font-size: 13px;
 }
 
@@ -1577,14 +1646,14 @@ select {
   border: 1px dashed var(--line);
   border-radius: 7px;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   text-align: center;
 }
 
 .contract-section.compact > .prose {
   margin-top: 18px;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-prose);
   font-size: 14px;
 }
 
@@ -1609,7 +1678,7 @@ select {
 }
 
 .relationship-group > a strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
 }
@@ -1671,7 +1740,7 @@ select {
 
 .source-drawer header strong {
   overflow: hidden;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1705,7 +1774,7 @@ select {
   margin: 0;
   padding: 22px;
   overflow: auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.7;
   white-space: pre;
@@ -1722,7 +1791,7 @@ select {
 
 .route-not-found h1 {
   max-width: 650px;
-  font-size: clamp(38px, 5vw, 60px);
+  font-size: 24px;
 }
 
 .route-not-found a {
@@ -1746,8 +1815,8 @@ select {
 .review-hero h1,
 .review-unavailable h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(44px, 5vw, 68px);
+  font-family: var(--font-sans);
+  font-size: 28px;
   font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 0.98;
@@ -1756,7 +1825,7 @@ select {
 .review-hero p:last-child {
   margin: 18px 0 0;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 16px;
 }
 
@@ -1823,7 +1892,7 @@ select {
 
 .comparison-strip strong {
   overflow: hidden;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -1972,7 +2041,7 @@ select {
 
 .review-group > header h2 {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 500;
   text-transform: capitalize;
@@ -2018,7 +2087,7 @@ select {
 .review-feature-identity small {
   overflow: hidden;
   color: var(--moss);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2026,7 +2095,7 @@ select {
 
 .review-feature-identity strong {
   overflow: hidden;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -2121,7 +2190,7 @@ select {
   max-width: 620px;
   margin: 20px 0;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
 }
@@ -2232,7 +2301,7 @@ select {
 
 .health-totals strong {
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 400;
 }
@@ -2317,7 +2386,7 @@ select {
 
 .health-row strong {
   overflow: hidden;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.25;
@@ -2398,8 +2467,8 @@ select {
 .feature-finding-detail h2,
 .health-detail-empty h2 {
   margin: 18px 0 10px;
-  font-family: Georgia, serif;
-  font-size: 25px;
+  font-family: var(--font-sans);
+  font-size: 17px;
   font-weight: 400;
   line-height: 1.16;
 }
@@ -2444,7 +2513,7 @@ select {
 .health-detail section > p:last-child,
 .health-detail-empty p {
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -2477,8 +2546,8 @@ select {
 
 .health-detail-empty > span {
   color: var(--moss);
-  font-family: Georgia, serif;
-  font-size: 40px;
+  font-family: var(--font-sans);
+  font-size: 26px;
 }
 
 .feature-finding-detail {
@@ -2554,7 +2623,7 @@ select {
   width: 100%;
   border: 0;
   background: transparent;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 17px;
 }
 
@@ -2616,7 +2685,7 @@ select {
 
 .command-results strong {
   overflow: hidden;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -2680,6 +2749,7 @@ select {
 
 .change-detail-hero {
   position: relative;
+  min-width: 0;
   padding-right: 180px;
 }
 
@@ -2726,20 +2796,22 @@ select {
 }
 
 .change-detail-hero h1 {
-  max-width: 900px;
+  max-width: 100%;
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(36px, 4.5vw, 60px);
-  font-weight: 400;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .change-detail-hero > p {
   max-width: 720px;
   margin: 18px 0 0;
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.55;
 }
@@ -2774,7 +2846,7 @@ select {
 }
 
 .inferred-callout strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
 }
 
@@ -2853,7 +2925,7 @@ select {
 
 .change-toolbar kbd,
 .shortcut-note kbd {
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 8px;
 }
 
@@ -2896,7 +2968,7 @@ select {
 .change-rail nav a > span:first-child {
   padding-top: 2px;
   color: var(--ink-faint);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 8px;
 }
 
@@ -2915,7 +2987,7 @@ select {
 
 .change-rail nav strong {
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 500;
 }
@@ -2984,12 +3056,12 @@ select {
   border: 1px solid currentColor;
   border-radius: 999px;
   color: var(--ink-muted);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   grid-row: 1 / 3;
 }
 
 .diff-value > header strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
 }
@@ -3009,7 +3081,7 @@ select {
 
 .diff-scalar {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   line-height: 1.5;
 }
@@ -3017,7 +3089,7 @@ select {
 .diff-empty-value {
   margin: 0;
   color: var(--ink-faint);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-style: italic;
 }
@@ -3059,7 +3131,7 @@ select {
 
 .typed-fields dd {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 13px;
 }
 
@@ -3084,7 +3156,7 @@ select {
 }
 
 .typed-identity strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
 }
@@ -3104,7 +3176,7 @@ select {
 .typed-decision td {
   padding: 9px;
   border: 1px solid var(--line);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 12px;
 }
 
@@ -3129,7 +3201,7 @@ select {
 .typed-relationship > strong,
 .typed-transition > strong,
 .typed-finding > strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 500;
 }
@@ -3168,7 +3240,7 @@ select {
 
 .raw-source-diff h2 {
   margin: 3px 0 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 500;
 }
@@ -3199,7 +3271,7 @@ select {
 }
 
 .raw-source-panel > header strong {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
 }
@@ -3225,7 +3297,7 @@ select {
   margin: 0;
   overflow: auto;
   background: color-mix(in srgb, var(--canvas) 60%, var(--surface));
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   line-height: 1.65;
 }
@@ -3270,13 +3342,13 @@ select {
 
 .session-loading p {
   color: var(--ink-muted);
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
 }
 
 .session-error h1,
 .unsupported-view h1 {
   max-width: 680px;
-  font-size: clamp(36px, 5vw, 58px);
+  font-size: 24px;
 }
 
 .session-error > p:not(.eyebrow),
@@ -3290,7 +3362,7 @@ select {
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
@@ -3672,7 +3744,7 @@ select {
   }
 
   .feature-hero h1 {
-    font-size: clamp(42px, 14vw, 62px);
+    font-size: 24px;
   }
 
   .feature-description {
