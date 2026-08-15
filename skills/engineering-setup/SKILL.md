@@ -33,6 +33,7 @@ Read the repo and work out what you can. Do not ask about anything you can deter
 - **Ticket references** — check existing rule files, skill files, and contributing docs **first**; teams write the pattern down long before it appears reliably in commit subjects. Only then sample recent commits and pull request titles. Coming up empty on git history is not evidence the repo has no ticket convention.
 - **Test layout** — colocated, `__tests__/`, or a mirrored tree; and how unit and integration tests are distinguished.
 - **Existing agent instructions** — `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `CONTRIBUTING.md`.
+- **Delivery-loop helpers** — a schema generate or migrate script, a local checkpoint commit helper (`calm-commit`, Graphite). Record the command only when it already exists. Do not invent one.
 
 ### 2. Confirm, don't interrogate
 
@@ -41,6 +42,7 @@ Present what you found as a filled-in draft config and ask me to correct it. One
 Ask only about what you genuinely could not detect:
 
 - Where should working documents live — implementation plans, review reports? Suggest a gitignored directory if the repo has no convention.
+- Do they want a short `/goal` overlay for repo-specific loop constraints (commit helpers, database generation rules)? Suggest `.engineering/goal.md` and omit it if they have none.
 - Where do specs live, if not `specs/`?
 - **Do specs link to a tracker at all?** Default to `none` and say so — it's the right answer for most repos, and a ticket field nobody completes is worse than no field. If they want one, `github` is the only provider where skills can actually resolve issue state without extra credentials. Anything else needs a pattern and URL template.
 - Which of this plugin's three areas do I want — conventions, specs, delivery, or all three?
@@ -62,6 +64,9 @@ paths:
   plans: .plans/
   reports: .reports/
   conventions: .engineering/conventions.yaml
+  # Optional. A short note /goal and run-implementation-plan read for
+  # repo-specific loop constraints. Omit if you have none.
+  goal: .engineering/goal.md
 
 commands:
   # Exactly what CI runs, in CI's order. Omit any that don't exist.
@@ -74,6 +79,13 @@ commands:
   deadcode: <dead code command>
   test: <full test command>
   test_file: "<command with {file} placeholder>"
+  # Optional delivery-loop commands. Omit if the repo has none.
+  # Tests that build their database from source schema must not run
+  # these merely to see a change. checkpoint_commit is a local
+  # Graphite-style helper (e.g. calm-commit), not a push.
+  db_generate: <schema / migration generate>
+  db_migrate: <apply migrations to a real database>
+  checkpoint_commit: <local checkpoint commit>
 
 # Which commands gate a merge, in order. `ready-for-pr` runs exactly these
 # and reports Blocked only on these.

@@ -1,11 +1,11 @@
 ---
 name: author-implementation-plan
-description: Turn a design document and its specs into a chunked implementation plan an agent can execute one session at a time, with dependencies, acceptance criteria, and explicit out-of-scope fences. Use when the user says "turn this design into a plan", "break this into chunks", "write an implementation plan", or before starting a large feature. Plans only — never implements.
+description: Turn a design document and its specs into a chunked implementation plan an agent can execute one reviewable pass at a time, with dependencies, acceptance criteria, and explicit out-of-scope fences. Use when the user says "turn this design into a plan", "break this into chunks", "write an implementation plan", or before starting a large feature. Plans only — never implements.
 ---
 
 # Author an Implementation Plan
 
-Turn a design into **chunks sized for one agent session**. This skill plans; `run-implementation-plan` executes.
+Turn a design into **chunks sized for one reviewable pass**. This skill plans; `run-implementation-plan` executes the plan, one chunk at a time, until it is done.
 
 Keeping those separate matters: a skill that plans _and_ builds will always plan just far enough ahead to justify what it already wants to build.
 
@@ -17,7 +17,7 @@ Plan location and commands: `.engineering/config.yaml`. Spec format: [`reference
 - "Break this feature into agent-sized chunks."
 - Before a large feature, once the design exists.
 
-**Not this skill:** executing a chunk (`run-implementation-plan`), writing specs (`spec-author-greenfield`).
+**Not this skill:** executing the plan (`run-implementation-plan` / `goal`), writing specs (`spec-author-greenfield`).
 
 ## Workflow
 
@@ -69,7 +69,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 ## Quality gate
 
 - [ ] Every chunk has all six fields.
-- [ ] No chunk too large for one session — split if Work has more than ~8 deliverables.
+- [ ] No chunk too large for one reviewable pass — split if Work has more than ~8 deliverables.
 - [ ] Deferred design scope appears only in later phases.
 - [ ] UI chunks have manual Done-when steps.
 - [ ] Journey chunks cite flow transition IDs and invent no state, guard, bypass, or exit the contract lacks.
@@ -86,6 +86,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 
 ## Related skills
 
-- `run-implementation-plan` — execute one chunk
+- `run-implementation-plan` — execute the plan, one chunk per pass, until it is done
+- `goal` — `/goal` wrapper around that loop
 - `spec-author-greenfield` — author specs a specs-first plan needs
 - `spec-maintain-on-ship` — badges when a chunk ships
