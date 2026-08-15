@@ -18,6 +18,16 @@ export function AtlasIcon(props: IconProps) {
   );
 }
 
+export function FlowIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="6" cy="6" r="2.4" />
+      <circle cx="18" cy="18" r="2.4" />
+      <path d="M6 8.4v4.1a3 3 0 0 0 3 3h6.4" />
+    </Icon>
+  );
+}
+
 export function BranchIcon(props: IconProps) {
   return (
     <Icon {...props}>

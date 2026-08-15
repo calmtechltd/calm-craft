@@ -8,6 +8,7 @@ import { BranchChangeDetail } from "./branch-change";
 import { BranchReviewNotStarted, BranchReviewView } from "./branch-review";
 import { CommandPalette } from "./command-palette";
 import { featureHref, FeatureView, type FeatureSelection } from "./feature";
+import { flowsHref, FlowsView, parseFlowsSelection, type FlowsSelection } from "./flows";
 import {
   buildHealthItems,
   healthHref,
@@ -15,7 +16,7 @@ import {
   parseHealthSelection,
   type HealthSelection,
 } from "./health";
-import { AtlasIcon, BranchIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
+import { AtlasIcon, BranchIcon, FlowIcon, HealthIcon, MoonIcon, SunIcon } from "./icons";
 import { parseReviewSelection, reviewHref, type ReviewSelection } from "./review-route";
 import type { CalmCraftSession, SessionSourceDescriptor } from "./session";
 
@@ -47,6 +48,7 @@ function openSpec(spec: SpecDocument): void {
 
 type AppRoute =
   | { view: "atlas"; selection: AtlasSelection }
+  | { view: "flows"; selection: FlowsSelection }
   | { view: "review"; selection: ReviewSelection }
   | { view: "health"; selection: HealthSelection }
   | { view: "feature"; id: string; selection: FeatureSelection };
@@ -65,6 +67,9 @@ export function parseAppRoute(hash: string): AppRoute {
   const parameters = new URLSearchParams(query);
   if (segments[0] === "atlas") {
     return { view: "atlas", selection: parseAtlasSelection(parameters) };
+  }
+  if (segments[0] === "flows") {
+    return { view: "flows", selection: parseFlowsSelection(parameters) };
   }
   if (segments[0] === "review")
     return {
@@ -156,6 +161,19 @@ export function CalmCraftApp({
     queueMicrotask(() => paletteReturnFocus.current?.focus());
   };
 
+  const flowCount = useMemo(
+    () =>
+      snapshot
+        ? snapshot.estate.specs.reduce(
+            (total, spec) =>
+              total +
+              spec.flows.reduce((count, contract) => count + contract.contract.flows.length, 0),
+            0,
+          )
+        : 0,
+    [snapshot],
+  );
+
   const health = useMemo(() => {
     const items = snapshot ? buildHealthItems(snapshot.estate, review) : [];
     const errors = items.filter((item) => item.finding.severity === "error").length;
@@ -219,6 +237,16 @@ export function CalmCraftApp({
             <AtlasIcon />
             <span>Atlas</span>
             <kbd>A</kbd>
+          </a>
+          <a
+            aria-label="Flows"
+            aria-current={route.view === "flows" ? "page" : undefined}
+            className={`nav-item ${route.view === "flows" ? "active" : ""}`}
+            href={route.view === "flows" ? flowsHref(route.selection) : flowsHref()}
+          >
+            <FlowIcon />
+            <span>Flows</span>
+            <small>{flowCount}</small>
           </a>
           <a
             aria-label="Branch Review"
@@ -315,6 +343,8 @@ export function CalmCraftApp({
             selection={route.selection}
             worktreeEntries={repository.worktreeEntries}
           />
+        ) : route.view === "flows" ? (
+          <FlowsView estate={snapshot.estate} selection={route.selection} />
         ) : route.view === "review" ? (
           review ? (
             route.selection.change ? (
