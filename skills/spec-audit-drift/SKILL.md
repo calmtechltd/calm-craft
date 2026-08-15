@@ -27,12 +27,12 @@ All behaviours, invariants, decision tables, and the flow contract. Form the exp
 
 For every behaviour ID, find the code that produces it and classify:
 
-| Verdict | Meaning |
-| --- | --- |
-| **Matches** | Code produces the described outcome |
-| **Drifted** | Code produces a *different* outcome — the spec is now wrong |
-| **Missing** | Badged 🟢 or 🟡 but no implementing code found |
-| **Unspecced** | Code produces observable behaviour no behaviour describes |
+| Verdict         | Meaning                                                     |
+| --------------- | ----------------------------------------------------------- |
+| **Matches**     | Code produces the described outcome                         |
+| **Drifted**     | Code produces a _different_ outcome — the spec is now wrong |
+| **Missing**     | Badged 🟢 or 🟡 but no implementing code found              |
+| **Unspecced**   | Code produces observable behaviour no behaviour describes   |
 | **Badge wrong** | Behaviour exists but the badge overstates or understates it |
 
 **Unspecced** is the category people forget and it's often the most valuable: features grow paths nobody recorded.

@@ -15,7 +15,7 @@ Test framework, layers, and locations: `.engineering/config.yaml`.
 - "Write a red test first" / "make sure this never breaks again."
 - After `spec-triage-bug-report` returns **confirmed bug**.
 
-**Not this skill:** new features (`spec-author-tests`), deciding whether it *is* a bug (`spec-triage-bug-report`).
+**Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`).
 
 ## Workflow
 
@@ -43,7 +43,7 @@ Pick the **narrowest layer that can actually reproduce it**. An integration test
 
 Run it. Read the failure.
 
-If it passes against broken code, it doesn't reproduce the bug — tighten the fixture or assert something deeper. If it fails for an unrelated reason (a missing fixture field, a typo), fix that and re-run until the failure is *the bug*.
+If it passes against broken code, it doesn't reproduce the bug — tighten the fixture or assert something deeper. If it fails for an unrelated reason (a missing fixture field, a typo), fix that and re-run until the failure is _the bug_.
 
 **This step is not optional and is the one most often skipped.** A test that never went red proves nothing about the fix.
 
@@ -55,7 +55,7 @@ Re-run the regression file, then adjacent tests if you touched shared code.
 
 ### 6. Leave it in place
 
-Name tests after the **shape** of the bug, not the function — "closed monthly occurrence with no checklist", not "test getOccurrence". A future reader deciding whether to delete a test needs to know what it guards.
+Name tests after the **shape** of the bug, not the function — "refund on a partially paid invoice", not "test getRefundTotal". A future reader deciding whether to delete a test needs to know what it guards.
 
 ## File header template
 

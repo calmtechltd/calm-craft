@@ -57,15 +57,15 @@ Signals of a suggestion: hedging, a question mark, one voice with no response, o
 
 ### 4. Classify
 
-| Found | Proposal |
-| --- | --- |
+| Found                        | Proposal                                                                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | **Answers an Open Question** | Resolve it — usually as a new behaviour, invariant, or decision-table row — and mark the question `**Settled:**` with the reasoning |
-| **New edge case** | A new behaviour, or a row on an existing decision table |
-| **Decision made** | Amend a behaviour, or add an invariant |
-| **Reported defect** | Hand to `spec-triage-bug-report`; don't classify it here |
-| **Scope moved** | Out of Scope, or Future Considerations |
-| **Journey change** | A flow contract change — name the transitions affected |
-| **Noise** | Ignored, but **counted**, so the reader knows the whole thread was read |
+| **New edge case**            | A new behaviour, or a row on an existing decision table                                                                             |
+| **Decision made**            | Amend a behaviour, or add an invariant                                                                                              |
+| **Reported defect**          | Hand to `spec-triage-bug-report`; don't classify it here                                                                            |
+| **Scope moved**              | Out of Scope, or Future Considerations                                                                                              |
+| **Journey change**           | A flow contract change — name the transitions affected                                                                              |
+| **Noise**                    | Ignored, but **counted**, so the reader knows the whole thread was read                                                             |
 
 Where a comment resolves something marked `**Blocks Bn:**`, say so prominently. That's a behaviour that can now move, which is the highest-value thing this skill can find.
 

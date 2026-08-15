@@ -37,24 +37,24 @@ Permission and tenancy checks usually live outside the changed lines — in midd
 
 ### 3. Review
 
-| Dimension | Look for |
-| --- | --- |
-| **Functional** | Edge cases, null and undefined, async and error handling, partial failure, idempotency |
-| **Permissions** | Authorisation checked; nothing trusting a client-supplied identity |
-| **Tenancy** | Scoping applied on reads *and* writes |
-| **Secrets** | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret |
-| **Code paths** | Unreachable branches, missing returns, swallowed errors |
-| **Conventions** | Whatever `review.always_check` lists in the config |
-| **Tests and specs** | Changed behaviour with no test, or a spec that now disagrees |
+| Dimension           | Look for                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Functional**      | Edge cases, null and undefined, async and error handling, partial failure, idempotency                               |
+| **Permissions**     | Authorisation checked; nothing trusting a client-supplied identity                                                   |
+| **Tenancy**         | Scoping applied on reads _and_ writes                                                                                |
+| **Secrets**         | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret |
+| **Code paths**      | Unreachable branches, missing returns, swallowed errors                                                              |
+| **Conventions**     | Whatever `review.always_check` lists in the config                                                                   |
+| **Tests and specs** | Changed behaviour with no test, or a spec that now disagrees                                                         |
 
 ### 4. Grade
 
-| Severity | When |
-| --- | --- |
+| Severity     | When                                                                     |
+| ------------ | ------------------------------------------------------------------------ |
 | **Critical** | Security or tenancy hole, data loss, definite runtime break, auth bypass |
-| **Major** | Likely bug, missing check, wrong code path, important behaviour untested |
-| **Minor** | Convention drift, weak error handling, maintainability |
-| **Nitpick** | Naming, docs, readability |
+| **Major**    | Likely bug, missing check, wrong code path, important behaviour untested |
+| **Minor**    | Convention drift, weak error handling, maintainability                   |
+| **Nitpick**  | Naming, docs, readability                                                |
 
 ### 5. Verify before reporting
 

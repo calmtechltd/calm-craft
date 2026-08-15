@@ -7,7 +7,7 @@ description: Audit a feature spec against the test suite to find which behaviour
 
 Which parts of this spec are proven by tests? Not a coverage percentage — a named list of what is and isn't covered, by ID.
 
-This works because the spec gives concrete named things to look for. Coverage tools tell you which lines executed; this tells you which *requirements* are demonstrated.
+This works because the spec gives concrete named things to look for. Coverage tools tell you which lines executed; this tells you which _requirements_ are demonstrated.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). Test locations and patterns: `.engineering/config.yaml`.
 
@@ -33,12 +33,12 @@ Specs carry no test references by design, so search on meaning: test names, desc
 
 ### 3. Classify
 
-| Verdict | Meaning |
-| --- | --- |
-| **Covered** | A test exercises it and asserts the documented outcome |
-| **Partial** | Exercised, but the assertion is weaker than the spec — happy path only, one guard branch, outcome not checked |
-| **Uncovered** | No test |
-| **Contradicted** | A test asserts something the spec doesn't say, or the opposite |
+| Verdict          | Meaning                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Covered**      | A test exercises it and asserts the documented outcome                                                        |
+| **Partial**      | Exercised, but the assertion is weaker than the spec — happy path only, one guard branch, outcome not checked |
+| **Uncovered**    | No test                                                                                                       |
+| **Contradicted** | A test asserts something the spec doesn't say, or the opposite                                                |
 
 **Contradicted** is the one to lead with. It means the spec and the suite disagree about intent, and one of them is wrong — a much more urgent problem than a gap.
 

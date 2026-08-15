@@ -7,7 +7,7 @@ description: Interview the user through the code-convention question bank, recor
 
 Most codebases never decided their conventions — they have drift, plus whatever the loudest reviewer enforces. Fix that: run the decisions, record them, and enforce them where a machine can.
 
-**The governing idea:** the conventions don't need to be *right*. The repo needs to state what they are, so someone arriving with different habits produces a visible diff instead of quiet drift. Any coherent answer beats no answer. "I don't care, take the default" is a valid response — record it as `defaulted`, not as a decision.
+**The governing idea:** the conventions don't need to be _right_. The repo needs to state what they are, so someone arriving with different habits produces a visible diff instead of quiet drift. Any coherent answer beats no answer. "I don't care, take the default" is a valid response — record it as `defaulted`, not as a decision.
 
 Question bank: [`references/conventions-question-bank.md`](../../references/conventions-question-bank.md). Config: `.engineering/config.yaml` (run `engineering-setup` first).
 
@@ -49,10 +49,10 @@ Work through the question bank, instantiated for the languages in `config.yaml`.
 
 ### 3. Sort into tiers, and push everything down
 
-| Tier | Mechanism |
-| --- | --- |
-| **Enforced** | Lint rule, formatter setting, compiler flag, CI gate |
-| **Ambient** | Rule file, glob-scoped to the files it governs |
+| Tier           | Mechanism                                             |
+| -------------- | ----------------------------------------------------- |
+| **Enforced**   | Lint rule, formatter setting, compiler flag, CI gate  |
+| **Ambient**    | Rule file, glob-scoped to the files it governs        |
 | **Documented** | Prose — only when neither of the above can express it |
 
 A prose rule is advisory; a lint rule that fails the build is not. Before writing anything as prose, state why it can't be enforced. "No rule exists" is valid; "it'd be fiddly" is not.

@@ -1,0 +1,41 @@
+name: Stage npm release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-stage-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm install --global --ignore-scripts npm@11.18.0 pnpm@11.10.0
+      - run: node scripts/verify-release-tag.mjs "$CALMCRAFT_RELEASE_TAG"
+        env:
+          CALMCRAFT_RELEASE_TAG: ${{ github.event.release.tag_name }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check-types
+      - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm build
+      - run: pnpm license-check
+      - run: pnpm release:check
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: npm stage publish --tag next

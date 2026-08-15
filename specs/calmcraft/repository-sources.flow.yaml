@@ -1,0 +1,150 @@
+version: 1
+flows:
+  - id: F1
+    name: Repository Session
+    start: select_source
+    states:
+      - id: select_source
+        kind: action
+        label: Select Repository Source
+      - id: discover_local
+        kind: action
+        label: Discover Local Repository
+      - id: clone_remote
+        kind: action
+        label: Clone Remote Repository
+      - id: source_failed
+        kind: terminal
+        label: Source Failed
+        outcome: The developer sees a redacted source error and the process exits without opening a session.
+      - id: load_estate
+        kind: action
+        label: Load Spec Estate
+      - id: resolve_base
+        kind: action
+        label: Resolve Comparison Base
+      - id: choose_without_base
+        kind: screen
+        label: Base Unavailable
+      - id: start_server
+        kind: action
+        label: Start Local Server
+      - id: server_failed
+        kind: terminal
+        label: Server Failed
+        outcome: The developer sees why the local server could not start and the process releases acquired resources.
+      - id: open_browser
+        kind: action
+        label: Open Browser or Print URL
+      - id: active
+        kind: screen
+        label: Active CalmCraft Session
+      - id: stop_server
+        kind: action
+        label: Stop Session
+      - id: complete
+        kind: terminal
+        label: Session Complete
+        outcome: The local server has stopped, its port is free, and temporary remote data has been removed.
+      - id: cancelled
+        kind: terminal
+        label: Session Cancelled
+        outcome: The process exits without starting the browser application and removes temporary remote data.
+    transitions:
+      - id: F1.T1
+        from: select_source
+        event: Use current or local path
+        to: discover_local
+        covers: [B1, B2, B3]
+      - id: F1.T2
+        from: select_source
+        event: Use remote URL
+        to: clone_remote
+        covers: [B8, B9]
+      - id: F1.T3
+        from: discover_local
+        event: Repository found
+        to: load_estate
+        covers: [B1, B2, B3, B4]
+      - id: F1.T4
+        from: discover_local
+        event: Discovery fails
+        to: source_failed
+        covers: [B11]
+      - id: F1.T5
+        from: clone_remote
+        event: Clone succeeds
+        to: load_estate
+        covers: [B8, B9]
+      - id: F1.T6
+        from: clone_remote
+        event: Clone fails
+        to: source_failed
+        covers: [B10, B11]
+      - id: F1.T7
+        from: load_estate
+        event: Estate loaded
+        to: resolve_base
+        covers: [B4, B7]
+      - id: F1.T8
+        from: load_estate
+        event: Repository cannot be read safely
+        to: source_failed
+        covers: [B4, B11]
+      - id: F1.T9
+        from: resolve_base
+        event: Base resolved
+        to: start_server
+        covers: [B5, B7]
+      - id: F1.T10
+        from: resolve_base
+        event: Base unavailable
+        to: choose_without_base
+        covers: [B6]
+      - id: F1.T11
+        from: choose_without_base
+        event: Continue without comparison
+        to: start_server
+        covers: [B6]
+      - id: F1.T12
+        from: choose_without_base
+        event: Retry with explicit base
+        to: resolve_base
+        guard: The developer supplied a different base reference.
+        covers: [B5, B6]
+      - id: F1.T13
+        from: choose_without_base
+        event: Cancel
+        to: cancelled
+        covers: [B6, B10]
+      - id: F1.T14
+        from: start_server
+        event: Server starts
+        to: open_browser
+        covers: [B12]
+      - id: F1.T15
+        from: start_server
+        event: Server fails
+        to: server_failed
+        covers: [B10, B12]
+      - id: F1.T16
+        from: open_browser
+        event: Browser opening enabled
+        to: active
+        covers: [B12]
+      - id: F1.T17
+        from: open_browser
+        event: Browser opening disabled
+        to: active
+        outcome: The developer sees the session URL in the terminal.
+        covers: [B12]
+      - id: F1.T18
+        from: active
+        event: Stop requested
+        to: stop_server
+        covers: [B10, B12]
+      - id: F1.T19
+        from: stop_server
+        event: Cleanup completes
+        to: complete
+        covers: [B10, B12]

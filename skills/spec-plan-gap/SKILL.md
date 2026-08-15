@@ -36,13 +36,13 @@ Search on **meaning**, several ways, because one angle won't find everything:
 
 ### 3. Classify what you found
 
-| Finding | Meaning | Action |
-| --- | --- | --- |
-| **Already covered** | An existing behaviour describes it | No new spec. Point at the ID |
-| **Partially covered** | Adjacent spec covers some of it | Extend that spec, usually |
+| Finding                   | Meaning                                           | Action                                                     |
+| ------------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
+| **Already covered**       | An existing behaviour describes it                | No new spec. Point at the ID                               |
+| **Partially covered**     | Adjacent spec covers some of it                   | Extend that spec, usually                                  |
 | **Deliberately excluded** | Named in an Out of Scope or Future Considerations | Not a gap. Surface the reasoning, ask whether it's changed |
-| **Conflicts** | An existing spec says something incompatible | **Stop.** Resolve before authoring |
-| **Genuine gap** | Nothing covers it | Plan the new spec |
+| **Conflicts**             | An existing spec says something incompatible      | **Stop.** Resolve before authoring                         |
+| **Genuine gap**           | Nothing covers it                                 | Plan the new spec                                          |
 
 **Conflicts halt the work.** Authoring on top of a contradiction produces two specs that disagree, and the estate loses the property that makes it useful.
 
