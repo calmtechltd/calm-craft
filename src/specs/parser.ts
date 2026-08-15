@@ -379,13 +379,34 @@ function parseLinks(source: string): SpecLink[] {
   return links;
 }
 
+const FLOW_REFERENCE =
+  /^-\s+\*\*(F\d+)\s*[—–-]\s*(.+?):\*\*\s+\[contract\]\(([^)]+\.flow\.yaml)\)\s*[·|]\s*\[diagram\]\(([^)]+\.flow\.mmd)\)(?:\s*[—–-]\s*covers\s+(.+))?$/u;
+
+/**
+ * Collect each Markdown list item as one logical line. A reference may be
+ * wrapped across several source lines — any formatter will do that once the
+ * contract link, diagram link, and coverage note no longer fit — so matching
+ * line by line silently loses the whole flow.
+ */
+function listItems(lines: string[]): { text: string; offset: number }[] {
+  const items: { text: string; offset: number }[] = [];
+  for (const [index, line] of lines.entries()) {
+    if (/^\s*-\s/u.test(line)) {
+      items.push({ text: line.trim(), offset: index });
+      continue;
+    }
+    const current = items.at(-1);
+    if (!current || line.trim() === "") continue;
+    current.text = `${current.text} ${line.trim()}`;
+  }
+  return items;
+}
+
 function parseFlowReferences(section: Section | undefined): FlowReference[] {
   if (!section || section.markdown === "_None._") return [];
   const references: FlowReference[] = [];
-  for (const [index, line] of section.lines.entries()) {
-    const match = line.match(
-      /^-\s+\*\*(F\d+)\s*[—–-]\s*(.+?):\*\*\s+\[contract\]\(([^)]+\.flow\.yaml)\)\s*[·|]\s*\[diagram\]\(([^)]+\.flow\.mmd)\)(?:\s*[—–-]\s*covers\s+(.+))?$/u,
-    );
+  for (const item of listItems(section.lines)) {
+    const match = item.text.match(FLOW_REFERENCE);
     if (!match) continue;
     references.push({
       id: match[1] ?? "",
@@ -393,7 +414,7 @@ function parseFlowReferences(section: Section | undefined): FlowReference[] {
       contractPath: match[3] ?? "",
       diagramPath: match[4] ?? "",
       coverageText: match[5]?.trim(),
-      location: location(section.contentLine + index),
+      location: location(section.contentLine + item.offset),
     });
   }
   return references;

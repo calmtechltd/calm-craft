@@ -43,6 +43,35 @@ describe("CalmCraft spec parser", () => {
     });
   });
 
+  /*
+   * A flow reference that wrapped across several source lines parsed as no flow
+   * at all, so a spec with a real contract and diagram beside it reported zero
+   * flows and raised no finding. Every visible flow in an estate could vanish
+   * because a formatter rewrapped one list item.
+   */
+  it("parses a flow reference wrapped across several lines", () => {
+    const spec = parseSpecDocument({
+      path: "billing/invoices/invoice-delivery.md",
+      source: fixture("billing/invoices/invoice-delivery.md").replace(
+        "- **F1 — Invoice Delivery:** [contract](./invoice-delivery.flow.yaml) · [diagram](./invoice-delivery.flow.mmd) — covers B1, B2a",
+        [
+          "- **F1 — Invoice Delivery:**",
+          "  [contract](./invoice-delivery.flow.yaml) ·",
+          "  [diagram](./invoice-delivery.flow.mmd) — covers B1, B2a",
+        ].join("\n"),
+      ),
+    });
+
+    expect(spec.flowReferences).toHaveLength(1);
+    expect(spec.flowReferences[0]).toMatchObject({
+      id: "F1",
+      name: "Invoice Delivery",
+      contractPath: "./invoice-delivery.flow.yaml",
+      diagramPath: "./invoice-delivery.flow.mmd",
+      coverageText: "B1, B2a",
+    });
+  });
+
   it("reports a malformed heading and keeps later canonical behaviour", () => {
     const spec = parseSpecDocument({
       path: "support/cases/case-routing.md",
