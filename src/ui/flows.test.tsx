@@ -81,9 +81,9 @@ function makeSpec(id: string, module: string, behaviourKeys: string[], flow?: Fl
 function makeEstate(): SpecEstate {
   const specs = [
     makeSpec("mapped-complete", "library", ["B1", "B2"], makeFlow("F1", 4, 6, ["B1", "B2"])),
-    makeSpec("mapped-partial", "premises", ["B1", "B2", "B3"], makeFlow("F1", 9, 17, ["B1"])),
-    makeSpec("unmapped-one", "premises", ["B1"]),
-    makeSpec("unmapped-two", "core", ["B1"]),
+    makeSpec("mapped-partial", "support", ["B1", "B2", "B3"], makeFlow("F1", 9, 17, ["B1"])),
+    makeSpec("unmapped-one", "support", ["B1"]),
+    makeSpec("unmapped-two", "billing", ["B1"]),
   ];
   return { root: "/repo", specsRoot: "specs", specs, relationships: [], findings: [] };
 }
@@ -140,11 +140,11 @@ describe("CalmCraft Flows", () => {
 
   it("keeps the selection in the route", () => {
     expect(flowsHref()).toBe("#/flows");
-    expect(flowsHref({ module: "premises", incomplete: true })).toBe(
-      "#/flows?module=premises&incomplete=1",
+    expect(flowsHref({ module: "support", incomplete: true })).toBe(
+      "#/flows?module=support&incomplete=1",
     );
-    expect(parseFlowsSelection(new URLSearchParams("module=premises&incomplete=1"))).toEqual({
-      module: "premises",
+    expect(parseFlowsSelection(new URLSearchParams("module=support&incomplete=1"))).toEqual({
+      module: "support",
       incomplete: true,
     });
     expect(parseFlowsSelection(new URLSearchParams("incomplete=0"))).toEqual({});

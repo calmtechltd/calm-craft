@@ -59,7 +59,7 @@ function makeEstate(): SpecEstate {
     root: "/repo",
     specsRoot: "specs",
     specs: [
-      makeSpec("rrule", "core", [makeQuestion(12, ["B1", "B2"]), makeQuestion(30, [])]),
+      makeSpec("invoicing", "billing", [makeQuestion(12, ["B1", "B2"]), makeQuestion(30, [])]),
       makeSpec("coverage", "operations", [makeQuestion(24, ["B4"]), makeQuestion(40, [], true)]),
       makeSpec("quiet", "admin", []),
     ],
@@ -75,7 +75,7 @@ describe("CalmCraft Questions", () => {
   it("collects unresolved questions and leaves settled ones out", () => {
     const open = buildEstateQuestions(makeEstate());
     expect(open).toHaveLength(3);
-    expect(open.map((item) => item.spec.id)).toEqual(["rrule", "rrule", "coverage"]);
+    expect(open.map((item) => item.spec.id)).toEqual(["invoicing", "invoicing", "coverage"]);
 
     const settled = buildEstateQuestions(makeEstate(), true);
     expect(settled).toHaveLength(1);
@@ -111,12 +111,12 @@ describe("CalmCraft Questions", () => {
 
   it("keeps the selection in the route", () => {
     expect(questionsHref()).toBe("#/questions");
-    expect(questionsHref({ module: "core", blocking: true })).toBe(
-      "#/questions?module=core&blocking=1",
+    expect(questionsHref({ module: "billing", blocking: true })).toBe(
+      "#/questions?module=billing&blocking=1",
     );
     expect(
-      parseQuestionsSelection(new URLSearchParams("module=core&blocking=1&settled=1")),
-    ).toEqual({ module: "core", blocking: true, settled: true });
+      parseQuestionsSelection(new URLSearchParams("module=billing&blocking=1&settled=1")),
+    ).toEqual({ module: "billing", blocking: true, settled: true });
     expect(parseQuestionsSelection(new URLSearchParams("blocking=0"))).toEqual({});
   });
 });
