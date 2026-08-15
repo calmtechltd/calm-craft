@@ -211,24 +211,24 @@ describe("CalmCraft Atlas", () => {
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot() }} />);
 
     await user.type(screen.getByRole("searchbox", { name: "Search specifications" }), "feature 2");
-    expect(screen.getByText("Showing 1 of 1 matches across 6 specs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 6 specifications")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "Filter by module" }), "billing");
-    expect(screen.getByText("Showing 3 of 3 matches across 6 specs")).toBeInTheDocument();
+    expect(await screen.findByText("Showing 3 of 6 specifications")).toBeInTheDocument();
     await user.selectOptions(
       screen.getByRole("combobox", { name: "Filter by status" }),
       "implemented",
     );
-    expect(screen.getByText("Showing 1 of 1 matches across 6 specs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 6 specifications")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear" }));
     await user.click(screen.getByRole("button", { name: "Has blockers" }));
-    expect(screen.getByText("Showing 1 of 1 matches across 6 specs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 6 specifications")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear" }));
     await user.click(screen.getByRole("button", { name: "Has findings" }));
-    expect(screen.getByText("Showing 1 of 1 matches across 6 specs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 6 specifications")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear" }));
     await user.click(screen.getByRole("button", { name: "Changed here" }));
-    expect(screen.getByText("Showing 1 of 1 matches across 6 specs")).toBeInTheDocument();
+    expect(screen.getByText("Showing 1 of 6 specifications")).toBeInTheDocument();
   });
 
   it("opens a specification with pointer or keyboard and preserves a local URL", async () => {
@@ -254,27 +254,36 @@ describe("CalmCraft Atlas", () => {
     expect(window.location.href).not.toContain("token=");
   });
 
-  it("limits initial rendering while filtering a 1,000-spec estate", async () => {
+  /*
+   * The estate used to render 120 rows behind a Show more button because there
+   * was no windowing. Rows now carry `content-visibility`, so the browser skips
+   * off-screen work and the whole match set can render at once. The budget is
+   * unchanged: filtering a 1,000-spec estate stays under 750ms.
+   */
+  it("renders every match while filtering a 1,000-spec estate", { timeout: 20_000 }, async () => {
+    const renderStarted = performance.now();
     render(<CalmCraftApp session={{ mode: "estate", snapshot: makeSnapshot(1_000) }} />);
+    const renderCost = performance.now() - renderStarted;
 
-    expect(document.querySelectorAll("[data-spec-id]")).toHaveLength(120);
-    expect(screen.getByRole("button", { name: "Show 120 more" })).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-spec-id]")).toHaveLength(1_000);
+    expect(screen.queryByRole("button", { name: /Show \d+ more/u })).not.toBeInTheDocument();
+    /* jsdom lays out every row; a browser skips the off-screen ones entirely. */
+    expect(renderCost).toBeLessThan(1_500);
     const started = performance.now();
     fireEvent.change(screen.getByRole("searchbox", { name: "Search specifications" }), {
       target: { value: "feature 999" },
     });
-    expect(await screen.findByText("Showing 1 of 1 matches across 1000 specs")).toBeInTheDocument();
+    expect(await screen.findByText("Showing 1 of 1000 specifications")).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-spec-id]")).toHaveLength(1);
     expect(performance.now() - started).toBeLessThan(750);
 
     fireEvent.click(screen.getByRole("button", { name: "Clear" }));
-    expect(await screen.findByText("Showing 120 of 1000 matches")).toBeInTheDocument();
+    expect(await screen.findByText("Showing 1000 of 1000 specifications")).toBeInTheDocument();
     const filterStarted = performance.now();
     fireEvent.change(screen.getByRole("combobox", { name: "Filter by status" }), {
       target: { value: "future" },
     });
-    expect(
-      await screen.findByText("Showing 120 of 334 matches across 1000 specs"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Showing 334 of 1000 specifications")).toBeInTheDocument();
     expect(performance.now() - filterStarted).toBeLessThan(750);
   });
 });

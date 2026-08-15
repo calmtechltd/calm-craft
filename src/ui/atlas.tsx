@@ -6,8 +6,6 @@ import { atlasHref, type AtlasSelection } from "./atlas-route";
 import { ArrowIcon, CloseIcon, SearchIcon } from "./icons";
 import { StatusBadge } from "./status";
 
-const PAGE_SIZE = 120;
-
 type AtlasFilters = {
   search: string;
   module: string;
@@ -113,7 +111,6 @@ function SpecRow({
 }
 
 export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selectedId }: AtlasProps) {
-  const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
   const [focusIndex, setFocusIndex] = useState(0);
   const [searchDraft, setSearchDraft] = useState(selection.search ?? "");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -155,10 +152,9 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
         left.title.localeCompare(right.title),
     );
   }, [changedPaths, deferredSearch, estate.specs, filters]);
-  const visible = filtered.slice(0, visibleLimit);
   const groups = useMemo(() => {
     const map = new Map<string, Map<string, SpecDocument[]>>();
-    for (const spec of visible) {
+    for (const spec of filtered) {
       const areas = map.get(spec.module) ?? new Map<string, SpecDocument[]>();
       const specs = areas.get(spec.featureArea) ?? [];
       specs.push(spec);
@@ -166,7 +162,7 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
       map.set(spec.module, areas);
     }
     return map;
-  }, [visible]);
+  }, [filtered]);
   const hasFilters =
     filters.search !== "" ||
     filters.module !== "all" ||
@@ -176,7 +172,6 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
     filters.changed;
 
   useEffect(() => {
-    setVisibleLimit(PAGE_SIZE);
     setFocusIndex(0);
     setSearchDraft(selection.search ?? "");
   }, [selection]);
@@ -199,9 +194,9 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
     }
   };
   const focusRow = (index: number): void => {
-    const bounded = Math.max(0, Math.min(index, visible.length - 1));
+    const bounded = Math.max(0, Math.min(index, filtered.length - 1));
     setFocusIndex(bounded);
-    const spec = visible[bounded];
+    const spec = filtered[bounded];
     if (spec) rowRefs.current.get(spec.id)?.focus();
   };
   const onRowKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
@@ -216,7 +211,7 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
       focusRow(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      focusRow(visible.length - 1);
+      focusRow(filtered.length - 1);
     }
   };
 
@@ -318,11 +313,10 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
       </section>
 
       <div aria-live="polite" className="result-summary">
-        Showing {visible.length} of {filtered.length} matches
-        {filtered.length !== estate.specs.length ? ` across ${estate.specs.length} specs` : ""}
+        Showing {filtered.length} of {estate.specs.length} specifications
       </div>
 
-      {visible.length === 0 ? (
+      {filtered.length === 0 ? (
         <section className="empty-state">
           <span aria-hidden="true">∅</span>
           <h2>No specifications match</h2>
@@ -352,7 +346,7 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
                   </div>
                   <div className="spec-list" role="list">
                     {specs.map((spec) => {
-                      const index = visible.indexOf(spec);
+                      const index = filtered.indexOf(spec);
                       return (
                         <div key={spec.id} role="listitem">
                           <SpecRow
@@ -378,16 +372,6 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
           ))}
         </div>
       )}
-
-      {visible.length < filtered.length ? (
-        <button
-          className="load-more"
-          onClick={() => setVisibleLimit((limit) => limit + PAGE_SIZE)}
-          type="button"
-        >
-          Show {Math.min(PAGE_SIZE, filtered.length - visible.length)} more
-        </button>
-      ) : null}
     </main>
   );
 }

@@ -798,9 +798,14 @@ select:focus-visible,
   border-top: 1px solid var(--line);
 }
 
+/*
+ * Native row virtualisation: the browser skips layout and paint for rows that
+ * are off screen, so the whole estate renders without a page cap. `auto` lets
+ * it remember each row's real height once measured.
+ */
 .spec-list > div {
   content-visibility: auto;
-  contain-intrinsic-size: 59px;
+  contain-intrinsic-size: auto 40px;
 }
 
 .spec-row {
