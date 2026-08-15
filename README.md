@@ -37,7 +37,10 @@ CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version
 
 ```sh
 npx --yes @calmcraft/cli@0.2.0 generate
+npx --yes @calmcraft/cli@0.2.0 generate --diff --base origin/main
 ```
+
+`generate` writes one HTML file and opens it from disk. `--diff` bakes Branch Review into that file from the current working tree; there is no port, token, or process left running.
 
 Or install the same pinned version:
 
@@ -71,15 +74,15 @@ CalmCraft reads the selected worktree's filesystem and shared Git objects withou
 
 ### Branch review
 
-Open the semantic review for the current branch and local work:
+Bake the semantic review for the current branch and local work into the generated file:
 
 ```sh
-calmcraft view --diff
-calmcraft view --diff --base origin/main
-calmcraft view --diff --provenance committed,staged
+calmcraft generate --diff
+calmcraft generate --diff --base origin/main
+calmcraft generate --diff --provenance committed,staged
 ```
 
-Without `--base`, CalmCraft checks `calmcraft.json`, `origin/HEAD`, then common main-branch names. Provenance controls accept `committed`, `staged`, `unstaged`, and `untracked` as a comma-separated list.
+The live `view` command accepts the same flags. Without `--base`, CalmCraft checks `calmcraft.json`, `origin/HEAD`, then common main-branch names. Provenance controls accept `committed`, `staged`, `unstaged`, and `untracked` as a comma-separated list.
 
 An optional `calmcraft.json` can set the spec root and default base without executing repository code:
 

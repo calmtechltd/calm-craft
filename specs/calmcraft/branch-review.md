@@ -54,6 +54,10 @@ If no base can be resolved, Branch Review explains how to supply one and does no
 
 The same base, target filesystem, configuration, and Git object state produce the same ordered semantic change set.
 
+### B12 — Bake the review into a generated file 🟢 implemented
+
+`calmcraft generate --diff` computes the comparison once from the current filesystem and writes it into the HTML file. Opening the file does not start a process, bind a port, or re-read the repository.
+
 ## Rules (Invariants)
 
 - Uncommitted content is never attributed to a branch commit.

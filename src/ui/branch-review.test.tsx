@@ -224,7 +224,7 @@ describe("Branch Review", () => {
       />,
     );
     expect(screen.getByRole("heading", { name: /Choose a comparison base/u })).toBeVisible();
-    expect(screen.getByText("calmcraft view --diff --base <ref>")).toBeVisible();
+    expect(screen.getByText("calmcraft generate --diff --base <ref>")).toBeVisible();
     expect(
       within(screen.getByText("Tried locally").parentElement!).getByText("missing/base"),
     ).toBeVisible();

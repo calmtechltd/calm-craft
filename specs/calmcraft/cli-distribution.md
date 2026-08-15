@@ -20,7 +20,7 @@ The `view` command accepts one local repository path or supported Git remote URL
 
 ### B3 — Configure branch review 🟢 implemented
 
-`--diff` opens Branch Review, `--base <ref>` selects the comparison base, and local-work controls include or exclude staged, unstaged, and untracked content without changing it.
+`--diff` opens Branch Review, `--base <ref>` selects the comparison base, and local-work controls include or exclude staged, unstaged, and untracked content without changing it. On `generate`, the comparison is computed at write time and baked into the file.
 
 ### B4 — Control browser and port behaviour 🟢 implemented
 
@@ -58,6 +58,10 @@ Partial delivery: stage-only trusted-publishing and cross-platform smoke workflo
 
 A contributor can run one documented development command against any local checkout. The command starts the real CLI data path and a loopback-only Vite UI with hot module replacement, opens the private session unless disabled, restarts when imported backend modules change, and shuts down both servers together. Development requires neither a global install nor an npm publication.
 
+### B12 — Generate a self-contained file 🟢 implemented
+
+`calmcraft generate` writes one HTML file that opens from the filesystem with no server, port, or token. `--diff` and `--base` bake Branch Review into that file. Without `--out`, the file lands in a temporary directory so it is not committed by accident.
+
 ## Rules (Invariants)
 
 - The executable name is `calmcraft`.
@@ -77,6 +81,8 @@ A contributor can run one documented development command against any local check
 | `calmcraft view <local-path>`                 | Open supplied local estate                  |
 | `calmcraft view <remote-url> --branch <name>` | Open temporary remote estate                |
 | `calmcraft view --diff --base <ref>`          | Open comparison against explicit base       |
+| `calmcraft generate`                          | Write a self-contained estate file          |
+| `calmcraft generate --diff --base <ref>`      | Bake comparison into the generated file     |
 | `calmcraft view --no-open`                    | Start session and print URL                 |
 | Invalid command or option                     | Print help-oriented error and exit non-zero |
 

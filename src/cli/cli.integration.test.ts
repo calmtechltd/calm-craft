@@ -75,6 +75,27 @@ async function remoteRepository(): Promise<{
   };
 }
 
+function embeddedSession(html: string): {
+  data: {
+    mode: string;
+    initialProvenance?: string[];
+    review: { available: boolean; base: { selectedBase?: string }; semanticChanges: unknown[] };
+  };
+  sources: Array<{ id: string; path: string; context?: string }>;
+  sourceById: Record<string, string>;
+} {
+  const match = html.match(
+    /window\.__CALMCRAFT_SESSION__ = Object\.assign\((?<payload>\{.*\}), \{ sourceById: (?<sources>\{.*\}) \}\);/su,
+  );
+  const payload = match?.groups?.payload;
+  const sources = match?.groups?.sources;
+  if (!payload || !sources) throw new Error("The generated file has no embedded session.");
+  return {
+    ...JSON.parse(payload),
+    sourceById: JSON.parse(sources),
+  };
+}
+
 afterEach(async () => {
   await Promise.all(sessions.splice(0).map((session) => session.close()));
   await Promise.all(repositories.splice(0).map(removeGitFixture));
@@ -350,12 +371,95 @@ describe("CalmCraft CLI", () => {
 
   it("rejects session options that mean nothing to a generated file", () => {
     expect(() => parseCliArguments(["generate", "--port", "3000"])).toThrow(/Unknown option/u);
-    expect(() => parseCliArguments(["generate", "--diff"])).toThrow(/Unknown option/u);
+    expect(() => parseCliArguments(["generate", "--branch", "main"])).toThrow(/Unknown option/u);
     expect(parseCliArguments(["generate"], "/repo")).toEqual({
       command: "generate",
       source: "/repo",
       out: undefined,
       openBrowser: true,
+      diff: false,
+      base: undefined,
+      provenance: undefined,
+    });
+    expect(
+      parseCliArguments(["generate", "--diff", "--base", "main", "--provenance", "committed"]),
+    ).toMatchObject({
+      command: "generate",
+      diff: true,
+      base: "main",
+      provenance: ["committed"],
+    });
+  });
+
+  it("bakes a branch review into the generated file", async () => {
+    const root = await repository();
+    await fixtureGit(root, ["switch", "-c", "feature/generated-review"]);
+    await writeFixtureFile(
+      root,
+      "specs/core/original.md",
+      canonicalSpec("fixture-original", "Reviewed", "Generated review source"),
+    );
+    await fixtureGit(root, ["add", "specs/core/original.md"]);
+    await fixtureGit(root, ["commit", "-m", "Change the reviewed feature"]);
+
+    const out = join(root, "review.html");
+    let stdout = "";
+    const code = await runCli(
+      [
+        "generate",
+        root,
+        "--diff",
+        "--base",
+        "main",
+        "--provenance",
+        "committed",
+        "--out",
+        out,
+        "--no-open",
+      ],
+      {
+        assetsRoot: await browserAssets(),
+        io: { stdout: (value: string) => (stdout += value), stderr: () => undefined },
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(stdout).toContain("semantic changes");
+    const html = await readFile(out, "utf8");
+    expect(html).toContain("CalmCraft Branch Review");
+    expect(html).not.toContain("/api/session");
+    expect(html).not.toContain('"beforeSource"');
+    expect(html).not.toContain('"afterSource"');
+    const session = embeddedSession(html);
+    expect(session.data).toMatchObject({
+      mode: "review",
+      initialProvenance: ["committed"],
+      review: { available: true, base: { selectedBase: "main" } },
+    });
+    expect(session.data.review.semanticChanges.length).toBeGreaterThan(0);
+    expect(session.sources.some((source) => source.context?.endsWith(":before"))).toBe(true);
+    expect(session.sources.some((source) => source.context?.endsWith(":after"))).toBe(true);
+    expect(Object.keys(session.sourceById).length).toBeGreaterThan(0);
+  });
+
+  it("bakes an honest missing-base review instead of inventing a comparison", async () => {
+    const root = await repository();
+    const out = join(root, "review.html");
+    let stdout = "";
+    const code = await runCli(
+      ["generate", root, "--diff", "--base", "missing/base", "--out", out, "--no-open"],
+      {
+        assetsRoot: await browserAssets(),
+        io: { stdout: (value: string) => (stdout += value), stderr: () => undefined },
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(stdout).toContain("comparison base needed");
+    const session = embeddedSession(await readFile(out, "utf8"));
+    expect(session.data).toMatchObject({
+      mode: "review",
+      review: { available: false, base: { selectedBase: "missing/base" }, semanticChanges: [] },
     });
   });
 });

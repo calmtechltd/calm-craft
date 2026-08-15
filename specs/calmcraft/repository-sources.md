@@ -28,7 +28,7 @@ Opening, browsing, and comparing specs does not checkout a branch, stage a file,
 
 ### B5 — Select a branch-review base 🟢 implemented
 
-Branch review uses an explicit base when the developer supplies one. Otherwise CalmCraft uses the repository configuration, the symbolic origin default, or a conventional local or remote default branch in the documented order.
+Branch review uses an explicit base when the developer supplies one. Otherwise CalmCraft uses the repository configuration, the symbolic origin default, or a conventional local or remote default branch in the documented order. `generate --diff` uses the same resolution and writes the comparison into the file.
 
 ### B6 — Continue when no base exists 🟢 implemented
 

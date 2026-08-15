@@ -107,7 +107,7 @@ _None._
 ## Future Considerations
 
 - Saved local filters and review positions with an explicit privacy policy.
-- Shareable static review artifacts.
+- Hosted sharing of a generated review file.
 - IDE deep links from source locations.
 
 ## Out of Scope

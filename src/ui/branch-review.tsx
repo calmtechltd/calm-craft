@@ -119,7 +119,7 @@ function BaseUnavailable({ review }: { review: BranchReview }) {
       <p className="eyebrow">Branch Review unavailable</p>
       <h1>Choose a comparison base to review this branch.</h1>
       <p>{review.base.reason ?? "No valid local base reference could be resolved."}</p>
-      <code>calmcraft view --diff --base &lt;ref&gt;</code>
+      <code>calmcraft generate --diff --base &lt;ref&gt;</code>
       {review.base.attempted.length > 0 ? (
         <div className="attempted-bases">
           <span>Tried locally</span>
@@ -346,9 +346,9 @@ export function BranchReviewView({
 export function BranchReviewNotStarted() {
   return (
     <main className="review-unavailable" id="main-content">
-      <p className="eyebrow">Estate-only session</p>
-      <h1>Start this session with a branch comparison.</h1>
-      <code>calmcraft view --diff</code>
+      <p className="eyebrow">Estate-only snapshot</p>
+      <h1>Generate this file with a branch comparison.</h1>
+      <code>calmcraft generate --diff</code>
       <a href="#/atlas">Return to Atlas</a>
     </main>
   );

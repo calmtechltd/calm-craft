@@ -31,6 +31,7 @@ The package supports Node 22 and newer at runtime. CI tests supported versions b
 - `src/git`: read-only repository access and snapshots.
 - `src/specs`: parser, validation, rendering, and normalized data.
 - `src/diff`: semantic comparison.
+- `src/static`: single-file estate and review generation.
 - `src/server`: loopback session server.
 - `src/ui`: browser application.
 

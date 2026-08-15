@@ -225,10 +225,19 @@ export async function runGenerateCommand(
     source: repository.root,
     out,
     assetsRoot: dependencies.assetsRoot ?? defaultAssetsRoot(),
+    diff: arguments_.diff,
+    base: arguments_.base,
+    provenance: arguments_.provenance ?? ALL_PROVENANCE,
   });
   const megabytes = (result.bytes / 1024 / 1024).toFixed(2);
+  const comparison =
+    result.mode === "review"
+      ? result.reviewAvailable
+        ? `${result.semanticChanges} semantic changes · `
+        : "comparison base needed · "
+      : "";
   io.stdout(
-    `CalmCraft ${CALMCRAFT_VERSION}\n${result.out}\n${result.specs} specifications · ${megabytes} MB\n`,
+    `CalmCraft ${CALMCRAFT_VERSION}\n${result.out}\n${result.specs} specifications · ${comparison}${megabytes} MB\n`,
   );
   if (arguments_.openBrowser) {
     await (dependencies.browserOpener ?? openBrowser)(pathToFileURL(result.out).href);

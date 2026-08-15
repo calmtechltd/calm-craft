@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 
 import { collectSources } from "../cli/command";
 import { loadConfig } from "../config";
+import { createBranchReview } from "../diff";
+import type { Provenance } from "../diff/model";
 import { discoverRepository } from "../git";
 import { serializeData } from "../server";
 import { loadFilesystemSnapshot } from "../git/snapshot";
@@ -16,6 +18,12 @@ export type BuildStaticEstateOptions = {
   out: string;
   /** Built browser assets. Defaults to the packaged bundle. */
   assetsRoot?: string;
+  /** Compute Branch Review now and bake it into the file. */
+  diff?: boolean;
+  /** Explicit comparison base. Implies diff. */
+  base?: string;
+  /** Provenance layers shown when the file first opens. */
+  provenance?: Provenance[];
 };
 
 export type BuildStaticEstateResult = {
@@ -26,6 +34,9 @@ export type BuildStaticEstateResult = {
   payloadBytes: number;
   sourceBytes: number;
   assetBytes: number;
+  mode: "estate" | "review";
+  reviewAvailable?: boolean;
+  semanticChanges?: number;
 };
 
 function defaultAssetsRoot(): string {
@@ -84,12 +95,25 @@ export async function buildStaticEstate(
 ): Promise<BuildStaticEstateResult> {
   const repository = await discoverRepository(options.source);
   const config = await loadConfig(repository.root);
-  const snapshot = await loadFilesystemSnapshot(repository.root, config.specsRoot);
-  const data = {
-    mode: "estate" as const,
-    snapshot,
-    repositorySource: { kind: "local" as const },
-  };
+  const repositorySource = { kind: "local" as const };
+  const data = options.diff
+    ? {
+        mode: "review" as const,
+        review: await createBranchReview(repository.root, {
+          explicitBase: options.base,
+          configuredBase: config.defaultBase,
+          specsRoot: config.specsRoot,
+        }),
+        initialProvenance: options.provenance ?? ["committed", "staged", "unstaged", "untracked"],
+        repositorySource,
+      }
+    : {
+        mode: "estate" as const,
+        snapshot: await loadFilesystemSnapshot(repository.root, config.specsRoot),
+        repositorySource,
+      };
+  const specs =
+    data.mode === "review" ? data.review.estate.specs.length : data.snapshot.estate.specs.length;
 
   const collected = collectSources(data);
   const sourceById: Record<string, string> = {};
@@ -128,7 +152,7 @@ export async function buildStaticEstate(
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>CalmCraft Atlas</title>
+    <title>${data.mode === "review" ? "CalmCraft Branch Review" : "CalmCraft Atlas"}</title>
     <style>${style}</style>
   </head>
   <body>
@@ -145,10 +169,17 @@ export async function buildStaticEstate(
   return {
     out: options.out,
     bytes: Buffer.byteLength(html),
-    specs: snapshot.estate.specs.length,
+    specs,
     sources: Object.keys(sourceById).length,
     payloadBytes: Buffer.byteLength(payload),
     sourceBytes: Buffer.byteLength(sources),
     assetBytes: Buffer.byteLength(script) + Buffer.byteLength(style),
+    mode: data.mode,
+    ...(data.mode === "review"
+      ? {
+          reviewAvailable: data.review.available,
+          semanticChanges: data.review.semanticChanges.length,
+        }
+      : {}),
   };
 }

@@ -300,7 +300,7 @@ test("missing base explains the repair command while Atlas remains usable", asyn
   await expect(
     page.getByRole("heading", { name: "Choose a comparison base to review this branch." }),
   ).toBeVisible();
-  await expect(page.getByText("calmcraft view --diff --base <ref>")).toBeVisible();
+  await expect(page.getByText("calmcraft generate --diff --base <ref>")).toBeVisible();
   await expect(page.getByText("does-not-exist", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Back to Atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas" })).toBeVisible();
