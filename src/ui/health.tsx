@@ -272,13 +272,7 @@ export function HealthView({
   return (
     <main className="health-view" id="main-content">
       <header className="view-heading health-heading">
-        <div>
-          <p className="eyebrow">The contract, under examination</p>
-          <h1>Health</h1>
-          <p className="view-intro">
-            Findings stay read only, source located, and separate from healthy product intent.
-          </p>
-        </div>
+        <h1>Health</h1>
         <div className="health-totals" aria-label={`${items.length} health items`}>
           <span>
             <strong>{counts.errors}</strong> errors

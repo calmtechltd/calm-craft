@@ -92,15 +92,15 @@ function SpecRow({
         <span className="spec-id">{spec.id}</span>
       </span>
       <StatusBadge status={spec.status} />
-      <span className="metric" title={`${spec.behaviours.length} behaviours`}>
+      <span className={`metric ${spec.behaviours.length === 0 ? "metric-zero" : ""}`}>
         <strong>{spec.behaviours.length}</strong>
         <span>behaviours</span>
       </span>
-      <span className={`metric ${blockers > 0 ? "metric-alert" : ""}`}>
+      <span className={`metric ${blockers > 0 ? "metric-alert" : "metric-zero"}`}>
         <strong>{blockers}</strong>
         <span>blockers</span>
       </span>
-      <span className={`metric ${spec.findings.length > 0 ? "metric-alert" : ""}`}>
+      <span className={`metric ${spec.findings.length > 0 ? "metric-alert" : "metric-zero"}`}>
         <strong>{spec.findings.length}</strong>
         <span>findings</span>
       </span>
@@ -223,17 +223,10 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
   return (
     <main className="atlas" id="main-content">
       <header className="view-heading">
-        <div>
-          <p className="eyebrow">Product intent, mapped</p>
-          <h1>Atlas</h1>
-          <p className="view-intro">
-            One navigable estate of features, behaviours, decisions, and unfinished work.
-          </p>
-        </div>
-        <div className="estate-count" aria-label={`${estate.specs.length} specifications`}>
-          <strong>{estate.specs.length}</strong>
-          <span>specifications</span>
-        </div>
+        <h1>Atlas</h1>
+        <span className="view-count">
+          <strong>{estate.specs.length}</strong> specifications
+        </span>
       </header>
 
       <section aria-label="Atlas controls" className="atlas-controls">
@@ -343,6 +336,14 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
                 <h2>{module}</h2>
                 <span>{[...areas.values()].reduce((total, specs) => total + specs.length, 0)}</span>
               </header>
+              <div aria-hidden="true" className="spec-columns">
+                <span>Specification</span>
+                <span>Status</span>
+                <span>Behaviours</span>
+                <span>Blockers</span>
+                <span>Findings</span>
+                <span />
+              </div>
               {[...areas].map(([area, specs]) => (
                 <div className="feature-area" key={area}>
                   <div className="feature-area-label">

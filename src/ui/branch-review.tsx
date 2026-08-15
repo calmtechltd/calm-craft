@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import type { BranchReview, Provenance, SemanticChange } from "../diff/model";
 import type { SpecDocument } from "../specs/model";
-import { BranchIcon, ArrowIcon } from "./icons";
+import { ArrowIcon } from "./icons";
 import {
   effectiveProvenance,
   REVIEW_PROVENANCE,
@@ -183,18 +183,12 @@ export function BranchReviewView({
 
   return (
     <main className="branch-review" id="main-content">
-      <header className="review-hero">
-        <div>
-          <p className="eyebrow">Product change, not file churn</p>
-          <h1>Branch Review</h1>
-          <p>
-            {review.semanticChanges.length === 0
-              ? "This branch contains no semantic CalmCraft changes."
-              : `${review.semanticChanges.length} semantic changes across ${new Set(review.semanticChanges.map((change) => change.specId)).size} features.`}
-          </p>
-        </div>
-        <span className="review-glyph" aria-hidden="true">
-          <BranchIcon />
+      <header className="view-heading">
+        <h1>Branch Review</h1>
+        <span className="view-count">
+          {review.semanticChanges.length === 0
+            ? "No semantic changes"
+            : `${review.semanticChanges.length} semantic changes across ${new Set(review.semanticChanges.map((change) => change.specId)).size} features`}
         </span>
       </header>
 
