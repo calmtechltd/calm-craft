@@ -45,7 +45,7 @@ npx --yes @calmcraft/cli@0.2.0 generate --diff --base origin/main
 Or install the same pinned version:
 
 ```sh
-npm install --global @calmcraft/cli@0.1.0
+npm install --global @calmcraft/cli@0.2.0
 calmcraft view
 ```
 

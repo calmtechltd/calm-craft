@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runCli } from "../../src/cli/command";
 import {
@@ -10,7 +10,7 @@ import {
   writeFixtureFile,
 } from "../helpers/git-fixture";
 
-const assetsRoot = new URL("../../dist/ui", import.meta.url).pathname;
+const assetsRoot = fileURLToPath(new URL("../../dist/ui", import.meta.url));
 
 let repositoryRoot: string;
 let estateFile: string;
