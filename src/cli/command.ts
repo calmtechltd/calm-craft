@@ -1,5 +1,5 @@
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { loadConfig } from "../config";
 import { createBranchReview } from "../diff";
@@ -14,7 +14,14 @@ import {
 } from "../git";
 import { CALMCRAFT_VERSION } from "../meta";
 import { startLocalSession, type LocalSession, type SessionSource } from "../server";
-import { ALL_PROVENANCE, HELP_TEXT, parseCliArguments, type ViewArguments } from "./arguments";
+import { buildStaticEstate } from "../static/build";
+import {
+  ALL_PROVENANCE,
+  HELP_TEXT,
+  parseCliArguments,
+  type GenerateArguments,
+  type ViewArguments,
+} from "./arguments";
 import { openBrowser, type BrowserOpener } from "./browser";
 
 export type CliIo = {
@@ -43,7 +50,7 @@ function assertSupportedNode(version: string): void {
   }
 }
 
-function collectSources(data: unknown): SessionSource[] {
+export function collectSources(data: unknown): SessionSource[] {
   const sources = new Map<string, SessionSource>();
   const visit = (value: unknown, parentChangeId?: string): void => {
     if (!value || typeof value !== "object") return;
@@ -202,6 +209,29 @@ export async function startViewCommand(
   }
 }
 
+export async function runGenerateCommand(
+  arguments_: GenerateArguments,
+  dependencies: ViewDependencies = {},
+): Promise<string> {
+  assertSupportedNode(dependencies.nodeVersion ?? process.version);
+  const io = dependencies.io ?? DEFAULT_IO;
+  const repository = await discoverRepository(arguments_.source);
+  const out = arguments_.out ?? resolve(repository.root, "calmcraft-estate.html");
+  const result = await buildStaticEstate({
+    source: repository.root,
+    out,
+    assetsRoot: dependencies.assetsRoot ?? defaultAssetsRoot(),
+  });
+  const megabytes = (result.bytes / 1024 / 1024).toFixed(2);
+  io.stdout(
+    `CalmCraft ${CALMCRAFT_VERSION}\n${result.out}\n${result.specs} specifications · ${megabytes} MB\n`,
+  );
+  if (arguments_.openBrowser) {
+    await (dependencies.browserOpener ?? openBrowser)(pathToFileURL(result.out).href);
+  }
+  return result.out;
+}
+
 export async function runCli(args: string[], dependencies: ViewDependencies = {}): Promise<number> {
   const io = dependencies.io ?? DEFAULT_IO;
   const cancellation = new AbortController();
@@ -220,6 +250,10 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
     }
     if (parsed.command === "version") {
       io.stdout(`${CALMCRAFT_VERSION}\n`);
+      return 0;
+    }
+    if (parsed.command === "generate") {
+      await runGenerateCommand(parsed, dependencies);
       return 0;
     }
     session = await startViewCommand(parsed, {

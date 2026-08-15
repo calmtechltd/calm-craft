@@ -36,6 +36,17 @@ export type SessionResponse = {
 const TOKEN_STORAGE_KEY = "calmcraft.session-token";
 let activeToken: string | undefined;
 
+/**
+ * A generated single-file estate embeds its own session and opens from the
+ * filesystem, so there is no origin to fetch from and no token to present.
+ */
+type EmbeddedWindow = Window & { __CALMCRAFT_SESSION__?: SessionResponse };
+
+function embeddedSession(): SessionResponse | undefined {
+  // oxlint-disable-next-line no-underscore-dangle -- the generated file sets this global by name.
+  return (window as EmbeddedWindow).__CALMCRAFT_SESSION__;
+}
+
 function storedToken(): string | undefined {
   try {
     return window.sessionStorage?.getItem(TOKEN_STORAGE_KEY) ?? undefined;
@@ -67,6 +78,8 @@ export function readSessionToken(location = window.location): string | undefined
 }
 
 export async function loadSession(): Promise<SessionResponse> {
+  const embedded = embeddedSession();
+  if (embedded) return embedded;
   const token = readSessionToken();
   if (!token) throw new Error("This CalmCraft session is missing its local access token.");
   const response = await fetch("/api/session", {
@@ -77,6 +90,14 @@ export async function loadSession(): Promise<SessionResponse> {
 }
 
 export async function loadSessionSource(id: string): Promise<string> {
+  const embedded = embeddedSession() as
+    | (SessionResponse & { sourceById?: Record<string, string> })
+    | undefined;
+  if (embedded) {
+    const source = embedded.sourceById?.[id];
+    if (source === undefined) throw new Error("This source is not embedded in the generated file.");
+    return source;
+  }
   const token = activeToken ?? storedToken();
   if (!token) throw new Error("This source request has no active local session token.");
   const response = await fetch(`/api/source/${encodeURIComponent(id)}`, {

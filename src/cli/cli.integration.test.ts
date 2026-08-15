@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -28,6 +28,16 @@ async function assets(): Promise<string> {
     '<!doctype html><script src="/assets/app.js"></script>',
   );
   await writeFile(join(root, "assets/app.js"), "globalThis.calmcraftLoaded = true;");
+  return root;
+}
+
+async function browserAssets(): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "calmcraft-generate-assets-"));
+  roots.push(root);
+  await mkdir(join(root, "assets"));
+  await writeFile(join(root, "index.html"), "<!doctype html>");
+  await writeFile(join(root, "assets/index-abc123.js"), "globalThis.calmcraftLoaded = true;");
+  await writeFile(join(root, "assets/index-abc123.css"), "body { color: black; }");
   return root;
 }
 
@@ -297,5 +307,50 @@ describe("CalmCraft CLI", () => {
     expect(stderr.join("")).not.toContain("super-secret");
     expect(stderr.join("")).not.toContain("hidden-token");
     expect(stderr.join("")).toContain("Run calmcraft --help for usage");
+  });
+
+  it("writes a self-contained estate that needs no session", async () => {
+    const root = await repository();
+    const out = join(root, "estate.html");
+    const io = { stdout: "", stderr: "" };
+    const code = await runCli(["generate", root, "--out", out, "--no-open"], {
+      assetsRoot: await browserAssets(),
+      io: {
+        stdout: (value: string) => (io.stdout += value),
+        stderr: (value: string) => (io.stderr += value),
+      },
+    });
+
+    expect(code).toBe(0);
+    expect(io.stderr).toBe("");
+    expect(io.stdout).toContain("1 specifications");
+    const html = await readFile(out, "utf8");
+    /* Nothing may be fetched: no origin, no token, no server. */
+    expect(html).not.toContain("/api/session");
+    expect(html).not.toMatch(/src="\/assets\//u);
+    expect(html).toContain("__CALMCRAFT_SESSION__");
+    expect(html).toContain("body { color: black; }");
+    expect(html).toContain("Original");
+  });
+
+  it("defaults the generated file to the repository root", async () => {
+    const root = await repository();
+    await runCli(["generate", root, "--no-open"], {
+      assetsRoot: await browserAssets(),
+      io: { stdout: () => {}, stderr: () => {} },
+    });
+
+    await expect(access(join(root, "calmcraft-estate.html"))).resolves.toBeUndefined();
+  });
+
+  it("rejects session options that mean nothing to a generated file", () => {
+    expect(() => parseCliArguments(["generate", "--port", "3000"])).toThrow(/Unknown option/u);
+    expect(() => parseCliArguments(["generate", "--diff"])).toThrow(/Unknown option/u);
+    expect(parseCliArguments(["generate"], "/repo")).toEqual({
+      command: "generate",
+      source: "/repo",
+      out: undefined,
+      openBrowser: true,
+    });
   });
 });

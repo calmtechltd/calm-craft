@@ -11,7 +11,18 @@ export type ViewArguments = {
   provenance?: Provenance[];
 };
 
-export type CliArguments = ViewArguments | { command: "help" } | { command: "version" };
+export type GenerateArguments = {
+  command: "generate";
+  source: string;
+  out?: string;
+  openBrowser: boolean;
+};
+
+export type CliArguments =
+  | ViewArguments
+  | GenerateArguments
+  | { command: "help" }
+  | { command: "version" };
 
 export class CliArgumentError extends Error {
   constructor(message: string) {
@@ -41,11 +52,37 @@ function parseProvenance(value: string): Provenance[] {
   return ALL_PROVENANCE.filter((item) => requested.includes(item));
 }
 
+/**
+ * A generated estate is a file, not a session, so it takes none of the session
+ * options: no port to bind, no token to carry, and no live comparison.
+ */
+function parseGenerateArguments(args: string[], cwd: string): GenerateArguments {
+  let source: string | undefined;
+  let out: string | undefined;
+  let openBrowser = true;
+  for (let index = 1; index < args.length; index += 1) {
+    const argument = args[index] ?? "";
+    if (argument === "--no-open") openBrowser = false;
+    else if (argument === "--out") {
+      out = readValue(args, index, argument);
+      index += 1;
+    } else if (argument.startsWith("-")) {
+      throw new CliArgumentError(`Unknown option: ${argument}`);
+    } else if (source) {
+      throw new CliArgumentError("generate accepts one repository path.");
+    } else source = argument;
+  }
+  return { command: "generate", source: source ?? cwd, out, openBrowser };
+}
+
 export function parseCliArguments(args: string[], cwd = process.cwd()): CliArguments {
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") return { command: "help" };
   if (args[0] === "--version" || args[0] === "-v") return { command: "version" };
-  if (args[0] !== "view") throw new CliArgumentError(`Unknown command: ${args[0]}`);
+  if (args[0] !== "view" && args[0] !== "generate") {
+    throw new CliArgumentError(`Unknown command: ${args[0]}`);
+  }
   if (args.includes("--help") || args.includes("-h")) return { command: "help" };
+  if (args[0] === "generate") return parseGenerateArguments(args, cwd);
 
   let source: string | undefined;
   let diff = false;
@@ -99,11 +136,13 @@ export function parseCliArguments(args: string[], cwd = process.cwd()): CliArgum
 export const HELP_TEXT = `CalmCraft — local product-spec visualizer
 
 Usage:
+  calmcraft generate [path] [options]
   calmcraft view [path] [options]
   calmcraft --help
   calmcraft --version
 
 Options:
+  --out <file>        Write the generated estate here (generate)
   --diff              Open branch review against an inferred base
   --base <ref>        Compare against an explicit Git base
   --provenance <list> Start with committed, staged, unstaged, and/or untracked work

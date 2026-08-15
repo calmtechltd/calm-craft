@@ -70,7 +70,7 @@ function cookieValue(cookieHeader: string | undefined, name: string): string | u
     ?.slice(name.length + 1);
 }
 
-function serializeData(data: unknown): string {
+export function serializeData(data: unknown): string {
   return JSON.stringify(data, function replacer(key, value: unknown) {
     if (["beforeSource", "afterSource", "diagramSource"].includes(key)) return undefined;
     if (
