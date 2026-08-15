@@ -46,7 +46,7 @@ function spec(findings: SpecFinding[]): SpecDocument {
     area: "Fixture",
     status: "partial",
     path: "core/alpha.md",
-    module: "core",
+    module: "billing",
     featureArea: "root",
     name: "alpha",
     title: "Feature Alpha",

@@ -55,7 +55,7 @@ Re-run the regression file, then adjacent tests if you touched shared code.
 
 ### 6. Leave it in place
 
-Name tests after the **shape** of the bug, not the function — "closed monthly occurrence with no checklist", not "test getOccurrence". A future reader deciding whether to delete a test needs to know what it guards.
+Name tests after the **shape** of the bug, not the function — "refund on a partially paid invoice", not "test getRefundTotal". A future reader deciding whether to delete a test needs to know what it guards.
 
 ## File header template
 

@@ -80,7 +80,7 @@ function makeSpec(id: string, module: string, behaviourKeys: string[], flow?: Fl
 
 function makeEstate(): SpecEstate {
   const specs = [
-    makeSpec("mapped-complete", "library", ["B1", "B2"], makeFlow("F1", 4, 6, ["B1", "B2"])),
+    makeSpec("mapped-complete", "billing", ["B1", "B2"], makeFlow("F1", 4, 6, ["B1", "B2"])),
     makeSpec("mapped-partial", "support", ["B1", "B2", "B3"], makeFlow("F1", 9, 17, ["B1"])),
     makeSpec("unmapped-one", "support", ["B1"]),
     makeSpec("unmapped-two", "billing", ["B1"]),
@@ -100,8 +100,8 @@ describe("CalmCraft Flows", () => {
       key: "mapped-complete:F1",
       covered: 2,
       behaviours: 2,
-      contractPath: "library/mapped-complete.flow.yaml",
-      diagramPath: "library/mapped-complete.flow.mmd",
+      contractPath: "billing/mapped-complete.flow.yaml",
+      diagramPath: "billing/mapped-complete.flow.mmd",
     });
     expect(mapped[1]).toMatchObject({ key: "mapped-partial:F1", covered: 1, behaviours: 3 });
   });

@@ -34,7 +34,7 @@ Name each test after the **documented intent**, and cite the ID:
 ```
 B5 — a partially paid invoice can be refunded up to the amount received
 F1.T3 — validation failure returns to upload with the reason shown
-Decision table row 4 — expired grace period marks the occurrence missed
+Decision table row 4 — an expired grace period marks the payment overdue
 ```
 
 A future reader must be able to go from a failing test to the thing it was protecting without reading the implementation. This is why the naming matters more than usual.

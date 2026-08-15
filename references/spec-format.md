@@ -79,9 +79,9 @@ Front-matter `status` is the roll-up: `implemented` only if every behaviour is; 
 
 | Avoid | Use |
 | --- | --- |
-| "A projection is calculated in memory and cached…" | "Future occurrences appear on the timeline…" |
-| "An hourly job scans the table and flips a flag…" | "Each day, work that has come due becomes actionable…" |
-| "We publish a message to the queue…" | "When the schedule changes, future work is regenerated…" |
+| "A projection is calculated in memory and cached…" | "A saved search shows the same results next time…" |
+| "An hourly job scans the table and flips a flag…" | "An invitation stops working once it expires, without anyone acting…" |
+| "We publish a message to the queue…" | "When someone leaves a team, their access ends everywhere…" |
 
 If you couldn't say it to a non-developer, it doesn't belong in a spec. Implementation detail belongs in code, comments, or design docs.
 

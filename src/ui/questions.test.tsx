@@ -60,8 +60,8 @@ function makeEstate(): SpecEstate {
     specsRoot: "specs",
     specs: [
       makeSpec("invoicing", "billing", [makeQuestion(12, ["B1", "B2"]), makeQuestion(30, [])]),
-      makeSpec("coverage", "operations", [makeQuestion(24, ["B4"]), makeQuestion(40, [], true)]),
-      makeSpec("quiet", "admin", []),
+      makeSpec("coverage", "support", [makeQuestion(24, ["B4"]), makeQuestion(40, [], true)]),
+      makeSpec("quiet", "support", []),
     ],
     relationships: [],
     findings: [],
