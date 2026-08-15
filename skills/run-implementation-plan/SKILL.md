@@ -1,18 +1,21 @@
 ---
 name: run-implementation-plan
-description: Pick up an implementation plan and implement every remaining chunk — one reviewable pass at a time — without waiting for another prompt. Use when the user says "run the implementation plan", "continue the plan", "do the next chunk", "ship B4", "finish the plan", or names a chunk ID.
+description: Complete the incomplete behaviours in current scope — read the scoped specs, build a queue, and keep working across turns until the definition of done is satisfied. Use when the user says "run the implementation plan", "continue the plan", "finish the scoped work", "complete the incomplete behaviours", "ship B4", or names a chunk ID.
 ---
 
 # Run an Implementation Plan
 
-Implement the plan **until it is done**. The chunk is still the unit of work: one reviewable pass, then the next. The skill does not stop after the first chunk.
+Complete the incomplete behaviours in current scope. You can confirm this if unsure.
 
-A chunk is sized so its diff is reviewable and its acceptance criteria are checkable. That property disappears the moment you do two in one pass. The loop is what changed — not the fence.
+Treat the scoped specs as the source of truth. Keep working across turns until the definition of done below is satisfied. Do not expand into unrelated specs, unscheduled future behaviours, or another feature area.
 
-Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md). Continuation: [`goal`](../goal/SKILL.md).
+The card is still the unit of work: one behaviour or implementation-plan chunk per pass. The skill does not stop after the first card.
+
+Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md). Invoke as `/goal` via [`goal`](../goal/SKILL.md). Repo-specific extras: `paths.goal` (default `.engineering/goal.md`).
 
 ## When to use
 
+- `/goal` / "complete the incomplete behaviours in current scope".
 - "Run the implementation plan" / "finish the plan" / "continue the plan".
 - "Do the next chunk" / "ship B4" / "run E1."
 
@@ -20,121 +23,87 @@ Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-f
 
 ## Host continuation
 
-After each chunk, if dependency-ready work remains, **do not wait for another prompt**. Continue like this:
+After each card, if dependency-ready work remains, **do not wait for another prompt**.
 
-1. **Same session, if context is healthy** — start the next chunk immediately.
-2. **New turn required** — use the host's continuation command, same scope, same checkpoint:
-   - **Cursor** — `/loop` on this skill, or `/goal` if this plugin's `goal` skill is how the session started. The interval is "next chunk". The stop condition is the definition of done below, not a clock.
-   - **Hosts with `/goal`** (Codex and similar, or this plugin's `goal` skill) — `/goal` with the same scope.
-   - **Neither available** — keep working in this session anyway.
+1. **Same session, if context is healthy** — start the next card immediately.
+2. **New turn required** — same scope, same checkpoint:
+   - **Cursor** — `/loop` on this skill, or `/goal` if that is how the session started. The interval is "next card". The stop condition is the definition of done, not a clock.
+   - **Hosts with `/goal`** — `/goal` with the same scope.
+   - **Neither** — keep working in this session anyway.
 
-Do not treat Cursor `/loop` as a timed job. Do not re-litigate scope when continuing. Read the checkpoint and the next chunk; do not restart the plan.
+Do not reset `.active/` on a continuation turn. If I attached supplementary text, or the goal overlay exists, honour it. Slash text wins for this run.
 
-If I attached supplementary text, or the repo has a goal overlay (`paths.goal` in the config, default `.engineering/goal.md`), honour it. That file is how a consuming app adds repo-specific loop constraints without forking this skill.
+## Before implementation
 
-## Workflow
+- Read every scoped spec, its linked implementation plan or design document, and the repository rules.
+- Identify behaviour statuses, dependencies, existing implementation, test coverage, and Open Questions.
+- Resolve questions only when authoritative evidence in the specs, code, tests, or linked decisions establishes the answer.
+- Batch genuinely blocking product decisions for me before coding. Do not invent a product decision. If I tell you not to stop for questions, skip blocked behaviours and record them instead.
+- Build a dependency-ordered work queue. Work on one behaviour or implementation-plan chunk at a time.
+- Keep a concise checkpoint under `.active/` containing the scope, queue, completed cards, verification evidence, current database state, blockers, and next action. Do not commit `.active/`.
 
-### 1. Open the plan and build the queue
+Starting card, in order: the ID I named; the plan's "Next up" marker; the first incomplete chunk in execution order. **Verify Depends on either way.** If prerequisites aren't complete and you cannot complete them inside this scope, record the blocker — do not skip ahead. If everything is complete, say so; don't start new scope.
 
-Find the plan at the plans path, or ask which feature if several match. Read the header and the how-to-use section.
+## For each card
 
-Resolve the starting chunk in order:
+1. Read the complete relevant spec and acceptance criteria. Read the flow contract and the exact transitions assigned to this card. The YAML governs; Mermaid is a human view. Read **Work**, **Done when**, **Out of scope**. Out of scope is a hard wall. If the code seems to need an undeclared transition, stop and change the contract first.
+2. Check the implementation for drift and assess existing test coverage.
+3. Add or update tests that prove the specified behaviour. Include permission, tenancy, invariant, decision-table, and regression cases where applicable. Each cited flow transition gets a test, and each guard gets both branches, where there is a test surface for it.
+4. Implement until the relevant tests pass. Follow the repo's conventions. If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Do not commit `.env` or put a real secret in `.env.example`.
+5. Use browser testing for genuinely user-facing paths. Exercise the local app when the acceptance criteria require observable UI behaviour. Actually do it; don't assume.
+6. If this repo's tests build their database from source schema (often `src/db/schema/**`), do not run `commands.db_generate` or `commands.db_migrate` merely to make tests see a schema change.
+7. Run `commands.db_generate` only when generated migration files must be verified, or when a real app or browser path needs the schema change. Run `commands.db_migrate` only when that real database needs those generated or committed migrations. Omit both steps when the config does not define them.
+8. Treat database coordination notices as informational. Do not ask me to confirm an external chat or ticket state. Keep generated migration artifacts uncommitted unless I have explicitly authorised committing them.
+9. Update the spec and implementation plan so behaviour badges, tickets, Open Questions, and completion state match reality (`spec-maintain-on-ship`). Mark the chunk complete with a dated status line and advance "Next up".
+10. Run the card's targeted tests, changed-file lint and format checks, relevant type checking, and git diff checks. Review the card's complete diff and fix verified functional, permission, tenancy, and coverage findings. Use `review.always_check` from the config.
+11. Clean only temporary or generated output created by this card whose removal is proven safe. Never delete pre-existing or unexplained files, and never discard migration artifacts blindly.
+12. If `commands.checkpoint_commit` is set, create a local checkpoint commit through that command, update the checkpoint file, and continue to the next dependency-ready card without waiting for another prompt. If it is not set, update the checkpoint and continue; do not invent a commit tool, and do not commit unless I asked.
 
-1. The ID I named.
-2. The plan's "Next up" marker.
-3. The first chunk in execution order that isn't complete.
+Then go back to card step 1 for the next dependency-ready card. Use the host continuation rules when a new turn is required.
 
-**Verify Depends on either way.** If prerequisites aren't complete, stop and report the blocker — do not skip ahead. If everything is complete, say so; don't start new scope.
-
-Build a dependency-ordered queue of remaining in-scope chunks. Work one at a time.
-
-Keep a concise checkpoint under `.active/` — scope, queue, completed chunk IDs, verification evidence, blockers, and the next action. `.active/` is working state, not a deliverable; do not commit it.
-
-### 2. Load the acceptance criteria before writing code
-
-For the current chunk:
-
-- Read the cited **specs in full**, or at least the cited behaviour IDs.
-- Read the **flow contract** and the exact transitions assigned to this chunk. The YAML governs; Mermaid is a human view.
-- Read **Work**, **Done when**, **Out of scope**.
-- Skim the design doc only for ambiguity — the chunk and spec win.
-
-Restate in three lines — chunk ID, goal, Done when — then implement. Don't wait for approval.
-
-### 3. Implement, inside the fence
-
-- **Out of scope is a hard wall**, not a suggestion.
-- Implement only the states, events, guards, and outcomes the flow contract allows. Preserve documented back, cancel, retry, failure, and resumable paths. **If the code seems to need an undeclared transition, stop and change the contract first** — implementing it and reconciling later is how a contract becomes fiction.
-- Foundation chunks may be backend-only; UI chunks ship their routes in the same change.
-- Follow the repo's conventions. If `conventions-audit` exists and the chunk is substantial, running it beats discovering violations at review.
-- If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Honour the install-script allowlist and release cooldown if those decisions exist. Do not commit `.env` or put a real secret in `.env.example`.
-- **Do not start the next chunk in this pass.** Finish, verify, and record this one first.
-
-### 4. Verify before marking complete
-
-- **Done when** is satisfied — including the manual app path for UI chunks. Actually do it; don't assume.
-- Tests for server logic where the repo tests similar code.
-- Each cited flow transition has a test, and each guard has both branches, where there's a test surface for it.
-- Spec badges updated for shipped behaviour (`spec-maintain-on-ship`).
-- No type or lint regressions on touched files.
-
-Then mark the chunk complete in the plan with a dated status line, advance the "Next up" marker, and update the checkpoint.
-
-### 5. Continue, or stop for a real reason
-
-If the queue still has a dependency-ready chunk, go back to step 2. Use the host continuation rules above when a new turn is required.
-
-Stop only when one of these is true:
-
-- Every remaining in-scope chunk is complete.
-- I asked for **only** one named chunk.
-- A prerequisite is incomplete and you cannot complete it inside this scope.
-- A product decision is genuinely blocking and the specs, code, tests, and linked decisions do not settle it. Batch those and ask. Do not invent a product decision.
-- An external dependency you cannot resolve.
-
-Skip a blocked chunk, record it on the checkpoint, and continue with anything that does not depend on it.
-
-### 6. Close the plan
-
-When the queue is empty or only blockers remain:
-
-- Run `branch-self-review` on the branch, then `ready-for-pr`.
-- Leave the checkpoint stating what shipped, what was verified, remaining blockers, and anything I still need to do myself.
-- Do not push, open a pull request, or commit unless I asked, or the goal overlay names a local checkpoint command.
+Stop only when every in-scope card is done, I asked for **only** one named chunk, or the remaining work is blocked by a decision or external dependency. Skip a blocked card, record it, and continue with anything that does not depend on it.
 
 ## Definition of done
 
-- Every in-scope chunk is implemented or explicitly recorded as blocked.
-- Every implemented behaviour, invariant, and cited flow transition has the evidence this repo uses for that kind of change.
-- Specs and the plan describe the final state.
-- `branch-self-review` and `ready-for-pr` have been run on the finished branch.
+- Every in-scope behaviour is implemented or explicitly recorded as blocked by a decision or external dependency.
+- Every implemented behaviour, invariant, and decision-table row has appropriate test evidence.
+- Required browser paths have been exercised successfully.
+- Specs and implementation plans accurately describe the final behaviour and state.
+- A full branch self-review has been performed (`branch-self-review`) and verified findings have been fixed.
+- The `ready-for-pr` gates pass — types, lint, dead code (knip where that is the command), and tests, in the config's `gates` order.
+- A final spec drift and coverage check (`spec-audit-drift`, `spec-assess-coverage`) finds no unaddressed in-scope gap.
+- The final checkpoint records what shipped, verification performed, generated migration artifacts left uncommitted, remaining blockers, and any developer action.
+
+Do not push, submit, open a PR, commit protected migration artifacts, implement unrelated future scope, or broaden the branch without explicit authorisation.
 
 ## Quality gate
 
-- [ ] Depends on verified before starting each chunk.
-- [ ] Specs and flow transitions read before any code for that chunk.
+- [ ] Every scoped spec, plan, and Open Question read before the first card.
+- [ ] Queue is dependency-ordered; blockers batched or recorded, not invented through.
+- [ ] Each card followed the twelve steps, including tests before calling it done.
 - [ ] Nothing implemented outside Work, or inside Out of scope.
 - [ ] No undeclared transition, guard, bypass, or exit added.
-- [ ] Done when verified, not assumed — manual path walked for UI.
-- [ ] Spec badges updated.
-- [ ] Plan file and checkpoint updated after each chunk.
-- [ ] Next chunk not started in the same pass.
+- [ ] Schema generate and migrate ran only when the config defines them and the card actually needed them.
+- [ ] Spec badges, plan, and `.active/` checkpoint match reality after each card.
 - [ ] The skill did not stop while dependency-ready work remained, unless I asked for only one chunk.
+- [ ] Close-out ran self-review, ready-for-pr, drift, and coverage.
 
 ## Anti-patterns
 
-- **Stopping after the first chunk** because the old skill did. The loop is the job.
-- **Two chunks in one pass** because the second is small. The most common failure.
-- **Pulling deferred work forward** because it's convenient while you're in the file.
-- **Marking complete on tests alone** when Done when requires the app.
-- **Adding a transition the contract doesn't have** and planning to update the spec after.
-- **Re-litigating open decisions** without asking.
-- **Using `/loop` on a wall-clock interval** instead of "next chunk until done".
+- **Stopping after the first card** because the old skill did. The loop is the job.
+- **Two cards in one pass** because the second is small. The most common failure.
+- **Inventing a product decision** so the queue can keep moving.
+- **Running schema generate or migrate to make tests pass** when tests already build from source schema.
+- **Asking me to confirm an external Slack or ticket state.**
+- **Committing generated migration artifacts** without explicit authorisation.
+- **Pushing or opening a pull request** as part of the loop.
+- **Using `/loop` on a wall-clock interval** instead of "next card until done".
 
 ## Related skills
 
 - `goal` — the `/goal` wrapper; supplementary scope and the same loop
 - `author-implementation-plan` — writes the plan
 - `spec-maintain-on-ship` — badges in the same change
-- `ready-for-pr` — gates before opening the pull request
+- `spec-audit-drift` / `spec-assess-coverage` — the final gap check
 - `branch-self-review` — review the branch before anyone else
+- `ready-for-pr` — gates before opening the pull request

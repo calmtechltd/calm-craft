@@ -33,6 +33,7 @@ Read the repo and work out what you can. Do not ask about anything you can deter
 - **Ticket references** — check existing rule files, skill files, and contributing docs **first**; teams write the pattern down long before it appears reliably in commit subjects. Only then sample recent commits and pull request titles. Coming up empty on git history is not evidence the repo has no ticket convention.
 - **Test layout** — colocated, `__tests__/`, or a mirrored tree; and how unit and integration tests are distinguished.
 - **Existing agent instructions** — `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `CONTRIBUTING.md`.
+- **Delivery-loop helpers** — a schema generate or migrate script, a local checkpoint commit helper (`calm-commit`, Graphite). Record the command only when it already exists. Do not invent one.
 
 ### 2. Confirm, don't interrogate
 
@@ -78,6 +79,13 @@ commands:
   deadcode: <dead code command>
   test: <full test command>
   test_file: "<command with {file} placeholder>"
+  # Optional delivery-loop commands. Omit if the repo has none.
+  # Tests that build their database from source schema must not run
+  # these merely to see a change. checkpoint_commit is a local
+  # Graphite-style helper (e.g. calm-commit), not a push.
+  db_generate: <schema / migration generate>
+  db_migrate: <apply migrations to a real database>
+  checkpoint_commit: <local checkpoint commit>
 
 # Which commands gate a merge, in order. `ready-for-pr` runs exactly these
 # and reports Blocked only on these.
