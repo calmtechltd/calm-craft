@@ -140,6 +140,10 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 
 ## Axis 10 — Dependencies
 
+These are **policies**, not a product pick. 10.1 records the manager the repo already uses — detect it, pin it, do not convert the repo to a favourite. npm, pnpm, Yarn, and Bun (and uv, Poetry, Composer, Cargo…) instantiate the same answers with different config keys; `conventions-decide` writes the one the recorded manager understands, from that manager's current docs.
+
+10.7–10.10 exist because the managers shipped them and most people have never heard of them. Offer the useful pair (a one-day cooldown and an install-script allowlist), say what each one does in a sentence, and accept "off" without a lecture. This is a helper pointing at a switch, not a security programme.
+
 | # | Question | Options |
 | --- | --- | --- |
 | 10.1 | Package manager | ★ One, pinned in the manifest, enforced so a wrong-manager install fails · Whatever works |
@@ -148,8 +152,18 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 | 10.4 | Bar for adding a dependency | ★ Named in the rules — what it must do to beat writing it yourself · No stated bar |
 | 10.5 | Freshness policy | ★ Framework and runtime on current major within a stated window; everything else on the bot's schedule · Update when something breaks |
 | 10.6 | Runtime version | ★ Pinned in the manifest and in CI · Unpinned |
+| 10.7 | Release cooldown | ★ One day (or keep the manager's built-in default), with a named exclude list for urgent patches · Longer window (3–7 days) · Off |
+| 10.8 | Install-time scripts | ★ Allowlist — only named packages may run install/build scripts · Manager default · Scripts run freely |
+| 10.9 | Non-registry sources | ★ Transitive git/tarball dependencies blocked; a direct one is a recorded decision · Free |
+| 10.10 | Trust downgrade | ★ Block it where the manager can · Unchecked |
 
 10.5 is what stops the "we're four majors behind and every upgrade is now a project" outcome. Note it's a *policy* question with a *skill* answer — checking freshness is a thing you'd actually ask for, so it's one of the few items here that belongs in a skill rather than a rule.
+
+10.7 is the other half of the same conversation, not a contradiction. Freshness says don't rot; a cooldown says don't take a version published twenty minutes ago. Most compromised releases are yanked within hours. A one-day gate catches that smash-and-grab window without turning every security patch into a wait. Longer windows exist and are reasonable for a lockstep monorepo; they are not the default, because they *do* delay fixes. If an update bot opens PRs, its cooldown must match the resolver's, or it will keep proposing versions you cannot install.
+
+10.8 is the highest-value consumer-side control and the one that actually stopped worms that spread through `preinstall` / `postinstall`. An allowlist is a short, reviewable list — `esbuild`, `sharp`, a handful of others. A global "ignore all scripts" is the setting that breaks people, so it is not the recommended default. If the manager already blocks scripts unless allowlisted, record that as settled and move on.
+
+10.10 is N/A on managers that cannot enforce it. Skip the question rather than inventing a prose rule nobody can check. Do not fail the interview because a dry install surfaced a package published without provenance — that is information, not a reason to turn the default off for everyone.
 
 ---
 
@@ -242,7 +256,7 @@ The closest thing to a solved problem, and a useful benchmark for the others: `g
 - **Concurrency:** strict concurrency checking on or off; `@MainActor` discipline for UI; whether detached `Task { }` work needs a stated cancellation story.
 - **Singletons and `.shared`:** ★ named exceptions only, listed.
 - **File layout:** one primary type per file; where extensions live; `// MARK:` conventions.
-- **Dependencies:** SPM pinning policy and the bar for adding one.
+- **Dependencies:** SPM pinning policy and the bar for adding one. Same Axis 10 policies; instantiate with whatever the toolchain actually enforces.
 
 ## Python
 
@@ -252,7 +266,7 @@ The closest thing to a solved problem, and a useful benchmark for the others: `g
 - **Mutable default arguments:** lint-enforced ban. Cheap, and catches a real bug class.
 - **Data structures:** ★ dataclasses for plain data, a validation library only at input boundaries · validation models throughout.
 - **Exceptions:** custom hierarchy vs built-ins; bare `except:` banned.
-- **Packaging:** which tool owns the environment (uv, Poetry, pip-tools), lockfile committed, Python version pinned.
+- **Packaging:** which tool owns the environment (uv, Poetry, pip-tools), lockfile committed, Python version pinned. Release cooldown instantiates as uv's `exclude-newer` (or equivalent) — same policy as Axis 10.7, different flag.
 
 ## Ruby
 
@@ -271,7 +285,7 @@ The closest thing to a solved problem, and a useful benchmark for the others: `g
 - **Final by default:** ★ classes final unless designed for extension · open.
 - **Constructor property promotion** and readonly properties: house style or optional.
 - **Framework conventions:** where the framework's opinion ends and yours begins — especially around fat models, service layers, and where business logic may not live.
-- **Dependencies:** Composer lockfile committed, PHP version pinned in `composer.json` and CI.
+- **Dependencies:** Composer lockfile committed, PHP version pinned in `composer.json` and CI. Axis 10.7–10.10 apply where Composer or the update bot can enforce them; skip what they cannot.
 
 ## C#
 
@@ -294,7 +308,7 @@ The most contested list here, because the language supports several incompatible
 - **Ownership:** ★ smart pointers express ownership, raw pointers and references are non-owning views · free. Write the rule down; this is where the memory bugs come from.
 - **Headers:** ★ `#pragma once` · include guards. Include-what-you-use enforced or not.
 - **`auto`:** where it aids readability vs where it hides a type that matters.
-- **Build:** CMake conventions, dependency management (vcpkg, Conan, submodules), and whether sanitiser builds run in CI.
+- **Build:** CMake conventions, dependency management (vcpkg, Conan, submodules), and whether sanitiser builds run in CI. Pin the source of each dependency; a git submodule at `main` is Axis 10.7 turned off.
 
 ## WebAssembly
 
@@ -329,6 +343,28 @@ Nobody thinks of these as needing conventions, everybody has them, and they're w
 - Migrations forward-only or reversible; who runs them and when.
 - Naming: tables, columns, indexes, constraints.
 - ★ Every migration reviewed for a lock that would take production down. Name the operations that need special handling.
+
+**Secrets and environment**
+
+The expensive mistake is committing a real value, or teaching an agent that `.env` is "just config". These are cheap to decide and cheap to enforce; skipping them is how keys land in git history. Same helper rule as Axis 10: point at the obvious bits, do not invent a secrets framework.
+
+| # | Question | Options |
+| --- | --- | --- |
+| S.1 | Secret files in git | ★ `.env`, `.env.local`, `.env.*.local`, and environment-specific secret files gitignored; never committed · Convention only |
+| S.2 | Env contract | ★ A committed example file (`.env.example` / `.env.sample`) with keys and placeholders, no real values · README list · None |
+| S.3 | Secret scanning | ★ Platform push protection (GitHub secret scanning or equivalent), plus a pre-commit or CI scanner · Platform only · None |
+| S.4 | Required env at startup | ★ Validated at boot; missing or malformed keys fail with the key names · Fail later · Unchecked |
+| S.5 | Client-exposed env | ★ Prefixes that reach the browser (`NEXT_PUBLIC_`, `VITE_`, `PUBLIC_`, …) are a named allowlist of non-secrets · Convention only · Unchecked |
+
+S.1 is non-negotiable and mechanically checkable: the ignore file, `git ls-files` for tracked `.env*`, and the `ready-for-pr` sanity check. `.env.example` is the exception that *is* committed — it is the contract, not the secrets. If a `.env` is already tracked, that is a finding to surface, not a silent `git rm`; the values may already be in history and need rotation.
+
+S.2 and S.4 are the pair that stop "clone the repo, nothing works, copy someone else's `.env`". The example file lists what must exist; startup validation refuses to boot without it. A typed schema is a good enforcement mechanism, not a required one — any fail-fast check that names the missing keys is enough.
+
+S.3: do not add a scanner the repo has no appetite to run. Platform push protection is the one that still works when someone force-adds an ignored file. A local hook is extra, not a substitute.
+
+S.5 is the web-app-shaped hole: a secret behind a public prefix is a secret in the browser bundle. If the repo has no client bundle, skip it.
+
+Also write down, once, what must never be logged — tokens, raw env values, authorization headers. Axis 7.5 already owns the user-facing half of this; the agent-facing half belongs in `AGENTS.md`: never print `.env` contents, never commit the file, never paste secrets into a ticket or a spec.
 
 If your language or tool decided something for you, don't re-decide it. Record it as settled and move on.
 
