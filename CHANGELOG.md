@@ -10,6 +10,7 @@ CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes desc
 - Read flow references that wrap across several lines; they previously parsed as no flow at all.
 - Rebuild the interface on bundled Geist with a single type scale and reserved semantic colour.
 - Render every matching specification instead of the first 120.
+- `run-implementation-plan` now loops the remaining plan, one chunk per pass, and continues via `/loop` on Cursor or `/goal` elsewhere. Add the `goal` skill as the `/goal` wrapper, with an optional `.engineering/goal.md` overlay for repo-specific constraints.
 
 ## 0.1.0 — pending
 

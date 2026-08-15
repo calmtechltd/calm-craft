@@ -41,6 +41,7 @@ Present what you found as a filled-in draft config and ask me to correct it. One
 Ask only about what you genuinely could not detect:
 
 - Where should working documents live — implementation plans, review reports? Suggest a gitignored directory if the repo has no convention.
+- Do they want a short `/goal` overlay for repo-specific loop constraints (commit helpers, database generation rules)? Suggest `.engineering/goal.md` and omit it if they have none.
 - Where do specs live, if not `specs/`?
 - **Do specs link to a tracker at all?** Default to `none` and say so — it's the right answer for most repos, and a ticket field nobody completes is worse than no field. If they want one, `github` is the only provider where skills can actually resolve issue state without extra credentials. Anything else needs a pattern and URL template.
 - Which of this plugin's three areas do I want — conventions, specs, delivery, or all three?
@@ -62,6 +63,9 @@ paths:
   plans: .plans/
   reports: .reports/
   conventions: .engineering/conventions.yaml
+  # Optional. A short note /goal and run-implementation-plan read for
+  # repo-specific loop constraints. Omit if you have none.
+  goal: .engineering/goal.md
 
 commands:
   # Exactly what CI runs, in CI's order. Omit any that don't exist.

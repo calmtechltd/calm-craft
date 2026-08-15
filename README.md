@@ -5,7 +5,7 @@ Free and open source, from [Calm Tech Ltd](https://github.com/calmtechltd). MIT 
 An [Agent Plugin](https://agent-plugins.org/) providing three things that make coding agents produce work you can trust:
 
 1. **Specs** — the product's intent, written down in an addressable form, so an agent has a source of truth that doesn't move.
-2. **A delivery loop** — design → chunked plan → one chunk per session → gates → self-review.
+2. **A delivery loop** — design → chunked plan → one chunk per pass, looped until the plan is done → gates → self-review.
 3. **Conventions** — decided once, enforced by lint where a machine can enforce them, ambient where it can't.
 
 Portable by design: skills live in `skills/` per the Agent Plugins v1 spec, so this works in Codex, Cursor, VS Code, Copilot, and anything else implementing the standard. `.claude-plugin/` sits alongside for Claude Code, which uses its own manifest location; both read the same skills.
@@ -183,8 +183,9 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 
 | Skill                        | Job                                                                 |
 | ---------------------------- | ------------------------------------------------------------------- |
-| `author-implementation-plan` | Design doc → chunks sized for one agent session.                    |
-| `run-implementation-plan`    | Implement exactly one chunk.                                        |
+| `author-implementation-plan` | Design doc → chunks sized for one reviewable pass.                  |
+| `run-implementation-plan`    | Implement the plan, one chunk per pass, until it is done.           |
+| `goal`                       | `/goal` wrapper — supplementary scope, then the same loop.          |
 | `bug-regression-red-green`   | Failing test first, then the fix, and the test stays.               |
 | `branch-self-review`         | Review your own diff before anyone else does. Reports; never fixes. |
 | `ready-for-pr`               | Run the gates CI runs; fix what fails.                              |
@@ -195,7 +196,7 @@ These exist because collapsing them is easy and quietly destroys the value:
 
 1. **Auditors report; migrators edit.** An auditor that can fix things can make its own findings disappear.
 2. **Planning and execution are separate.** A skill that does both plans just far enough to justify what it already wants to build.
-3. **One chunk per session.** However small the next one looks.
+3. **One chunk per pass.** The runner may loop the rest of the plan; it still finishes, verifies, and records one chunk before starting the next. Two chunks in one pass is still the failure.
 4. **Format lives in one file.** `specs/README.md` for specs, `.engineering/conventions.yaml` for conventions. Skills describe workflow and link to them.
 5. **Push rules down a tier.** If a linter can enforce it, prose about it is worse than useless.
 6. **The spec owns intent; the tracker owns scheduling.** A closed issue never promotes a badge — it flags the behaviour as worth verifying. Discussion flows _into_ specs, never the reverse.
