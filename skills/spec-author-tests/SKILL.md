@@ -15,13 +15,13 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 - Filling gaps `spec-assess-coverage` found.
 - Proving a wizard's navigation and recovery paths.
 
-**Not this skill:** assessing what's missing (`spec-assess-coverage`), a regression test for a reported bug (`bug-regression-red-green`).
+**Not this skill:** assessing what's missing (`spec-assess-coverage`), a regression test for a reported bug (`bug-regression-red-green`), deciding a test is worth writing (`write-tests` — apply that first).
 
 ## Workflow
 
 ### 1. Select the surface
 
-Confirm which behaviours, invariants, rows, and transitions are in scope. Default to what `spec-assess-coverage` reported uncovered. For guards, both branches are separate tests.
+Confirm which behaviours, invariants, rows, and transitions are in scope. Default to what `spec-assess-coverage` reported uncovered, then drop anything `write-tests` would refuse — types already cover it, I said not to test it, it is unscheduled, or it is an implementation detail. For behavioural guards, both branches are separate tests.
 
 ### 2. Pick the layer
 
@@ -81,9 +81,11 @@ Report: tests written, pending stubs and why, disagreements found, and any behav
 - **Editing the spec to match the code** mid-task.
 - **One test covering five rows.** Row-level naming is what makes a decision table auditable.
 - **Empty passing tests** for unbuilt behaviour. They read as coverage.
+- **Filling every uncovered ID.** `write-tests` decides whether the ID earns a test.
 
 ## Related skills
 
+- `write-tests` — whether this test should exist
 - `spec-assess-coverage` — what needs writing
 - `spec-maintain-on-ship` — when the spec turned out to be stale
 - `bug-regression-red-green` — when the code turned out to be wrong

@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 `/goal Complete the incomplete behaviours in current scope. You can confirm this if unsure.`
 
-That is the default objective when I type `/goal` with nothing else. Then follow [`run-implementation-plan`](../run-implementation-plan/SKILL.md) in full — the before-implementation work, the twelve card steps, the definition of done, and the host continuation.
+That is the default objective when I type `/goal` or `/loop` with nothing else. Then follow [`run-implementation-plan`](../run-implementation-plan/SKILL.md) in full — the before-implementation work, the twelve card steps, the definition of done, and the host continuation. `run-implementation-plan-all` is the same loop under the name that means finish the plan.
 
 This skill is the slash command. That skill is the loop. Do not duplicate the card steps here.
 
@@ -18,11 +18,11 @@ This skill is the slash command. That skill is the loop. Do not duplicate the ca
 - "Complete the incomplete behaviours in current scope."
 - I pasted a one-line goal and expect the agent to keep going across turns.
 
-**Not this skill:** writing a plan (`author-implementation-plan`).
+**Not this skill:** writing a plan (`author-implementation-plan`). A named chunk with **only** means `run-implementation-plan` stops after that card.
 
 ## Supplementary text
 
-The words after `/goal` replace or narrow the default objective. Honour them.
+The words after `/goal` or `/loop` replace or narrow the default objective. Honour them.
 
 A consuming app can also keep a short overlay at `paths.goal` in `.engineering/config.yaml` (default `.engineering/goal.md`). That is the place for command names this portable skill must not hardcode — `db_generate`, `db_migrate`, `checkpoint_commit`, protected migration paths. Read it when it exists. If the slash text and the overlay disagree, the slash text wins for this run.
 
@@ -38,8 +38,9 @@ Detect the host from available slash commands, not from guessing.
 | Codex and other hosts with `/goal` | `/goal` with the same scope | Same |
 | Neither | Keep working in this session | Same |
 
-The interval is **next card**, not a clock. If a checkpoint already exists under `.active/`, resume it.
+The interval is **next card**, not a clock. `/loop 5m` is the wrong tool. If a checkpoint already exists under `.active/`, resume it.
 
 ## Related skills
 
 - `run-implementation-plan` — the loop this command starts
+- `run-implementation-plan-all` — the same loop, named as finish the plan

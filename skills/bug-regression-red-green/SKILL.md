@@ -15,7 +15,7 @@ Test framework, layers, and locations: `.engineering/config.yaml`.
 - "Write a red test first" / "make sure this never breaks again."
 - After `spec-triage-bug-report` returns **confirmed bug**.
 
-**Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`).
+**Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`). Visual or click-only bugs are not this skill either — fix them and walk the app; `write-tests` explains why a bolted-on component test does not help.
 
 ## Workflow
 
@@ -89,6 +89,7 @@ Spec context: <behaviour IDs, if a spec governs this>.
 
 ## Related skills
 
+- `write-tests` — layer and whether a test belongs at all
 - `spec-triage-bug-report` — confirm it's a bug before fixing
 - `spec-maintain-on-ship` — if the spec needs updating too
 - `ready-for-pr` — gates before the pull request

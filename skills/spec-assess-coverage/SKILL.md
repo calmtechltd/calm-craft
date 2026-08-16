@@ -76,6 +76,7 @@ Don't write tests here. Hand to `spec-author-tests`.
 
 ## Related skills
 
+- `write-tests` — whether an uncovered ID should get a test
 - `spec-author-tests` — write the missing tests
 - `spec-audit-drift` — the code-side question
 - `spec-maintain-on-ship` — correct badges this proves wrong

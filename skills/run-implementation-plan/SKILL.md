@@ -16,7 +16,7 @@ Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-f
 ## When to use
 
 - `/goal` / "complete the incomplete behaviours in current scope".
-- "Run the implementation plan" / "finish the plan" / "continue the plan".
+- "Run the implementation plan" / "finish the plan" / "run them all" / `run-implementation-plan-all`.
 - "Do the next chunk" / "ship B4" / "run E1."
 
 **Not this skill:** writing a plan (`author-implementation-plan`). A named chunk starts there; it does not mean "stop after it" unless I say **only** that chunk.
@@ -48,7 +48,7 @@ Starting card, in order: the ID I named; the plan's "Next up" marker; the first 
 
 1. Read the complete relevant spec and acceptance criteria. Read the flow contract and the exact transitions assigned to this card. The YAML governs; Mermaid is a human view. Read **Work**, **Done when**, **Out of scope**. Out of scope is a hard wall. If the code seems to need an undeclared transition, stop and change the contract first.
 2. Check the implementation for drift and assess existing test coverage.
-3. Add or update tests that prove the specified behaviour. Include permission, tenancy, invariant, decision-table, and regression cases where applicable. Each cited flow transition gets a test, and each guard gets both branches, where there is a test surface for it.
+3. Add or update tests that prove the specified behaviour, but only where `write-tests` says they earn their keep. Include permission, tenancy, invariant, decision-table, and regression cases where applicable. Each cited flow transition gets a test, and each behavioural guard gets both branches, where there is a test surface for it — not a page mock, not a type the compiler already checks.
 4. Implement until the relevant tests pass. Follow the repo's conventions. If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Do not commit `.env` or put a real secret in `.env.example`.
 5. Use browser testing for genuinely user-facing paths. Exercise the local app when the acceptance criteria require observable UI behaviour. Actually do it; don't assume.
 6. If this repo's tests build their database from source schema (often `src/db/schema/**`), do not run `commands.db_generate` or `commands.db_migrate` merely to make tests see a schema change.
@@ -66,7 +66,7 @@ Stop only when every in-scope card is done, I asked for **only** one named chunk
 ## Definition of done
 
 - Every in-scope behaviour is implemented or explicitly recorded as blocked by a decision or external dependency.
-- Every implemented behaviour, invariant, and decision-table row has appropriate test evidence.
+- Every implemented behaviour, invariant, and decision-table row has appropriate test evidence — only the tests `write-tests` would allow.
 - Required browser paths have been exercised successfully.
 - Specs and implementation plans accurately describe the final behaviour and state.
 - A full branch self-review has been performed (`branch-self-review`) and verified findings have been fixed.
@@ -101,8 +101,10 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 
 ## Related skills
 
-- `goal` — the `/goal` wrapper; supplementary scope and the same loop
+- `goal` — the `/goal` / `/loop` wrapper; supplementary scope and the same loop
+- `run-implementation-plan-all` — the same loop, named as finish the plan
 - `author-implementation-plan` — writes the plan
+- `write-tests` — whether a chunk test should exist
 - `spec-maintain-on-ship` — badges in the same change
 - `spec-audit-drift` / `spec-assess-coverage` — the final gap check
 - `branch-self-review` — review the branch before anyone else

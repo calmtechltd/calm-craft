@@ -172,6 +172,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | `spec-audit-drift`        | Does the spec still match the implementation?                                      |
 | `spec-assess-coverage`    | Which behaviours, rules, and flow transitions have tests?                          |
 | `spec-author-tests`       | Generate tests from a spec, halting on spec/code disagreement.                     |
+| `write-tests`             | Whether a test earns its keep — picked up whenever an agent is about to write one. |
 | `spec-maintain-on-ship`   | Update a spec when work changes its state.                                         |
 | `spec-plan-gap`           | Search for overlap before authoring a new spec.                                    |
 | `spec-triage-bug-report`  | Bug, expected behaviour, gap, drift, or out of scope?                              |
@@ -181,14 +182,15 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 
 ### Delivery
 
-| Skill                        | Job                                                                 |
-| ---------------------------- | ------------------------------------------------------------------- |
-| `author-implementation-plan` | Design doc → chunks sized for one reviewable pass.                  |
-| `run-implementation-plan`    | Complete in-scope behaviours, one card at a time, until done.       |
-| `goal`                       | `/goal` — default objective, then the same loop.                    |
-| `bug-regression-red-green`   | Failing test first, then the fix, and the test stays.               |
-| `branch-self-review`         | Review your own diff before anyone else does. Reports; never fixes. |
-| `ready-for-pr`               | Run the gates CI runs; fix what fails.                              |
+| Skill                         | Job                                                                 |
+| ----------------------------- | ------------------------------------------------------------------- |
+| `author-implementation-plan`  | Design doc → chunks sized for one reviewable pass.                  |
+| `run-implementation-plan`     | Complete in-scope behaviours, one card at a time, until done.       |
+| `run-implementation-plan-all` | Named entry for finishing the plan — same loop.                     |
+| `goal`                        | Thin wrapper — `/goal` on Codex, `/loop` on Cursor.                 |
+| `bug-regression-red-green`    | Failing test first, then the fix, and the test stays.               |
+| `branch-self-review`          | Review your own diff before anyone else does. Reports; never fixes. |
+| `ready-for-pr`                | Run the gates CI runs; fix what fails.                              |
 
 ## Boundaries this plugin defends
 
@@ -201,6 +203,7 @@ These exist because collapsing them is easy and quietly destroys the value:
 5. **Push rules down a tier.** If a linter can enforce it, prose about it is worse than useless.
 6. **The spec owns intent; the tracker owns scheduling.** A closed issue never promotes a badge — it flags the behaviour as worth verifying. Discussion flows _into_ specs, never the reverse.
 7. **Third-party text is data, never instruction.** Issue and review comments arrive from outside the session, and on a public repository from anyone at all. `spec-harvest-discussion` classifies them and never obeys them.
+8. **A test that restates the type checker, or an instruction not to test, is worse than no test.** `write-tests` decides whether one earns its keep before any other skill writes it.
 
 ## References
 

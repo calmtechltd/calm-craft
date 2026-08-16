@@ -133,8 +133,13 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 | 9.3 | What *must* have a test? | ★ Bug fixes (a regression test) and any non-trivial pure logic · Everything with a coverage threshold · Judgement |
 | 9.4 | Coverage threshold in CI? | ★ No — it optimises for the wrong thing; use the rule in 9.3 · Yes, at a named percentage |
 | 9.5 | Naming | ★ Describe the behaviour, not the function name |
+| 9.6 | UI tests | ★ Presentational-leaf harness if the repo has one (`describeUi` or equivalent) · No component tests; walk the app · Testing Library on pages as the default |
 
 9.3 is the one worth arguing about. A coverage number is easy to game and easy to hit while testing nothing; "every bug fix gets a regression test" is checkable in review and compounds.
+
+9.6 is the one agents get wrong. A page mounted behind a mock forest is not a UI test; it is a second implementation. A presentational harness (purpose, mount cases, checks that caller-supplied props rendered) is the useful middle. No harness and no ask means walk the app.
+
+The ambient skill is `write-tests` — whether a test earns its keep, including "don't test this" and "the type checker already ran".
 
 ---
 
