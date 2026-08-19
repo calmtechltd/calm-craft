@@ -185,12 +185,18 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | Skill                         | Job                                                                 |
 | ----------------------------- | ------------------------------------------------------------------- |
 | `author-implementation-plan`  | Design doc → chunks sized for one reviewable pass.                  |
+| `ask-questions`               | Surface open decisions in current work and ask them, structured.    |
 | `run-implementation-plan`     | Complete in-scope behaviours, one card at a time, until done.       |
 | `run-implementation-plan-all` | Named entry for finishing the plan — same loop.                     |
 | `goal`                        | Thin wrapper — `/goal` on Codex, `/loop` on Cursor.                 |
 | `bug-regression-red-green`    | Failing test first, then the fix, and the test stays.               |
 | `branch-self-review`          | Review your own diff before anyone else does. Reports; never fixes. |
 | `ready-for-pr`                | Run the gates CI runs; fix what fails.                              |
+| `update-pr`                   | Rewrite or sync the current PR title and body from the branch.      |
+| `branch-cleanup`              | Delete locally what is provably in trunk; never remotes.            |
+| `coderabbit-review-triage`    | Download a CodeRabbit review, verify, classify. Writes `.active/` only. |
+| `coderabbit-review-implement` | Apply obvious fixes locally. No commit, push, or resolve.           |
+| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.            |
 
 ## Boundaries this plugin defends
 

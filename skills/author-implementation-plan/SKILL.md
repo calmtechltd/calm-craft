@@ -88,6 +88,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 
 - `run-implementation-plan` — execute the plan, one chunk per pass, until it is done
 - `run-implementation-plan-all` — the same loop, named as finish the plan
+- `ask-questions` — put unresolved questions found while chunking
 - `goal` — `/goal` / `/loop` wrapper around that loop
 - `spec-author-greenfield` — author specs a specs-first plan needs
 - `spec-maintain-on-ship` — badges when a chunk ships

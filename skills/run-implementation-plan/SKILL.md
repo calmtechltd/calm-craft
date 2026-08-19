@@ -38,7 +38,7 @@ Do not reset `.active/` on a continuation turn. If I attached supplementary text
 - Read every scoped spec, its linked implementation plan or design document, and the repository rules.
 - Identify behaviour statuses, dependencies, existing implementation, test coverage, and Open Questions.
 - Resolve questions only when authoritative evidence in the specs, code, tests, or linked decisions establishes the answer.
-- Batch genuinely blocking product decisions for me before coding. Do not invent a product decision. If I tell you not to stop for questions, skip blocked behaviours and record them instead.
+- Batch genuinely blocking product decisions for me before coding via [`ask-questions`](../ask-questions/SKILL.md). Do not invent a product decision. If I tell you not to stop for questions, skip blocked behaviours and record them instead.
 - Build a dependency-ordered work queue. Work on one behaviour or implementation-plan chunk at a time.
 - Keep a concise checkpoint under `.active/` containing the scope, queue, completed cards, verification evidence, current database state, blockers, and next action. Do not commit `.active/`.
 
@@ -103,6 +103,7 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 
 - `goal` — the `/goal` / `/loop` wrapper; supplementary scope and the same loop
 - `run-implementation-plan-all` — the same loop, named as finish the plan
+- `ask-questions` — batch blocking product decisions before coding
 - `author-implementation-plan` — writes the plan
 - `write-tests` — whether a chunk test should exist
 - `spec-maintain-on-ship` — badges in the same change

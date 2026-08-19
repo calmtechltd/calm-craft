@@ -17,7 +17,7 @@ Default branch, report path, and always-check conventions: `.engineering/config.
 - "What could break in this diff?"
 - After finishing a chunk, before `ready-for-pr`.
 
-**Not this skill:** running gates (`ready-for-pr`), convention compliance (`conventions-audit`), processing bot feedback on an existing pull request.
+**Not this skill:** running gates (`ready-for-pr`), convention compliance (`conventions-audit`), processing bot feedback on an existing pull request (`coderabbit-review-triage`).
 
 ## Workflow
 
@@ -94,5 +94,6 @@ Then: fix the Critical and Major findings, run `ready-for-pr`, open the pull req
 ## Related skills
 
 - `ready-for-pr` — the gates
+- `coderabbit-review-triage` — process a bot review on an open PR
 - `conventions-audit` — convention compliance specifically
 - `bug-regression-red-green` — for a real bug this found

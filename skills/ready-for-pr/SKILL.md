@@ -15,7 +15,7 @@ Commands come from `commands` in `.engineering/config.yaml`, which `engineering-
 - "Run the checks" / "will CI pass?"
 - After finishing a chunk or a fix.
 
-**Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata.
+**Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`).
 
 ## Workflow
 
@@ -83,5 +83,6 @@ Be accurate about what actually ran. "Ready" after skipping the test suite is th
 ## Related skills
 
 - `branch-self-review` — bugs and risk, before or after these gates
+- `update-pr` — title and body once the gates pass
 - `conventions-audit` — convention compliance
 - `engineering-setup` — when the commands here are wrong or missing

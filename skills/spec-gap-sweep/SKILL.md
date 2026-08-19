@@ -92,3 +92,4 @@ Change nothing.
 - `spec-plan-gap` — plan a spec for an unspecced module
 - `spec-audit-drift` — go deep on a spec this flagged
 - `spec-visualize` — the same data, browsable
+- `ask-questions` — asks current-work decisions; this skill only reports

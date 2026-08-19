@@ -79,4 +79,5 @@ Path, and counts: behaviours, invariants, flow transitions, Open Questions, Futu
 - `spec-plan-gap` — check for overlap before authoring
 - `spec-author-from-impl` — for features that already exist
 - `spec-maintain-on-ship` — flip badges when work is prioritised or ships
+- `ask-questions` — put Open Questions to me as structured choices
 - `author-implementation-plan` — turn the spec into executable chunks
