@@ -219,7 +219,7 @@ export function Atlas({ estate, worktreeEntries, onOpenSpec, selection, selected
     <main className="atlas" id="main-content">
       <header className="view-heading">
         <h1>Atlas</h1>
-        <span className="view-count">
+        <span aria-label={`${estate.specs.length} specifications`} className="view-count">
           <strong>{estate.specs.length}</strong> specifications
         </span>
       </header>

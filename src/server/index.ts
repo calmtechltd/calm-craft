@@ -33,7 +33,7 @@ const SECURITY_HEADERS = {
     "script-src 'self'",
     "style-src 'self'",
     "font-src 'self'",
-    "img-src 'self'",
+    "img-src 'self' data:",
     "connect-src 'self'",
     "object-src 'none'",
     "media-src 'none'",

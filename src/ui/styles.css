@@ -31,7 +31,7 @@
 
   --ink: #09090b; /* foreground */
   --ink-muted: #71717a; /* muted-foreground */
-  --ink-faint: #a1a1aa; /* subtle-foreground */
+  --ink-faint: #52525b; /* subtle-foreground; AA on canvas and nav */
   --canvas: #fafafa; /* page ground */
   --surface: #ffffff; /* card */
   --surface-raised: #ffffff; /* popover */
@@ -88,7 +88,7 @@
   color-scheme: dark;
   --ink: #fafafa;
   --ink-muted: #a1a1aa;
-  --ink-faint: #71717a;
+  --ink-faint: #a1a1aa;
   --canvas: #09090b;
   --surface: #101012;
   --surface-raised: #131316;
@@ -1183,7 +1183,7 @@ select:focus-visible,
   padding: 0 12px 0 136px;
   border-bottom: 1px solid var(--line);
   background: var(--nav-accent);
-  color: var(--ink-muted);
+  color: var(--ink);
   font-size: var(--text-xs);
   grid-template-columns: minmax(170px, 2fr) 118px 68px 68px 68px 34px;
   gap: 10px;

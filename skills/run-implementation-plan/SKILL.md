@@ -11,7 +11,7 @@ Treat the scoped specs as the source of truth. Keep working across turns until t
 
 The card is still the unit of work: one behaviour or implementation-plan chunk per pass. The skill does not stop after the first card.
 
-Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md). Invoke as `/goal` via [`goal`](../goal/SKILL.md). Repo-specific extras: `paths.goal` (default `.engineering/goal.md`).
+Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md). Host `/goal` (Cursor, Codex, and others) starts this loop. Repo-specific extras: `paths.goal` (default `.engineering/goal.md`).
 
 ## When to use
 
@@ -27,8 +27,7 @@ After each card, if dependency-ready work remains, **do not wait for another pro
 
 1. **Same session, if context is healthy** — start the next card immediately.
 2. **New turn required** — same scope, same checkpoint:
-   - **Cursor** — `/loop` on this skill, or `/goal` if that is how the session started. The interval is "next card". The stop condition is the definition of done, not a clock.
-   - **Hosts with `/goal`** — `/goal` with the same scope.
+   - **Hosts with `/goal`** (Cursor, Codex, and others) — `/goal` with the same scope. The interval is "next card". The stop condition is the definition of done, not a clock.
    - **Neither** — keep working in this session anyway.
 
 Do not reset `.active/` on a continuation turn. If I attached supplementary text, or the goal overlay exists, honour it. Slash text wins for this run.
@@ -101,7 +100,6 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 
 ## Related skills
 
-- `goal` — the `/goal` / `/loop` wrapper; supplementary scope and the same loop
 - `run-implementation-plan-all` — the same loop, named as finish the plan
 - `ask-questions` — batch blocking product decisions before coding
 - `author-implementation-plan` — writes the plan
