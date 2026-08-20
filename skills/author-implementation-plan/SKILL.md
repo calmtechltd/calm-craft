@@ -17,7 +17,7 @@ Plan location and commands: `.engineering/config.yaml`. Spec format: [`reference
 - "Break this feature into agent-sized chunks."
 - Before a large feature, once the design exists.
 
-**Not this skill:** executing the plan (`run-implementation-plan` / `run-implementation-plan-all` / `goal`), writing specs (`spec-author-greenfield`).
+**Not this skill:** executing the plan (`run-implementation-plan` / `run-implementation-plan-all`), writing specs (`spec-author-greenfield`).
 
 ## Workflow
 
@@ -89,6 +89,5 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 - `run-implementation-plan` — execute the plan, one chunk per pass, until it is done
 - `run-implementation-plan-all` — the same loop, named as finish the plan
 - `ask-questions` — put unresolved questions found while chunking
-- `goal` — `/goal` / `/loop` wrapper around that loop
 - `spec-author-greenfield` — author specs a specs-first plan needs
 - `spec-maintain-on-ship` — badges when a chunk ships

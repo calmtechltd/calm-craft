@@ -1,11 +1,11 @@
 ---
 name: ready-for-pr
-description: Run the same quality gates CI runs — types, lint, dead code, tests — and fix what fails until the branch would pass. Use when the user says "ready for PR", "run the checks", "is this ready to ship", "will CI pass", or before opening a pull request.
+description: Run the same quality gates CI runs — types, lint, dead code, tests — and fix what fails until the branch would pass. Then mark the current branch's GitHub PR ready for review if it is still a draft. Use when the user says "ready for PR", "run the checks", "is this ready to ship", "will CI pass", or before opening a pull request. A bare commit or submit does not run this suite and must not mark the PR ready.
 ---
 
 # Ready for PR
 
-Run the gates CI runs, fix what fails, report pass or blocked. Nothing more.
+Run the gates CI runs, fix what fails, then — only if every gate passed — mark the current branch's draft PR ready for review.
 
 Commands come from `commands` in `.engineering/config.yaml`, which `engineering-setup` took from the CI workflow. If they've drifted from CI, that's a finding — report it rather than quietly running something different from what will actually gate the merge.
 
@@ -15,7 +15,7 @@ Commands come from `commands` in `.engineering/config.yaml`, which `engineering-
 - "Run the checks" / "will CI pass?"
 - After finishing a chunk or a fix.
 
-**Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`).
+**Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`). Opening or submitting the PR is a separate skill — this one only marks an existing draft ready.
 
 ## Workflow
 
@@ -53,12 +53,27 @@ Once gates pass, look at what's actually staged and changed. Flag:
 
 **Do not commit or push** unless I ask.
 
-### 4. Report
+### 4. Mark the PR ready (after gates pass)
+
+This is the step submit must not do. Only run it when every gate above passed.
+
+```bash
+gh pr view --json number,isDraft,url
+```
+
+- **No PR** — report Ready locally. Do not open or submit one.
+- **Draft** — `gh pr ready`, then confirm `isDraft` is false. That is what notifies reviewers and turns review bots on when they skip drafts.
+- **Already ready** — leave it. Report that the gates passed.
+- **Gates blocked** — never mark ready. A draft with failing checks is the correct state.
+
+If I asked only to **run the checks** and not to publish, skip `gh pr ready`. Report the actual PR state: no PR, still a draft, or already ready.
+
+### 5. Report
 
 Two shapes only:
 
-- **Ready** — all gates passed, with a note on scope if you ran anything narrower than the full suite.
-- **Blocked** — which step failed, the one-line cause, what you fixed, and what still needs a human. Include anything I must run myself, such as a migration.
+- **Ready** — all gates passed; whether the PR was marked ready, left ready, or does not exist yet.
+- **Blocked** — which step failed, the one-line cause, what you fixed, and what still needs a human. Include anything I must run myself, such as a migration. Do not mark the PR ready.
 
 Be accurate about what actually ran. "Ready" after skipping the test suite is the single most damaging thing this skill can say.
 
@@ -69,6 +84,7 @@ Be accurate about what actually ran. "Ready" after skipping the test suite is th
 - [ ] Failures fixed at the root, not suppressed.
 - [ ] Config commands match what CI runs — drift reported.
 - [ ] Git sanity check done.
+- [ ] Draft PR marked ready only after gates passed, unless I asked only to run the checks.
 - [ ] Nothing committed or pushed unasked.
 - [ ] The report states what actually ran.
 
@@ -79,6 +95,7 @@ Be accurate about what actually ran. "Ready" after skipping the test suite is th
 - **Running a narrower test scope by default** because it's faster. Ask first.
 - **Continuing past a failure** to collect more output — later failures are usually downstream of the first.
 - **Fixing unrelated things** you noticed on the way. Note them instead.
+- **Calling `gh pr ready` from submit, or on a blocked draft.**
 
 ## Related skills
 
