@@ -14,6 +14,7 @@ CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes desc
 - Add `ask-questions`: surface real open decisions in the current conversation, plan, or session-owned branch and put them to you as structured choices. Never invents the questions.
 - Add `branch-cleanup`, `update-pr`, and the CodeRabbit review trio (`coderabbit-review-triage`, `coderabbit-review-implement`, `coderabbit-review-implement-all`). Repos without CodeRabbit simply never trigger those three.
 - `ready-for-pr` marks a draft PR ready after the gates pass. Submit stays draft; this skill is what publishes the review.
+- Ship skill sidecars in the npm package (`scripts/`, extra skill markdown). Select chevrons work under CSP. Muted chrome text meets contrast.
 
 ## 0.1.0 — pending
 

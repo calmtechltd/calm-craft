@@ -69,7 +69,7 @@ test("packed Atlas opens, filters, selects, themes, and adapts at 300 specs", as
   expect(coldStartDuration).toBeLessThan(4_000);
   expect(Date.now() - started).toBeLessThan(4_000);
   await expect(page.getByLabel("300 specifications")).toBeVisible();
-  await expect(page.locator("[data-spec-id]")).toHaveCount(120);
+  await expect(page.locator("[data-spec-id]")).toHaveCount(300);
   await expect(page).not.toHaveURL(/token=/u);
 
   const search = page.getByRole("searchbox", { name: "Search specifications" });

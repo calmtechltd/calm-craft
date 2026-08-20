@@ -89,6 +89,7 @@ describe("loopback session server", () => {
 
     expect(initial.status).toBe(200);
     expect(initial.headers.get("content-security-policy")).toContain("default-src 'none'");
+    expect(initial.headers.get("content-security-policy")).toContain("img-src 'self' data:");
     expect(initial.headers.get("x-content-type-options")).toBe("nosniff");
     const sessionCookie = initial.headers.get("set-cookie")?.split(";")[0];
     expect(sessionCookie).toMatch(/^calmcraft_session_\d+=/u);
