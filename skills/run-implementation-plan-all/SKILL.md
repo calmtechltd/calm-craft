@@ -9,7 +9,7 @@ Finish the plan. This is the same loop as [`run-implementation-plan`](../run-imp
 
 Host `/goal` starts this loop. The interval is next card, not a clock.
 
-Verification is the card's diff, not the whole repo: targeted tests, lint/format on touched files, path-scoped types when the tool accepts files. Do not run `ready-for-pr` or whole-programme `commands.types` / `commands.test` / `commands.deadcode` as part of finishing the plan.
+Per-card verification stays cheap: targeted tests, lint/format on touched files, path-scoped types when the tool accepts files. After the last card, run the close-out in `run-implementation-plan` — whole-programme types, knip, lint, and the test suite — and loop until green. Do not run that expensive pass after every card.
 
 **Not this skill:** writing a plan (`author-implementation-plan`). A named chunk with **only** stops after that card, still via `run-implementation-plan`.
 
