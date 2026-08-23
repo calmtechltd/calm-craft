@@ -9,6 +9,8 @@ Finish the plan. This is the same loop as [`run-implementation-plan`](../run-imp
 
 Host `/goal` starts this loop. The interval is next card, not a clock.
 
+Verification is the card's diff, not the whole repo: targeted tests, lint/format on touched files, path-scoped types when the tool accepts files. Do not run `ready-for-pr` or whole-programme `commands.types` / `commands.test` / `commands.deadcode` as part of finishing the plan.
+
 **Not this skill:** writing a plan (`author-implementation-plan`). A named chunk with **only** stops after that card, still via `run-implementation-plan`.
 
 ## Related skills
