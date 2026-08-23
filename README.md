@@ -186,7 +186,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | ----------------------------- | ------------------------------------------------------------------- |
 | `author-implementation-plan`  | Design doc → chunks sized for one reviewable pass.                  |
 | `ask-questions`               | Surface open decisions in current work and ask them, structured.    |
-| `run-implementation-plan`     | Complete in-scope behaviours, one card at a time, until done. Checks stay on the card's diff, not whole-repo gates. |
+| `run-implementation-plan`     | Complete in-scope behaviours, one card at a time, until done. Cheap checks per card; full gates once at close-out. |
 | `run-implementation-plan-all` | Named entry for finishing the plan — same loop.                     |
 | `bug-regression-red-green`    | Failing test first, then the fix, and the test stays.               |
 | `branch-self-review`          | Review your own diff before anyone else does. Reports; never fixes. |
