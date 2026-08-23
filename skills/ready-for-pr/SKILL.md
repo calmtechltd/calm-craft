@@ -13,7 +13,7 @@ Commands come from `commands` in `.engineering/config.yaml`, which `engineering-
 
 - "Is this ready for a pull request?"
 - "Run the checks" / "will CI pass?"
-- After finishing a chunk or a fix.
+- After finishing a chunk or a fix, **when I ask whether CI would pass** — not as part of `run-implementation-plan`. That loop stays on the diff.
 
 **Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`). Opening or submitting the PR is a separate skill — this one only marks an existing draft ready.
 

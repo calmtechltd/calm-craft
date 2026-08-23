@@ -7,7 +7,7 @@ description: Review this branch's committed changes against the merge-base for f
 
 Review your own diff before anyone else does. Functional bugs, permission and tenancy holes, risky paths, convention gaps.
 
-**Read-only for product code.** It writes a report and fixes nothing — an auditor that can edit can make its own findings disappear. It also doesn't run typecheck or tests; `ready-for-pr` owns gates.
+**Read-only for product code.** It writes a report and fixes nothing — an auditor that can edit can make its own findings disappear. It also doesn't run typecheck or tests; `ready-for-pr` owns whole-repo gates. The implementation loop does not run those gates either.
 
 Default branch, report path, and always-check conventions: `.engineering/config.yaml`.
 
