@@ -20,7 +20,7 @@ On npmjs.com, require two-factor authentication, disallow token publishing, and 
 
 ## Prepare a version
 
-1. Update `package.json`, `plugin.json`, `.claude-plugin/plugin.json`, and `src/meta.ts` to one version.
+1. Update `package.json`, `plugin.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, and `src/meta.ts` to one version.
 2. Move the release notes in `CHANGELOG.md` from pending to the release date.
 3. Run `pnpm install --frozen-lockfile`, `pnpm check-types`, `pnpm lint`, `pnpm test:unit`, `pnpm build`, `pnpm license-check`, `pnpm release:check`, and the packaged browser suite.
 4. Review the tarball file list and the complete Git diff. Do not publish from a developer checkout.

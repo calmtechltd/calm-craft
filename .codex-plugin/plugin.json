@@ -1,0 +1,24 @@
+{
+  "name": "calm-craft",
+  "version": "0.2.0",
+  "description": "Portable skills for writing specs, planning delivery, reviewing code, and keeping conventions enforceable.",
+  "author": {
+    "name": "Calm Tech Ltd",
+    "url": "https://github.com/calmtechltd"
+  },
+  "homepage": "https://github.com/calmtechltd/calm-craft",
+  "repository": "https://github.com/calmtechltd/calm-craft",
+  "license": "MIT",
+  "keywords": ["specs", "conventions", "code-review", "implementation-plan", "testing"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Calm Craft",
+    "shortDescription": "Turn decisions into specs and shipped work.",
+    "longDescription": "Calm Craft gives Codex a practical set of skills for writing and maintaining specifications, planning implementation, reviewing changes, and enforcing team conventions.",
+    "developerName": "Calmtech",
+    "category": "Developer Tools",
+    "capabilities": ["Specifications", "Planning", "Code review"],
+    "websiteURL": "https://github.com/calmtechltd/calm-craft",
+    "defaultPrompt": "Help me turn this work into a clear spec and implementation plan."
+  }
+}

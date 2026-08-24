@@ -27,6 +27,7 @@ describe("npm release contract", () => {
     const manifest = json<PackageManifest>("package.json");
     const plugin = json<{ version: string }>("plugin.json");
     const claudePlugin = json<{ version: string }>(".claude-plugin/plugin.json");
+    const codexPlugin = json<{ version: string }>(".codex-plugin/plugin.json");
 
     expect(manifest).toMatchObject({
       name: "@calmcraft/cli",
@@ -35,7 +36,14 @@ describe("npm release contract", () => {
       engines: { node: "^22.0.0 || ^24.0.0" },
       publishConfig: { access: "public", provenance: true },
     });
-    expect([manifest.version, plugin.version, claudePlugin.version, CALMCRAFT_VERSION]).toEqual([
+    expect([
+      manifest.version,
+      plugin.version,
+      claudePlugin.version,
+      codexPlugin.version,
+      CALMCRAFT_VERSION,
+    ]).toEqual([
+      manifest.version,
       manifest.version,
       manifest.version,
       manifest.version,
