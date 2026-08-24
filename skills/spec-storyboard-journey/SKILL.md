@@ -38,7 +38,7 @@ Use a flow for ordered steps, conditional navigation, cancellation, retry, resum
 
 ### 4. Storyboard the scenes
 
-Create the scene table from the UX reference. Tie each scene to its state, behaviours, and transitions. Include what the user sees, the main action, other exits, system feedback, preserved state, and accessibility intent.
+Create the scene table from the UX reference. Tie each scene to its state, behaviours, and transitions. Include what the user sees, the main action, system feedback, preserved state, and accessibility intent. Derive other exits from every outgoing transition except the scene's primary transition; review each exit's event, guard, destination, and outcome.
 
 Keep the baseline factual. Mark unknowns and contradictions. Do not improve them while describing them.
 
@@ -72,7 +72,7 @@ Once accepted:
 1. Update behaviours, invariants, and decision tables first.
 2. Badge unbuilt target behaviour `future` or `partial` with an honest note.
 3. Update the flow YAML. Each transition cites real behaviours through `covers`.
-4. Put the accepted scene evidence in each user-visible state's `storyboard` block. A screen's `primary_transition` references one of its outgoing transition IDs.
+4. Put the accepted scene evidence in each user-visible state's `storyboard` block. A screen's `primary_transition` references one of its outgoing transition IDs. Keep every secondary exit as another outgoing transition; do not duplicate exits in a storyboard field.
 5. Preserve IDs for unchanged states and transitions. Assign new IDs only to new paths.
 6. Generate Mermaid with the repository's owning command and inspect the result.
 
@@ -85,7 +85,8 @@ Report the baseline problems, accepted UX decisions, changed behaviour and trans
 ## Quality gate
 
 - [ ] Baseline and target are distinct.
-- [ ] Each scene states user goal, entering context, information, primary action, exits, feedback, preserved state, and accessibility intent.
+- [ ] Each scene states user goal, entering context, information, primary action, feedback, preserved state, and accessibility intent.
+- [ ] Every outgoing transition other than `primary_transition` appears in the scene review as a secondary exit, with no duplicate `other_exits` field.
 - [ ] Findings cite specific scenes or transitions and observed user cost.
 - [ ] Relevant back, cancel, retry, permission, failure, partial-success, and resume paths appear.
 - [ ] Terminal outcomes explain what happened and what the user can do next.

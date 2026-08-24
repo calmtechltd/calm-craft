@@ -26,12 +26,14 @@ Create one row per user-visible scene:
 | Enters with     | Prior decision, context, data, and system state                      |
 | Sees and knows  | Information needed to understand the current state and likely result |
 | Primary action  | The clearest next action                                             |
-| Other exits     | Back, cancel, pause, skip, or a safe alternative                     |
+| Other exits     | Every outgoing transition except the primary transition              |
 | System feedback | Progress, success, validation, permission, or failure feedback       |
 | Preserved state | Valid input or context that survives navigation and retry            |
 | Contract links  | Behaviour IDs and incoming or outgoing transition IDs                |
 
 Include action states when processing takes long enough to need progress, cancellation, or resumability. Include terminal scenes when the user needs a result, next step, or explanation of what happened to their data.
+
+Derive other exits from the flow topology. For each scene, list every outgoing transition except `storyboard.primary_transition`, then review its event, guard, destination, and outcome. Persist secondary exits as transitions in the flow YAML; do not add an `other_exits` storyboard field.
 
 ## Apple-inspired review lens
 
@@ -75,7 +77,7 @@ Storyboard keyboard order, focus movement, error association, reduced-motion beh
 
 1. Remove scenes that add no decision, information, safety, or feedback.
 2. Put permission and feasibility checks before the user invests work.
-3. Give each scene one clear primary action and a truthful exit.
+3. Give each scene one clear primary action and review every other outgoing transition as a truthful secondary exit.
 4. Delay advanced choices until their branch becomes relevant.
 5. Make processing, success, failure, and partial success visible.
 6. Preserve valid input across back, retry, and resume.
@@ -90,6 +92,6 @@ Tie each proposed UX change to product intent:
 - Add a decision-table row when the result depends on a combination of conditions.
 - Change the flow YAML when a state, event, guard, route, or terminal outcome changes.
 
-Every target transition must cite the behaviours it clarifies through `covers`. Preserve IDs for states and transitions whose meaning did not change. Record accepted scene evidence in each user-visible state's `storyboard` block, then generate Mermaid from YAML.
+Every target transition must cite the behaviours it clarifies through `covers`. Preserve IDs for states and transitions whose meaning did not change. Record accepted scene evidence in each user-visible state's `storyboard` block, using `primary_transition` to distinguish the main action from the remaining outgoing transitions, then generate Mermaid from YAML.
 
 Layout, copy, responsive behaviour, animation, and visual hierarchy still need screen design and browser review. A complete flow contract makes those reviews easier; it does not replace them.
