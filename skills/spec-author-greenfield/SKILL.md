@@ -15,7 +15,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 - "I want to think through the edge cases before we touch code."
 - "Capture this design so it doesn't only live in chat."
 
-**Not this skill:** speccing something already built (`spec-author-from-impl`), checking for an existing spec first (`spec-plan-gap`).
+**Not this skill:** speccing something already built (`spec-author-from-impl`), checking for an existing spec first (`spec-plan-gap`), or scene-level UX review of a journey (`spec-storyboard-journey`).
 
 ## Workflow
 
@@ -50,6 +50,7 @@ Adjust on my feedback, then write.
 - Omit the ticket field entirely until the work is prioritised.
 - Open Questions and Future Considerations will be heavier than in a backwards-engineered spec. **That is the point.**
 - If a flow is warranted, write the YAML contract first, then generate the Mermaid sibling from it with its generated-file warning. Every transition cites behaviours through `covers` — a flow never creates requirements outside them.
+- If the journey needs scene-level UX review, run `spec-storyboard-journey` and keep accepted storyboard evidence on the flow states.
 
 ### 5. Hand back
 
@@ -79,5 +80,6 @@ Path, and counts: behaviours, invariants, flow transitions, Open Questions, Futu
 - `spec-plan-gap` — check for overlap before authoring
 - `spec-author-from-impl` — for features that already exist
 - `spec-maintain-on-ship` — flip badges when work is prioritised or ships
+- `spec-storyboard-journey` — test a warranted journey scene by scene before implementation
 - `ask-questions` — put Open Questions to me as structured choices
 - `author-implementation-plan` — turn the spec into executable chunks

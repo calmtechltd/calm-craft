@@ -86,6 +86,17 @@ export type FlowState = {
   kind: "screen" | "action" | "terminal";
   label: string;
   outcome?: string;
+  storyboard?: FlowStoryboard;
+};
+
+export type FlowStoryboard = {
+  userGoal: string;
+  entersWith: string;
+  sees: string;
+  primaryTransition?: string;
+  feedback: string;
+  preserves: string;
+  accessibility: string;
 };
 
 export type FlowTransition = {

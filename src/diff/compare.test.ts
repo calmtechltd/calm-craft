@@ -5,7 +5,7 @@ import { renderFlowMermaid } from "../specs/flow-mermaid";
 import { loadSpecEstateFromSources } from "../specs/estate";
 import { compareEstates } from "./compare";
 
-function flowYaml(guard: string): string {
+function flowYaml(guard: string, feedback = "The reviewer sees the validation result."): string {
   return `version: 1
 flows:
   - id: F1
@@ -15,10 +15,25 @@ flows:
       - id: ready
         kind: screen
         label: Ready
+        storyboard:
+          user_goal: Review the change before deciding.
+          enters_with: A change that is ready for review.
+          sees: The change, its evidence, and the expected result.
+          primary_transition: F1.T1
+          feedback: ${feedback}
+          preserves: The change and its review evidence.
+          accessibility: Focus enters on the review heading.
       - id: done
         kind: terminal
         label: Done
         outcome: The review is complete.
+        storyboard:
+          user_goal: Confirm the review result.
+          enters_with: A completed review.
+          sees: The result and the next action.
+          feedback: Completion is announced without relying on colour.
+          preserves: The reviewed change and its evidence.
+          accessibility: Focus enters on the result heading.
     transitions:
       - id: F1.T1
         from: ready
@@ -186,6 +201,31 @@ describe("semantic estate comparison", () => {
 
     expect(compareEstates(before, after, "staged")).toEqual(
       compareEstates(before, after, "staged"),
+    );
+  });
+
+  it("reports storyboard evidence changes as semantic flow-state changes", async () => {
+    const before = await estate("implemented", false, true, "The review is approved.");
+    const yaml = flowYaml(
+      "The review is approved.",
+      "The reviewer sees approval beside the decision.",
+    );
+    const after = await loadSpecEstateFromSources(
+      "/fixture",
+      "specs",
+      new Map([
+        ["product/feature.md", featureSpec("implemented", false, true)],
+        ["product/related.md", relatedSpec()],
+        ["product/feature.flow.yaml", yaml],
+        [
+          "product/feature.flow.mmd",
+          renderFlowMermaid(parseFlowContract(yaml), "feature.flow.yaml"),
+        ],
+      ]),
+    );
+
+    expect(compareEstates(before, after, "committed")).toContainEqual(
+      expect.objectContaining({ kind: "flow.state.changed", elementId: "F1.ready" }),
     );
   });
 });

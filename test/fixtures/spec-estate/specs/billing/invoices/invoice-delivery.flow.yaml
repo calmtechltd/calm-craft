@@ -7,14 +7,36 @@ flows:
       - id: ready
         kind: screen
         label: Ready to Send
+        storyboard:
+          user_goal: Check the invoice and send it to the right customer.
+          enters_with: A prepared invoice and a customer delivery address.
+          sees: The invoice summary, destination, and any delivery warning.
+          primary_transition: F1.T1
+          feedback: Address problems appear before delivery is attempted.
+          preserves: The prepared invoice and any valid address correction.
+          accessibility: Focus enters on the review heading and warnings identify the affected field.
       - id: delivered
         kind: terminal
         label: Delivered
         outcome: The customer receives the invoice.
+        storyboard:
+          user_goal: Confirm that the invoice reached the customer.
+          enters_with: A successful delivery result.
+          sees: The recipient, delivery status, and available next action.
+          feedback: Delivery success is announced without relying on colour.
+          preserves: The invoice and its delivery evidence.
+          accessibility: Focus enters on the delivery result heading.
       - id: correction
         kind: terminal
         label: Correction Required
         outcome: The customer sees which address needs correction.
+        storyboard:
+          user_goal: Understand and correct the delivery problem.
+          enters_with: An invoice whose address failed validation.
+          sees: The invalid address, reason, and route back to editing.
+          feedback: The validation problem identifies the address field.
+          preserves: The invoice and every valid address value.
+          accessibility: The error summary links to the invalid address field.
     transitions:
       - id: F1.T1
         from: ready

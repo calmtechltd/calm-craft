@@ -71,6 +71,8 @@ describe("npm release contract", () => {
     expect(read("SECURITY.md")).toContain(
       "https://github.com/calmtechltd/calm-craft/security/advisories/new",
     );
+    expect(read("assets/specs/_template.md")).toBe(read("specs/_template.md"));
+    expect(read("assets/specs/_flow-template.yaml")).toBe(read("specs/_flow-template.yaml"));
     const releasing = read("RELEASING.md");
     expect(releasing).toContain("--allow-stage-publish");
     expect(releasing).toContain("npm stage publish --tag next");

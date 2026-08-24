@@ -30,10 +30,10 @@ status: partial                           # implemented | partial | future — r
 
 With a provider set, a `ticket` field becomes available in front matter and on 🟡 behaviours:
 
-| Provider | Setup |
-| --- | --- |
-| `none` | Default. No ticket field |
-| `github` | Inferred from the repository. `gh` is already authenticated, so skills can genuinely resolve issue state |
+| Provider                   | Setup                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `none`                     | Default. No ticket field                                                                                      |
+| `github`                   | Inferred from the repository. `gh` is already authenticated, so skills can genuinely resolve issue state      |
 | `linear`, `jira`, `custom` | Require `pattern` and a `url` template. Skills can link, but usually cannot resolve state without credentials |
 
 **What never changes:** a 🟡 behaviour always carries a one-line note on what's missing. The note is the valuable half — it describes the state of the product. The ticket is optional metadata recording that someone made a card.
@@ -59,11 +59,11 @@ Every spec has all of these headers, always, in this order. Empty sections are w
 
 Status lives at the **behaviour level**, not just the file level — a spec can describe a whole feature when only part is built. Behaviours are numbered `B1`, `B2`, … so anything can cite them.
 
-| Badge | Meaning |
-| --- | --- |
-| 🟢 `implemented` | Built and tested |
-| 🟡 `partial` | Built but incomplete. **Must** carry a one-line note on what's missing, plus a ticket if the repo links them |
-| 🔵 `future` | Designed, not scheduled. No ticket required |
+| Badge            | Meaning                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| 🟢 `implemented` | Built and tested                                                                                             |
+| 🟡 `partial`     | Built but incomplete. **Must** carry a one-line note on what's missing, plus a ticket if the repo links them |
+| 🔵 `future`      | Designed, not scheduled. No ticket required                                                                  |
 
 ```markdown
 ### B3 — Refunding a partially paid invoice 🟡 partial
@@ -77,17 +77,17 @@ Front-matter `status` is the roll-up: `implemented` only if every behaviour is; 
 
 ## Voice — requirements, not implementation
 
-| Avoid | Use |
-| --- | --- |
-| "A projection is calculated in memory and cached…" | "A saved search shows the same results next time…" |
-| "An hourly job scans the table and flips a flag…" | "An invitation stops working once it expires, without anyone acting…" |
-| "We publish a message to the queue…" | "When someone leaves a team, their access ends everywhere…" |
+| Avoid                                              | Use                                                                   |
+| -------------------------------------------------- | --------------------------------------------------------------------- |
+| "A projection is calculated in memory and cached…" | "A saved search shows the same results next time…"                    |
+| "An hourly job scans the table and flips a flag…"  | "An invitation stops working once it expires, without anyone acting…" |
+| "We publish a message to the queue…"               | "When someone leaves a team, their access ends everywhere…"           |
 
 If you couldn't say it to a non-developer, it doesn't belong in a spec. Implementation detail belongs in code, comments, or design docs.
 
 ## Test cross-references: none
 
-Specs are deliberately test-agnostic. Never write "tested by file X". Reasoning from a behaviour ID to matching tests is the assessor's job; if it can't find them, that *is* the gap report. Hand-maintained test links rot.
+Specs are deliberately test-agnostic. Never write "tested by file X". Reasoning from a behaviour ID to matching tests is the assessor's job; if it can't find them, that _is_ the gap report. Hand-maintained test links rot.
 
 ## Open Question markers
 
@@ -156,6 +156,37 @@ flows:
 - The diagram holds the same states and transitions as the contract. Regenerate after every YAML change. **If they disagree, the YAML wins.**
 
 Code must not add a step, bypass, guard, or terminal outcome the contract doesn't allow. Change the YAML and regenerate before implementing, when product intent changes.
+
+### Storyboard evidence
+
+Add storyboard details inside the flow YAML when a user-facing journey needs scene-level UX review. The flow remains the single authority; do not create a second storyboard file that can disagree with its states and transitions.
+
+Once one state has `storyboard`, every `screen` and `terminal` state in that flow has it. Visible processing states may add it too:
+
+```yaml
+states:
+  - id: review
+    kind: screen
+    label: Review Import
+    storyboard:
+      user_goal: Confirm the valid rows before importing them.
+      enters_with: A validated file and any row-level warnings.
+      sees: The valid rows, blocked rows, warnings, and expected result.
+      primary_transition: F1.T4
+      feedback: Blocking issues identify the row and the correction needed.
+      preserves: The uploaded file and every valid correction.
+      accessibility: Focus enters on the review heading and the error summary links to each row.
+```
+
+- `user_goal` states the result the user is trying to reach in this scene.
+- `enters_with` records the context and data that survive the incoming transition.
+- `sees` records the information needed to understand the current state and likely result.
+- `primary_transition` references one outgoing transition ID. Screen states require it; terminal states omit it.
+- `feedback` records progress, validation, success, permission, or failure communication.
+- `preserves` states which valid work and context survive back, retry, resume, or failure.
+- `accessibility` records focus, announcement, keyboard, or reduced-motion behaviour that affects the scene.
+
+Storyboard fields describe observable UX intent. Layout, styling, and component choices remain design and implementation details. A storyboard change is a semantic flow-state change and belongs in branch review even when the Mermaid graph stays the same.
 
 ## Maintenance
 

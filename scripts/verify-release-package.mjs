@@ -15,6 +15,8 @@ function assert(condition, message) {
 function expectedPath(path) {
   const exact = new Set([
     "package/.claude-plugin/plugin.json",
+    "package/assets/specs/_flow-template.yaml",
+    "package/assets/specs/_template.md",
     "package/CHANGELOG.md",
     "package/LICENSE",
     "package/README.md",
@@ -27,6 +29,7 @@ function expectedPath(path) {
     "package/plugin.json",
     "package/references/conventions-question-bank.md",
     "package/references/spec-format.md",
+    "package/references/ux-journey-design.md",
   ]);
   return (
     exact.has(path) ||

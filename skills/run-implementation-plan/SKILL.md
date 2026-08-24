@@ -45,7 +45,7 @@ Starting card, in order: the ID I named; the plan's "Next up" marker; the first 
 
 ## For each card
 
-1. Read the complete relevant spec and acceptance criteria. Read the flow contract and the exact transitions assigned to this card. The YAML governs; Mermaid is a human view. Read **Work**, **Done when**, **Out of scope**. Out of scope is a hard wall. If the code seems to need an undeclared transition, stop and change the contract first.
+1. Read the complete relevant spec and acceptance criteria. Read the flow contract, storyboard evidence for affected states, and the exact transitions assigned to this card. The YAML governs; Mermaid is a human view. Read **Work**, **Done when**, **Out of scope**. Out of scope is a hard wall. If the code seems to need an undeclared transition, stop and change the contract first.
 2. Check the implementation for drift and assess existing test coverage.
 3. Add or update tests that prove the specified behaviour, but only where `write-tests` says they earn their keep. Include permission, tenancy, invariant, decision-table, and regression cases where applicable. Each cited flow transition gets a test, and each behavioural guard gets both branches, where there is a test surface for it — not a page mock, not a type the compiler already checks.
 4. Implement until the relevant tests pass. Follow the repo's conventions. If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Do not commit `.env` or put a real secret in `.env.example`.

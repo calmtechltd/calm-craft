@@ -15,7 +15,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 - "Document how this actually works."
 - Before a significant change to an under-understood feature.
 
-**Not this skill:** specs for unbuilt features (`spec-author-greenfield`), checking an existing spec against code (`spec-audit-drift`).
+**Not this skill:** specs for unbuilt features (`spec-author-greenfield`), checking an existing spec against code (`spec-audit-drift`), or redesigning the captured journey (`spec-storyboard-journey`).
 
 ## Workflow
 
@@ -55,6 +55,8 @@ If the feature is a wizard, import, or approval, trace the real navigation from 
 
 Write the YAML first, generate Mermaid from it. Where the code allows a transition that looks wrong, record it and raise an Open Question rather than omitting it. The contract must describe reality before it can constrain it.
 
+If the user wants to improve the journey, hand the factual baseline to `spec-storyboard-journey`. Do not add target storyboard evidence while excavating current behaviour.
+
 ### 6. Hand back
 
 Path; counts of behaviours by badge; invariants; flow transitions; Open Questions. Call out explicitly: anything you found that looks like a bug, and any behaviour you couldn't determine from the code.
@@ -80,4 +82,5 @@ Path; counts of behaviours by badge; invariants; flow transitions; Open Question
 - `spec-audit-drift` — later, to check the spec still matches
 - `spec-assess-coverage` — find which of these behaviours have tests
 - `spec-triage-bug-report` — for the suspicious behaviour you found
+- `spec-storyboard-journey` — improve the captured journey without rewriting its baseline
 - `spec-gap-sweep` — track the backfill across the estate

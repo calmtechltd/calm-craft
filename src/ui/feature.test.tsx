@@ -75,6 +75,19 @@ describe("Feature view", () => {
       "href",
       featureHref(spec.id, { behaviour: "B2a" }),
     );
+
+    rerender(
+      <FeatureView
+        estate={estate}
+        selection={{ flow: "F1", state: "ready" }}
+        sources={[]}
+        spec={spec}
+      />,
+    );
+    const storyboard = screen.getByRole("region", { name: "ready storyboard" });
+    expect(storyboard).toHaveTextContent("Check the invoice and send it to the right customer.");
+    expect(storyboard).toHaveTextContent("Send");
+    expect(storyboard).toHaveTextContent("The prepared invoice and any valid address correction.");
   });
 
   it("loads source only through a server-issued resource ID", async () => {

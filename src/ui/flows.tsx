@@ -112,6 +112,18 @@ export function FlowsView({
           item.spec.title,
           item.spec.module,
           ...item.flow.states.map((state) => state.label),
+          ...item.flow.states.flatMap((state) =>
+            state.storyboard
+              ? [
+                  state.storyboard.userGoal,
+                  state.storyboard.entersWith,
+                  state.storyboard.sees,
+                  state.storyboard.feedback,
+                  state.storyboard.preserves,
+                  state.storyboard.accessibility,
+                ]
+              : [],
+          ),
           ...item.flow.transitions.map((transition) => transition.event),
         ]
           .join(" ")
