@@ -50,6 +50,7 @@ Adjust on my feedback, then write.
 - Omit the ticket field entirely until the work is prioritised.
 - Open Questions and Future Considerations will be heavier than in a backwards-engineered spec. **That is the point.**
 - If a flow is warranted, write the YAML contract first, then generate the Mermaid sibling from it with its generated-file warning. Every transition cites behaviours through `covers` — a flow never creates requirements outside them.
+- If the journey needs scene-level UX review, run `spec-storyboard-journey` and keep accepted storyboard evidence on the flow states.
 
 ### 5. Hand back
 

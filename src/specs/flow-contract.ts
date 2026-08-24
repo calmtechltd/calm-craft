@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 
-import type { Flow, FlowContract, FlowState, FlowTransition } from "./model";
+import type { Flow, FlowContract, FlowState, FlowStoryboard, FlowTransition } from "./model";
 
 function assertRecord(value: unknown, label: string): asserts value is Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -12,6 +12,28 @@ function assertString(value: unknown, label: string): asserts value is string {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error(`${label} must be a non-empty string.`);
   }
+}
+
+function readStoryboard(value: unknown, stateId: string): FlowStoryboard {
+  assertRecord(value, `${stateId} storyboard`);
+  assertString(value.user_goal, `${stateId} storyboard user_goal`);
+  assertString(value.enters_with, `${stateId} storyboard enters_with`);
+  assertString(value.sees, `${stateId} storyboard sees`);
+  if (value.primary_transition !== undefined) {
+    assertString(value.primary_transition, `${stateId} storyboard primary_transition`);
+  }
+  assertString(value.feedback, `${stateId} storyboard feedback`);
+  assertString(value.preserves, `${stateId} storyboard preserves`);
+  assertString(value.accessibility, `${stateId} storyboard accessibility`);
+  return {
+    userGoal: value.user_goal,
+    entersWith: value.enters_with,
+    sees: value.sees,
+    primaryTransition: value.primary_transition,
+    feedback: value.feedback,
+    preserves: value.preserves,
+    accessibility: value.accessibility,
+  };
 }
 
 function readState(value: unknown, flowId: string): FlowState {
@@ -28,6 +50,10 @@ function readState(value: unknown, flowId: string): FlowState {
     kind: value.kind as FlowState["kind"],
     label: value.label,
     outcome: value.outcome,
+    storyboard:
+      value.storyboard === undefined
+        ? undefined
+        : readStoryboard(value.storyboard, `${flowId}.${value.id}`),
   };
 }
 
@@ -113,6 +139,33 @@ export function parseFlowContract(source: string): FlowContract {
       }
       if (state.kind === "terminal" && !state.outcome) {
         throw new Error(`${flowId}.${state.id} needs a user-visible outcome.`);
+      }
+      if (state.kind === "terminal" && state.storyboard?.primaryTransition) {
+        throw new Error(
+          `${flowId}.${state.id} terminal storyboard cannot have a primary_transition.`,
+        );
+      }
+      if (state.storyboard?.primaryTransition) {
+        if (!outgoing.some((transition) => transition.id === state.storyboard?.primaryTransition)) {
+          throw new Error(
+            `${flowId}.${state.id} storyboard primary_transition must reference an outgoing transition.`,
+          );
+        }
+      } else if (state.storyboard && state.kind === "screen") {
+        throw new Error(`${flowId}.${state.id} storyboard needs a primary_transition.`);
+      }
+    }
+
+    const hasStoryboard = states.some((state) => state.storyboard !== undefined);
+    if (hasStoryboard) {
+      const missingStoryboard = states.find(
+        (state) =>
+          (state.kind === "screen" || state.kind === "terminal") && state.storyboard === undefined,
+      );
+      if (missingStoryboard) {
+        throw new Error(
+          `${flowId}.${missingStoryboard.id} needs storyboard details because this flow is storyboarded.`,
+        );
       }
     }
 

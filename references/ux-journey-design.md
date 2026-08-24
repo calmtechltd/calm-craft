@@ -15,7 +15,7 @@ Do not clean up the baseline while documenting it. Do not write the target into 
 
 ## Storyboard scenes
 
-A storyboard is a review view, not a new spec artifact. Keep it in the conversation or the repository's configured design-document location. Do not add a sibling file under `specs/` unless that repository extends its format to own one.
+Draft the baseline and target as review views first. Once the user accepts the target, record each scene in the owning state's `storyboard` block inside the authoritative flow YAML. Keeping scene evidence with the state prevents a separate storyboard file from drifting away from the allowed transitions.
 
 Create one row per user-visible scene:
 
@@ -90,6 +90,6 @@ Tie each proposed UX change to product intent:
 - Add a decision-table row when the result depends on a combination of conditions.
 - Change the flow YAML when a state, event, guard, route, or terminal outcome changes.
 
-Every target transition must cite the behaviours it clarifies through `covers`. Preserve IDs for states and transitions whose meaning did not change. Generate Mermaid from YAML after the target contract is accepted.
+Every target transition must cite the behaviours it clarifies through `covers`. Preserve IDs for states and transitions whose meaning did not change. Record accepted scene evidence in each user-visible state's `storyboard` block, then generate Mermaid from YAML.
 
 Layout, copy, responsive behaviour, animation, and visual hierarchy still need screen design and browser review. A complete flow contract makes those reviews easier; it does not replace them.

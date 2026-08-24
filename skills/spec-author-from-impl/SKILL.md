@@ -55,6 +55,8 @@ If the feature is a wizard, import, or approval, trace the real navigation from 
 
 Write the YAML first, generate Mermaid from it. Where the code allows a transition that looks wrong, record it and raise an Open Question rather than omitting it. The contract must describe reality before it can constrain it.
 
+If the user wants to improve the journey, hand the factual baseline to `spec-storyboard-journey`. Do not add target storyboard evidence while excavating current behaviour.
+
 ### 6. Hand back
 
 Path; counts of behaviours by badge; invariants; flow transitions; Open Questions. Call out explicitly: anything you found that looks like a bug, and any behaviour you couldn't determine from the code.

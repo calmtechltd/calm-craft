@@ -45,7 +45,7 @@ Every chunk carries all six. This is the part that matters most:
 
 - **Chunk ID** — `{PhaseLetter}{number}`, e.g. `B4`
 - **Depends on** — chunks that must be merged and tested first
-- **Spec(s)** — paths and behaviour IDs; flow transition IDs when it touches a journey
+- **Spec(s)** — paths and behaviour IDs; state and transition IDs when it touches a storyboarded journey
 - **Work** — concrete file areas, routes, helpers. Implementation language belongs here
 - **Done when** — observable acceptance criteria. For UI chunks, **manual steps in the running app**, never "tests pass" alone
 - **Out of scope** — an explicit fence. Omitting it invites scope creep
@@ -73,6 +73,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 - [ ] Deferred design scope appears only in later phases.
 - [ ] UI chunks have manual Done-when steps.
 - [ ] Journey chunks cite flow transition IDs and invent no state, guard, bypass, or exit the contract lacks.
+- [ ] Storyboarded journey chunks preserve the declared goal, information, primary action, feedback, state preservation, and accessibility intent.
 - [ ] Critical path matches dependencies; no cycles.
 - [ ] Open decisions captured, not silently resolved.
 

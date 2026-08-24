@@ -176,6 +176,9 @@ function FlowExplorer({
   const selectedTransition = flow.transitions.find(
     (transition) => transition.id === selection.transition,
   );
+  const primaryTransition = flow.transitions.find(
+    (transition) => transition.id === selectedState?.storyboard?.primaryTransition,
+  );
 
   const stateHref = (state: FlowState): string =>
     featureHref(spec.id, { flow: flow.id, state: state.id });
@@ -200,8 +203,54 @@ function FlowExplorer({
           </div>
         ))}
       </div>
-      {selectedState?.outcome ? (
-        <p className="flow-selection-note">{selectedState.outcome}</p>
+      {selectedState ? (
+        <section
+          aria-label={`${selectedState.id} storyboard`}
+          className="transition-detail state-detail"
+        >
+          <p className="eyebrow">Selected state</p>
+          <h4>{selectedState.label}</h4>
+          {selectedState.storyboard ? (
+            <dl>
+              <div>
+                <dt>User goal</dt>
+                <dd>{selectedState.storyboard.userGoal}</dd>
+              </div>
+              <div>
+                <dt>Enters with</dt>
+                <dd>{selectedState.storyboard.entersWith}</dd>
+              </div>
+              <div>
+                <dt>Sees and knows</dt>
+                <dd>{selectedState.storyboard.sees}</dd>
+              </div>
+              <div>
+                <dt>Primary action</dt>
+                <dd>{primaryTransition?.event ?? "The state has no primary action."}</dd>
+              </div>
+              <div>
+                <dt>Feedback</dt>
+                <dd>{selectedState.storyboard.feedback}</dd>
+              </div>
+              <div>
+                <dt>Preserves</dt>
+                <dd>{selectedState.storyboard.preserves}</dd>
+              </div>
+              <div>
+                <dt>Accessibility</dt>
+                <dd>{selectedState.storyboard.accessibility}</dd>
+              </div>
+              {selectedState.outcome ? (
+                <div>
+                  <dt>Outcome</dt>
+                  <dd>{selectedState.outcome}</dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : (
+            <p className="flow-selection-note">No storyboard details are recorded.</p>
+          )}
+        </section>
       ) : null}
       <div className="transition-list">
         {flow.transitions.map((transition) => (

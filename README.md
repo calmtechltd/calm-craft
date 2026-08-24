@@ -183,20 +183,20 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 
 ### Delivery
 
-| Skill                             | Job                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------- |
-| `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                      |
-| `ask-questions`                   | Surface open decisions in current work and ask them, structured.        |
+| Skill                             | Job                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                                                    |
+| `ask-questions`                   | Surface open decisions in current work and ask them, structured.                                      |
 | `run-implementation-plan`         | Complete in-scope behaviours one card at a time. Cheap checks per card; full gates once at close-out. |
-| `run-implementation-plan-all`     | Named entry for finishing the plan — same loop.                         |
-| `bug-regression-red-green`        | Failing test first, then the fix, and the test stays.                   |
-| `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.     |
-| `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                  |
-| `update-pr`                       | Rewrite or sync the current PR title and body from the branch.          |
-| `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                |
-| `coderabbit-review-triage`        | Download a CodeRabbit review, verify, classify. Writes `.active/` only. |
-| `coderabbit-review-implement`     | Apply obvious fixes locally. No commit, push, or resolve.               |
-| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.                    |
+| `run-implementation-plan-all`     | Named entry for finishing the plan — same loop.                                                       |
+| `bug-regression-red-green`        | Failing test first, then the fix, and the test stays.                                                 |
+| `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.                                   |
+| `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                                                |
+| `update-pr`                       | Rewrite or sync the current PR title and body from the branch.                                        |
+| `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                                              |
+| `coderabbit-review-triage`        | Download a CodeRabbit review, verify, classify. Writes `.active/` only.                               |
+| `coderabbit-review-implement`     | Apply obvious fixes locally. No commit, push, or resolve.                                             |
+| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.                                                  |
 
 ## Boundaries this plugin defends
 
@@ -216,6 +216,7 @@ These exist because collapsing them is easy and quietly destroys the value:
 - [`references/conventions-question-bank.md`](references/conventions-question-bank.md) — 12 axes, TypeScript in full, other languages sketched
 - [`references/spec-format.md`](references/spec-format.md) — the spec format authority, written into your repo by `engineering-setup`
 - [`references/ux-journey-design.md`](references/ux-journey-design.md) — scene-level storyboarding and the Apple-inspired UX review lens
+- [`assets/specs/_template.md`](assets/specs/_template.md) and [`assets/specs/_flow-template.yaml`](assets/specs/_flow-template.yaml) — bootstrap templates copied without overwriting repository-owned versions
 
 ## Licence
 

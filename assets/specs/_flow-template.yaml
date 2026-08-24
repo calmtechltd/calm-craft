@@ -1,0 +1,34 @@
+version: 1
+flows:
+  - id: F1
+    name: Example Journey
+    start: start
+    states:
+      - id: start
+        kind: screen
+        label: Start
+        storyboard:
+          user_goal: Understand the task and choose the next action.
+          enters_with: The context required to begin.
+          sees: The information needed to make the first decision.
+          primary_transition: F1.T1
+          feedback: Validation appears beside the input that needs attention.
+          preserves: Valid input and the context used to begin.
+          accessibility: Focus enters on the page heading and errors link to their inputs.
+      - id: complete
+        kind: terminal
+        label: Complete
+        outcome: The user sees the result and what they can do next.
+        storyboard:
+          user_goal: Confirm the result and choose any next action.
+          enters_with: A completed task and its result.
+          sees: The result, its effect, and the next available action.
+          feedback: Completion is announced without relying on colour.
+          preserves: The completed record and its evidence.
+          accessibility: Focus enters on the result heading.
+    transitions:
+      - id: F1.T1
+        from: start
+        event: Continue
+        to: complete
+        covers: [B1]

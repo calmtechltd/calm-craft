@@ -58,11 +58,16 @@ A repository can declare a supported `specVersion` in `calmcraft.json`. CalmCraf
 
 Each parser or validation finding has a stable code, severity, source path, source location when known, and repair guidance. Re-reading unchanged invalid content produces the same finding identity.
 
+### B13 — Model storyboard evidence for user-visible states 🟢 implemented
+
+A flow may storyboard its user-visible states inside the authoritative YAML contract. CalmCraft retains each scene's user goal, entering context, information, primary transition, feedback, preserved state, and accessibility intent. Once one scene is storyboarded, every screen and terminal state in that flow carries the same evidence.
+
 ## Rules (Invariants)
 
 - The normalized model contains product intent, source evidence, and findings; it contains no executable repository code.
 - Stable IDs take precedence over display text when CalmCraft connects or compares entities.
 - YAML owns flow intent. Mermaid cannot add a state, transition, guard, or outcome.
+- A storyboard's primary transition references an outgoing transition from the same state.
 - Sanitized HTML contains no remote resource request or active browser content.
 - One malformed file cannot erase a healthy file from the estate.
 - CalmCraft never changes a spec while parsing or validating it.

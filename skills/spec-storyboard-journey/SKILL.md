@@ -38,7 +38,7 @@ Use a flow for ordered steps, conditional navigation, cancellation, retry, resum
 
 ### 4. Storyboard the scenes
 
-Create the scene table from the UX reference. Tie each scene to its state, behaviours, and transitions. Include what the user sees, the main action, other exits, system feedback, and preserved state.
+Create the scene table from the UX reference. Tie each scene to its state, behaviours, and transitions. Include what the user sees, the main action, other exits, system feedback, preserved state, and accessibility intent.
 
 Keep the baseline factual. Mark unknowns and contradictions. Do not improve them while describing them.
 
@@ -72,10 +72,11 @@ Once accepted:
 1. Update behaviours, invariants, and decision tables first.
 2. Badge unbuilt target behaviour `future` or `partial` with an honest note.
 3. Update the flow YAML. Each transition cites real behaviours through `covers`.
-4. Preserve IDs for unchanged states and transitions. Assign new IDs only to new paths.
-5. Generate Mermaid with the repository's owning command and inspect the result.
+4. Put the accepted scene evidence in each user-visible state's `storyboard` block. A screen's `primary_transition` references one of its outgoing transition IDs.
+5. Preserve IDs for unchanged states and transitions. Assign new IDs only to new paths.
+6. Generate Mermaid with the repository's owning command and inspect the result.
 
-Do not store the storyboard under `specs/` unless the repository format defines that artifact. Use its configured design-document location when the user wants the storyboard saved.
+Do not create a separate storyboard file beside the spec. The flow YAML owns states, transitions, and their accepted scene evidence together.
 
 ### 9. Hand back
 
@@ -84,7 +85,7 @@ Report the baseline problems, accepted UX decisions, changed behaviour and trans
 ## Quality gate
 
 - [ ] Baseline and target are distinct.
-- [ ] Each scene states user goal, information, primary action, exits, feedback, and preserved state.
+- [ ] Each scene states user goal, entering context, information, primary action, exits, feedback, preserved state, and accessibility intent.
 - [ ] Findings cite specific scenes or transitions and observed user cost.
 - [ ] Relevant back, cancel, retry, permission, failure, partial-success, and resume paths appear.
 - [ ] Terminal outcomes explain what happened and what the user can do next.
@@ -99,7 +100,7 @@ Report the baseline problems, accepted UX decisions, changed behaviour and trans
 - **Redesigning while excavating.** It hides the baseline and makes drift impossible to reason about.
 - **Drawing screens without exits or feedback.** A storyboard must cover movement and recovery.
 - **Confirming every step.** Confirmation belongs at costly or irreversible boundaries.
-- **Inventing a storyboard file inside the spec estate.** The portable format does not own one.
+- **Creating a second storyboard authority.** Scene evidence belongs on the states in flow YAML.
 - **Changing IDs to make the diagram tidy.** Existing citations depend on them.
 - **Implementing before product agreement.** The target journey must become intent first.
 

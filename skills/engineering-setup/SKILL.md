@@ -133,7 +133,17 @@ Run each command in `commands`. A config full of commands that don't work is wor
 
 If a command fails, fix it or drop it — and say which you did.
 
-### 5. Write `AGENTS.md`
+### 5. Bootstrap the spec format when selected
+
+When the user selected specs, use the plugin's packaged sources to create missing files beneath `paths.specs`:
+
+- `references/spec-format.md` → `README.md`
+- `assets/specs/_template.md` → `_template.md`
+- `assets/specs/_flow-template.yaml` → `_flow-template.yaml`
+
+Create only files that do not exist. An existing format guide or template belongs to the repository; inspect it and report drift instead of overwriting it. Do not bootstrap these files when the user did not select specs.
+
+### 6. Write `AGENTS.md`
 
 If it doesn't exist, create it. If it does, propose a merge rather than overwriting.
 
@@ -160,7 +170,7 @@ Use the recorded `package_manager` in every command example. Do not write `npm i
 
 If the repo has a secrets convention — even just "`.env` is gitignored; copy `.env.example`" — put that in `AGENTS.md` in two lines. Also: never print `.env` contents, never commit the file, never paste secrets into a ticket or a spec. That is agent-facing, and a linter will not say it.
 
-### 6. Hand back
+### 7. Hand back
 
 - The config path, and each command with a pass/fail from step 4.
 - What you detected vs what I told you — including package manager, any install-time security already configured, and secrets hygiene (ignored / tracked / example file).
@@ -175,6 +185,7 @@ If the repo has a secrets convention — even just "`.env` is gitignored; copy `
 - [ ] No package manager was recommended or switched.
 - [ ] No install-time security control was enabled without being asked.
 - [ ] No placeholder values left in the written file.
+- [ ] Selected spec assets created when absent; existing repository-owned files preserved.
 - [ ] `AGENTS.md` exists and tool-specific files point at it rather than duplicating it.
 - [ ] Existing agent instruction files were merged, not clobbered.
 

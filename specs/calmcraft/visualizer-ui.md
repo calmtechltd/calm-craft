@@ -32,7 +32,7 @@ Each behaviour has an addressable anchor with its stable key, status, blocker st
 
 ### B6 — Explore relationships and flows 🟢 implemented
 
-Feature view shows outgoing relationships, backlinks, and authoritative user flows. Selecting a flow state or transition reveals its event, guard, outcome, and covered behaviours.
+Feature view shows outgoing relationships, backlinks, and authoritative user flows. Selecting a storyboarded state reveals its user goal, entering context, information, primary action, feedback, preserved state, and accessibility intent. Selecting a transition reveals its event, guard, outcome, and covered behaviours.
 
 ### B7 — Review branch changes by feature 🟢 implemented
 
