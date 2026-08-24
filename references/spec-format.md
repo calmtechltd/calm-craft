@@ -182,11 +182,12 @@ states:
 - `enters_with` records the context and data that survive the incoming transition.
 - `sees` records the information needed to understand the current state and likely result.
 - `primary_transition` references one outgoing transition ID. Screen states require it; terminal states omit it.
+- Every other outgoing transition from the state is a secondary exit. Review those transitions as part of the scene; do not duplicate them in an `other_exits` storyboard field.
 - `feedback` records progress, validation, success, permission, or failure communication.
 - `preserves` states which valid work and context survive back, retry, resume, or failure.
 - `accessibility` records focus, announcement, keyboard, or reduced-motion behaviour that affects the scene.
 
-Storyboard fields describe observable UX intent. Layout, styling, and component choices remain design and implementation details. A storyboard change is a semantic flow-state change and belongs in branch review even when the Mermaid graph stays the same.
+Storyboard fields describe observable UX intent. Layout, styling, and component choices remain design and implementation details. A storyboard change is a semantic flow-state change and belongs in branch review even when the Mermaid graph stays the same. Scene review must account for every outgoing transition: one may be the primary transition and all remaining transitions are secondary exits.
 
 ## Maintenance
 

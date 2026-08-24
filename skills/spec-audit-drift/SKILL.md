@@ -49,7 +49,9 @@ Then the harder direction — **what can the code do that the contract doesn't d
 
 Report guard mismatches precisely: a guard the code checks more loosely than the contract states is a real defect even when nothing has gone wrong yet.
 
-For storyboarded states, verify the running screen communicates the declared goal and information, exposes the named primary transition, provides the stated feedback, preserves the promised work, and follows the recorded accessibility behaviour. Report missing scene evidence as drift; do not turn visual preference into a requirement.
+Check storyboard coverage before its content. Once a flow uses storyboard evidence, every `screen` and `terminal` state requires a `storyboard` block; report each missing block as drift before checking the scenes themselves.
+
+For every storyboarded screen, terminal, or visible action/processing state, verify the running journey communicates the declared goal and information, exposes the named primary transition where applicable, provides the stated feedback, preserves the promised work, and follows the recorded accessibility behaviour. Do not turn visual preference into a requirement.
 
 ### 5. Verify before reporting
 
@@ -69,7 +71,8 @@ End with: counts by verdict, and whether the front-matter roll-up status is stil
 - [ ] Unspecced behaviour actively searched for, not just spec-to-code checked.
 - [ ] Invariants checked for bypass paths, not only for enforcement.
 - [ ] Flow audited in both directions.
-- [ ] Storyboard evidence checked against user-visible states where present.
+- [ ] Missing required storyboard blocks reported before storyboard content was checked.
+- [ ] Storyboard content checked for every storyboarded screen, terminal, and visible action/processing state.
 - [ ] Each finding verified against current code.
 - [ ] Each drift finding says which side you think is wrong.
 - [ ] Nothing edited.

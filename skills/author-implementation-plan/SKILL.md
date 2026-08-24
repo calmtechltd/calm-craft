@@ -72,7 +72,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 - [ ] No chunk too large for one reviewable pass — split if Work has more than ~8 deliverables.
 - [ ] Deferred design scope appears only in later phases.
 - [ ] UI chunks have manual Done-when steps.
-- [ ] Journey chunks cite flow transition IDs and invent no state, guard, bypass, or exit the contract lacks.
+- [ ] Journey chunks cite affected flow state IDs and transition IDs, and invent no state, guard, bypass, or exit the contract lacks.
 - [ ] Storyboarded journey chunks preserve the declared goal, information, primary action, feedback, state preservation, and accessibility intent.
 - [ ] Critical path matches dependencies; no cycles.
 - [ ] Open decisions captured, not silently resolved.
