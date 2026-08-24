@@ -99,7 +99,7 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 - [ ] Schema generate and migrate ran only when the config defines them and the card actually needed them.
 - [ ] Spec badges, plan, and `.active/` checkpoint match reality after each card.
 - [ ] The skill did not stop while dependency-ready work remained, unless I asked for only one chunk.
-- [ ] Close-out ran self-review, then the heavy gates once, then looped until green; knip and whole-programme types were not run after each card.
+- [ ] Close-out ran self-review, then the heavy gates once, then looped until green; whole-programme lint, knip, and types were not run after each card. Per-card lint covered only touched files.
 
 ## Anti-patterns
 
@@ -111,7 +111,7 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 - **Committing generated migration artifacts** without explicit authorisation.
 - **Pushing or opening a pull request** as part of the loop.
 - **Using `/loop` on a wall-clock interval** instead of "next card until done".
-- **Running whole-programme typecheck, knip, or the full test suite after every card.** That is the close-out pass. The usual time sink is `tsc --noEmit` on the whole repo — save it for the end.
+- **Running whole-programme lint, typecheck, knip, or the full test suite after every card.** That is the close-out pass. Lint only the files touched by the card; save repository-wide lint and `tsc --noEmit` for the end.
 - **Skipping close-out gates** because the per-card path-scoped checks were green. A shared type can still break files this card did not touch.
 
 ## Related skills

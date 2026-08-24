@@ -52,7 +52,7 @@ Update the **YAML contract first**, then regenerate the Mermaid sibling. Preserv
 
 New paths get new IDs. Removed paths are removed from both files; don't leave orphans in the diagram.
 
-If a screen's goal, information, primary action, feedback, preserved state, or accessibility behaviour changed, update its `storyboard` block in the same YAML edit. A layout-only change does not alter the storyboard.
+When a flow uses storyboard evidence, add or update the `storyboard` block for every affected screen and terminal state, and update every affected visible action/processing state that is already storyboarded. Do this in the same YAML edit when its goal, information, primary action, feedback, preserved state, or accessibility behaviour changes. A layout-only change does not alter the storyboard.
 
 ### Always: reconcile the roll-up
 
@@ -74,7 +74,7 @@ After any change, recompute front-matter `status`: `implemented` only if every b
 - [ ] Answered questions became durable spec content, not just deletions.
 - [ ] Blocked behaviours re-checked when their blocking question was settled.
 - [ ] Flow YAML updated before the diagram; unchanged IDs preserved.
-- [ ] Storyboard evidence updated when user-visible scene intent changed.
+- [ ] Storyboard evidence added or updated for every affected screen, terminal, and storyboarded visible action/processing state.
 - [ ] Roll-up status and ticket field recomputed.
 
 ## Anti-patterns
