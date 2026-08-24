@@ -15,7 +15,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 - "I want to think through the edge cases before we touch code."
 - "Capture this design so it doesn't only live in chat."
 
-**Not this skill:** speccing something already built (`spec-author-from-impl`), checking for an existing spec first (`spec-plan-gap`).
+**Not this skill:** speccing something already built (`spec-author-from-impl`), checking for an existing spec first (`spec-plan-gap`), or scene-level UX review of a journey (`spec-storyboard-journey`).
 
 ## Workflow
 
@@ -79,5 +79,6 @@ Path, and counts: behaviours, invariants, flow transitions, Open Questions, Futu
 - `spec-plan-gap` — check for overlap before authoring
 - `spec-author-from-impl` — for features that already exist
 - `spec-maintain-on-ship` — flip badges when work is prioritised or ships
+- `spec-storyboard-journey` — test a warranted journey scene by scene before implementation
 - `ask-questions` — put Open Questions to me as structured choices
 - `author-implementation-plan` — turn the spec into executable chunks

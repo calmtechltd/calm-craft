@@ -169,6 +169,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | ------------------------- | ---------------------------------------------------------------------------------- |
 | `spec-author-greenfield`  | Design-first spec for something not yet built.                                     |
 | `spec-author-from-impl`   | Work backwards from existing code and tests.                                       |
+| `spec-storyboard-journey` | Review and improve a stateful journey scene by scene before implementation.        |
 | `spec-audit-drift`        | Does the spec still match the implementation?                                      |
 | `spec-assess-coverage`    | Which behaviours, rules, and flow transitions have tests?                          |
 | `spec-author-tests`       | Generate tests from a spec, halting on spec/code disagreement.                     |
@@ -182,20 +183,20 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 
 ### Delivery
 
-| Skill                         | Job                                                                 |
-| ----------------------------- | ------------------------------------------------------------------- |
-| `author-implementation-plan`  | Design doc → chunks sized for one reviewable pass.                  |
-| `ask-questions`               | Surface open decisions in current work and ask them, structured.    |
-| `run-implementation-plan`     | Complete in-scope behaviours, one card at a time, until done. Cheap checks per card; full gates once at close-out. |
-| `run-implementation-plan-all` | Named entry for finishing the plan — same loop.                     |
-| `bug-regression-red-green`    | Failing test first, then the fix, and the test stays.               |
-| `branch-self-review`          | Review your own diff before anyone else does. Reports; never fixes. |
-| `ready-for-pr`                | Run the gates CI runs; fix what fails.                              |
-| `update-pr`                   | Rewrite or sync the current PR title and body from the branch.      |
-| `branch-cleanup`              | Delete locally what is provably in trunk; never remotes.            |
-| `coderabbit-review-triage`    | Download a CodeRabbit review, verify, classify. Writes `.active/` only. |
-| `coderabbit-review-implement` | Apply obvious fixes locally. No commit, push, or resolve.           |
-| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.            |
+| Skill                             | Job                                                                     |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                      |
+| `ask-questions`                   | Surface open decisions in current work and ask them, structured.        |
+| `run-implementation-plan`         | Complete in-scope behaviours one card at a time. Cheap checks per card; full gates once at close-out. |
+| `run-implementation-plan-all`     | Named entry for finishing the plan — same loop.                         |
+| `bug-regression-red-green`        | Failing test first, then the fix, and the test stays.                   |
+| `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.     |
+| `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                  |
+| `update-pr`                       | Rewrite or sync the current PR title and body from the branch.          |
+| `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                |
+| `coderabbit-review-triage`        | Download a CodeRabbit review, verify, classify. Writes `.active/` only. |
+| `coderabbit-review-implement`     | Apply obvious fixes locally. No commit, push, or resolve.               |
+| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.                    |
 
 ## Boundaries this plugin defends
 
@@ -214,6 +215,7 @@ These exist because collapsing them is easy and quietly destroys the value:
 
 - [`references/conventions-question-bank.md`](references/conventions-question-bank.md) — 12 axes, TypeScript in full, other languages sketched
 - [`references/spec-format.md`](references/spec-format.md) — the spec format authority, written into your repo by `engineering-setup`
+- [`references/ux-journey-design.md`](references/ux-journey-design.md) — scene-level storyboarding and the Apple-inspired UX review lens
 
 ## Licence
 

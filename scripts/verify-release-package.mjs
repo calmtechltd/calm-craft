@@ -27,6 +27,7 @@ function expectedPath(path) {
     "package/plugin.json",
     "package/references/conventions-question-bank.md",
     "package/references/spec-format.md",
+    "package/references/ux-journey-design.md",
   ]);
   return (
     exact.has(path) ||

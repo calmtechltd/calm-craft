@@ -15,7 +15,7 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 - "Document how this actually works."
 - Before a significant change to an under-understood feature.
 
-**Not this skill:** specs for unbuilt features (`spec-author-greenfield`), checking an existing spec against code (`spec-audit-drift`).
+**Not this skill:** specs for unbuilt features (`spec-author-greenfield`), checking an existing spec against code (`spec-audit-drift`), or redesigning the captured journey (`spec-storyboard-journey`).
 
 ## Workflow
 
@@ -80,4 +80,5 @@ Path; counts of behaviours by badge; invariants; flow transitions; Open Question
 - `spec-audit-drift` — later, to check the spec still matches
 - `spec-assess-coverage` — find which of these behaviours have tests
 - `spec-triage-bug-report` — for the suspicious behaviour you found
+- `spec-storyboard-journey` — improve the captured journey without rewriting its baseline
 - `spec-gap-sweep` — track the backfill across the estate

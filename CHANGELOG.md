@@ -4,6 +4,7 @@ CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes desc
 
 ## 0.2.0 — pending
 
+- Add `spec-storyboard-journey` and a shared UX journey reference for improving spec-governed flows through scene-level storyboarding, first-principles review, and explicit baseline-to-target decisions.
 - Add `calmcraft generate`, which writes the estate as one self-contained HTML file that opens from the filesystem with no server, port, or token.
 - Add `generate --diff --base <ref>` and `--provenance`, which bake Branch Review into that file at generation time. `--provenance` chooses which layers are visible when the file first opens.
 - Add Flows and Questions as first-class views, and stop counting unresolved questions as findings.
