@@ -42,13 +42,57 @@ Create the scene table from the UX reference. Tie each scene to its state, behav
 
 Keep the baseline factual. Mark unknowns and contradictions. Do not improve them while describing them.
 
-### 5. Review through the UX lens
+### 5. Rehearse disruption and recovery
+
+For every asynchronous, AI-driven, paid, or otherwise expensive action, storyboard more than its
+loading and generic failure appearance. Trace at least these outcomes when the product can produce
+them:
+
+- the work succeeds;
+- the work fails before producing a usable result;
+- the worker becomes silent or disappears without recording success or failure;
+- the work produces an invalid or incomplete result;
+- the user's permission, capacity, or relevant facts change while work is running;
+- the same attempt or response is delivered again;
+- the user returns, edits earlier facts, adds guidance, or cancels.
+
+For each supported disruption, prove the visible recovery loop from the user's perspective:
+
+1. The failure says what happened in useful product language and distinguishes development detail
+   from a user-actionable explanation.
+2. Valid prior work, the failed attempt's diagnosis, and any guidance survive navigation and retry.
+3. The user has truthful next actions: retry as-is, add guidance, revisit the owning decision, accept
+   a named limitation, or cancel. Do not show an action the current state cannot execute safely.
+4. A retry creates a fresh attempt without duplicating a paid or irreversible action.
+5. Editing facts or guidance returns through any required review or approval; earlier approval or
+   commitment cannot silently authorise changed work.
+6. Late output from superseded work cannot replace the user's newer state.
+7. Back, reload, narrow layout, and resume return to the same durable recovery point.
+8. Every working presentation has a liveness contract: the longest truthful silent interval, the
+   signal that refreshes it, the point at which animation and “working” language stop, and the
+   authoritative transition used when a worker times out or disappears. A persisted active flag by
+   itself is not evidence that work is still running.
+
+Reconcile all signals in the scene. The badge, animation, progress copy, available actions, live
+region, and durable state must tell the same story. A spinner or animated border must not continue
+after the interface says progress is stale or the recovery state is actionable.
+
+If missing evidence is itself a decision, storyboard the inline request rather than collapsing it
+into a generic error. Examples include adding a required Source, accepting a limitation, correcting
+a value, or narrowing the requested scope. The agent may phrase the question, but the allowed answer
+shape, consequence, and owning state must be explicit.
+
+Record an adversarial rehearsal for every materially distinct recovery branch. A transition list
+that merely reaches a failure state is insufficient: its expected outcome must say what was retained,
+which actions remain available, and where each action leads.
+
+### 6. Review through the UX lens
 
 Check clarity, deference, continuity, user control, progressive disclosure, feedback, forgiveness, consistency, platform fit, and accessibility. Each finding names the scene or transition, the observed cost to the user, and the evidence.
 
 Prefer removing a scene or decision over polishing unnecessary complexity. Put permission and feasibility checks before expensive user effort. Preserve valid work across recovery paths.
 
-### 6. Propose the target journey
+### 7. Propose the target journey
 
 Show:
 
@@ -61,11 +105,11 @@ Show:
 
 Do not present visual taste as a requirement. Separate platform conventions, accessibility requirements, product decisions, and optional polish.
 
-### 7. Get agreement before changing authority
+### 8. Get agreement before changing authority
 
 Put consequential choices to the user. Use `ask-questions` when several real decisions remain. Do not update the spec or flow while a decision can change the journey's states, guards, recovery, or terminal outcomes.
 
-### 8. Record the accepted target
+### 9. Record the accepted target
 
 Once accepted:
 
@@ -78,7 +122,7 @@ Once accepted:
 
 Do not create a separate storyboard file beside the spec. The flow YAML owns states, transitions, and their accepted scene evidence together.
 
-### 9. Hand back
+### 10. Hand back
 
 Report the baseline problems, accepted UX decisions, changed behaviour and transition IDs, unresolved questions, and the target journey. Recommend `author-implementation-plan` for delivery and browser verification for the complete flow.
 
@@ -89,6 +133,17 @@ Report the baseline problems, accepted UX decisions, changed behaviour and trans
 - [ ] Every outgoing transition other than `primary_transition` appears in the scene review as a secondary exit, with no duplicate `other_exits` field.
 - [ ] Findings cite specific scenes or transitions and observed user cost.
 - [ ] Relevant back, cancel, retry, permission, failure, partial-success, and resume paths appear.
+- [ ] Every asynchronous, AI-driven, paid, or expensive action has adversarial success, invalid-result,
+      interruption, silent-worker/timeout, duplicate-delivery, revision, and cancellation review
+      where those outcomes are possible.
+- [ ] Every long-running scene defines its liveness signal, maximum truthful silence, stale
+      presentation, authoritative timeout transition, and consistent badge/animation/copy.
+- [ ] Each recoverable failure proves retained work and diagnosis, executable retry/revise/cancel
+      actions, a fresh attempt, and a durable return point after reload or resume.
+- [ ] Changing facts or guidance invalidates superseded review or approval, and late work cannot
+      overwrite the newer state.
+- [ ] Missing evidence that needs a user decision becomes an inline typed request with an explicit
+      consequence, not a generic error or free-form dead end.
 - [ ] Terminal outcomes explain what happened and what the user can do next.
 - [ ] Product decisions were accepted before authoritative files changed.
 - [ ] Target transitions cover real behaviours; unbuilt work is not badged implemented.
@@ -100,6 +155,12 @@ Report the baseline problems, accepted UX decisions, changed behaviour and trans
 - **Treating a valid graph as good UX.** Structural completeness says nothing about clarity or effort.
 - **Redesigning while excavating.** It hides the baseline and makes drift impossible to reason about.
 - **Drawing screens without exits or feedback.** A storyboard must cover movement and recovery.
+- **Treating “Failed” as a complete scene.** A red panel is not recovery. Prove what survived, what
+  the user can do, and that each offered action reaches a safe next state.
+- **Animating a database flag.** “Active” or “running” can outlive the worker. Require a durable
+  liveness signal and stop working animation when that signal becomes stale.
+- **Retrying the picture, not the transaction.** Storyboard the fresh-attempt, duplicate-delivery,
+  stale-result, revised-facts, and approval consequences behind the button.
 - **Confirming every step.** Confirmation belongs at costly or irreversible boundaries.
 - **Creating a second storyboard authority.** Scene evidence belongs on the states in flow YAML.
 - **Changing IDs to make the diagram tidy.** Existing citations depend on them.
