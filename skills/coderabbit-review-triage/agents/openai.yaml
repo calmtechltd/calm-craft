@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeRabbit Review Triage"
+  short_description: "Triage CodeRabbit feedback before implementation."
+
+policy:
+  allow_implicit_invocation: false

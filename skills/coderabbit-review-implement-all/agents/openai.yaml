@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeRabbit Review Implement All"
+  short_description: "Publish CodeRabbit fixes and resolve threads."
+
+policy:
+  allow_implicit_invocation: false
