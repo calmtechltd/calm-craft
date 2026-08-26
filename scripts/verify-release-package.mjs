@@ -37,6 +37,7 @@ function expectedPath(path) {
     /^package\/dist\/ui\/assets\/index-[A-Za-z0-9_-]+\.(?:css|js)$/u.test(path) ||
     /^package\/dist\/ui\/assets\/geist(?:-mono)?-[A-Za-z0-9_-]+\.woff2$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/SKILL\.md$/u.test(path) ||
+    /^package\/skills\/[a-z0-9-]+\/agents\/openai\.yaml$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/[A-Za-z0-9._-]+\.md$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/scripts\/[A-Za-z0-9._-]+\.py$/u.test(path)
   );

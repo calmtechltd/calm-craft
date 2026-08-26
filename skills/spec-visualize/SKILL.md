@@ -20,9 +20,9 @@ Use the current checkout when the user names no source. Otherwise use the exact 
 ### 2. Generate and open
 
 ```sh
-npx --yes @calmcraft/cli@0.2.0 generate
-npx --yes @calmcraft/cli@0.2.0 generate /path/to/repository
-npx --yes @calmcraft/cli@0.2.0 generate --diff --base origin/main
+npx --yes @calmcraft/cli@0.2.1 generate
+npx --yes @calmcraft/cli@0.2.1 generate /path/to/repository
+npx --yes @calmcraft/cli@0.2.1 generate --diff --base origin/main
 ```
 
 The file lands in a temporary directory and opens in the default browser. Pass `--out <file>` only when the user wants to keep or share it, and put it where they ask — never inside their repository unless they say so, because it is several megabytes and easy to commit by accident.

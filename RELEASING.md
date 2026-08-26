@@ -41,7 +41,7 @@ Any failure requires a new version. npm versions and staged tarballs are immutab
 After every smoke job passes, move the already-tested version to the public channel with an authenticated maintainer session and two-factor authentication:
 
 ```sh
-npm dist-tag add @calmcraft/cli@0.2.0 latest
+npm dist-tag add @calmcraft/cli@0.2.1 latest
 npm dist-tag rm @calmcraft/cli next
 ```
 

@@ -9,7 +9,7 @@ Turn a bot PR review into an actionable triage package: raw comments on disk, a 
 
 This skill is **read-only** for product code — it may write files under `.active/` only.
 
-**Do not talk to CodeRabbit through new GitHub issue comments.** `gh pr comment`, GitHub MCP `addComment` / `add_issue_comment`, and REST `POST .../issues/.../comments` are what return **403** (especially cloud agents). Reads and later resolves go through **GraphQL review threads**.
+**Do not talk to CodeRabbit through new GitHub issue comments during triage.** Reads and inline-thread resolution use **GraphQL review threads**. The later implement-all pass may post one guarded PR-level resolve summary after publication when completed findings exist only in the review body; some cloud agent tokens cannot post it and must report that limitation.
 
 If the repo has no CodeRabbit review on the PR, say so and stop. Do not invent findings.
 
@@ -50,7 +50,7 @@ If no PR exists for the branch, ask for the PR number or URL.
 
 ### 2. Download review material
 
-Use `gh api graphql` (requires network). **Do not** use GitHub MCP comment tools, `gh pr comment`, or REST `POST` of comments. REST `GET` of `/pulls/.../comments` is also the wrong shape — it has no thread id, so implement-all cannot resolve without 403ing on `addComment`.
+Use `gh api graphql` (requires network). **Do not** use GitHub MCP comment tools, `gh pr comment`, or REST `POST` of comments. REST `GET` of `/pulls/.../comments` is also the wrong shape — it has no thread id, so implement-all cannot resolve the inline thread directly with GraphQL.
 
 Paginate **every** connection until `hasNextPage` is false: issue `comments`, `reviews`, `reviewThreads`, and nested `reviewThreads.comments`. Accumulate pages before parsing findings. A capped first page with no `after` loop can drop threads or replies with no error.
 
@@ -228,7 +228,7 @@ Do **not** start implementing fixes in this skill.
 
 ## Anti-patterns
 
-- **Posting a new PR comment to talk to CodeRabbit.** That is `addComment` and 403s. Resolve later via GraphQL threads in `coderabbit-review-implement-all`.
+- **Posting a new PR comment during triage.** Resolve later in `coderabbit-review-implement-all`, primarily via GraphQL threads and, only when required for review-body findings, its guarded PR-level summary.
 - **Implementing fixes during triage.**
 - **Skipping code verification on "obvious" bot comments.**
 - **Marking everything Needs Input.**

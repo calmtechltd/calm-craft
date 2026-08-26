@@ -15,7 +15,7 @@ Test framework, layers, and locations: `.engineering/config.yaml`.
 - "Write a red test first" / "make sure this never breaks again."
 - After `spec-triage-bug-report` returns **confirmed bug**.
 
-**Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`). Visual or click-only bugs are not this skill either — fix them and walk the app; `write-tests` explains why a bolted-on component test does not help.
+**Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`). Visual or click-only bugs are not this skill either; `write-tests` explains why a bolted-on component test does not help. Browser verification remains explicit-only under the repo policy.
 
 ## Workflow
 

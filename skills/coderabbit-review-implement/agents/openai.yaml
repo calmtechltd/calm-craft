@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeRabbit Review Implement"
+  short_description: "Apply triaged CodeRabbit fixes locally."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,6 +1,6 @@
 ---
 name: ready-for-pr
-description: Run the same quality gates CI runs — types, lint, dead code, tests — and fix what fails until the branch would pass. Then mark the current branch's GitHub PR ready for review if it is still a draft. Use when the user says "ready for PR", "run the checks", "is this ready to ship", "will CI pass", or before opening a pull request. A bare commit or submit does not run this suite and must not mark the PR ready.
+description: Run the same quality gates CI runs — types, lint, dead code, tests — and fix what fails until the branch would pass. Then mark the current branch's GitHub PR ready for review if it is still a draft. Use only when the user explicitly says "ready for PR", "run the checks", "is this ready to ship", or "will CI pass". A bare implementation, commit, submit, PR update, or PR opening request does not run this suite.
 ---
 
 # Ready for PR
@@ -13,7 +13,9 @@ Commands come from `commands` in `.engineering/config.yaml`, which `engineering-
 
 - "Is this ready for a pull request?"
 - "Run the checks" / "will CI pass?"
-- After finishing a chunk or a fix, when I ask whether CI would pass or to mark the draft ready. `run-implementation-plan` already runs these gates once at close-out; this skill is what publishes.
+- After finishing a chunk or a fix, only when I ask whether CI would pass or to mark the draft ready. Implementation workflows do not run these gates.
+
+Do not invoke this skill as an automatic follow-up to implementation, committing, submitting, updating PR metadata, or opening a PR. CI owns the full gates unless the user explicitly requests this local readiness pass.
 
 **Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`). Opening or submitting the PR is a separate skill — this one only marks an existing draft ready.
 

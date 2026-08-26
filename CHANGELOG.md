@@ -2,7 +2,13 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
-## 0.2.0 — pending
+## 0.2.1 — pending
+
+- Make the CodeRabbit review skills explicit-only so they never overlap with ordinary implementation work.
+- Require an explicit request before starting the app or using browser verification, and require a separate explicit request before opening an external GUI browser.
+- Keep ordinary implementation checks proportional: run only warranted targeted tests, leave repository-wide TypeScript, lint, Knip, UI, and test-suite gates to an explicitly requested `ready-for-pr` run or CI.
+
+## 0.2.0 — 2026-08-25
 
 - Add `spec-storyboard-journey`, authoritative storyboard evidence on flow states, scene inspection in Feature view, a shared UX journey reference, and packaged spec/flow templates for reconstructing a repository's portable spec layer.
 - Add `calmcraft generate`, which writes the estate as one self-contained HTML file that opens from the filesystem with no server, port, or token.
