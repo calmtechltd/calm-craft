@@ -36,8 +36,8 @@ To exercise only the source CLI against the last built browser bundle, use `pnpm
 CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version without installing it globally:
 
 ```sh
-npx --yes @calmcraft/cli@0.2.0 generate
-npx --yes @calmcraft/cli@0.2.0 generate --diff --base origin/main
+npx --yes @calmcraft/cli@0.2.1 generate
+npx --yes @calmcraft/cli@0.2.1 generate --diff --base origin/main
 ```
 
 `generate` writes one HTML file and opens it from disk. `--diff` bakes Branch Review into that file from the current working tree; there is no port, token, or process left running.
@@ -45,7 +45,7 @@ npx --yes @calmcraft/cli@0.2.0 generate --diff --base origin/main
 Or install the same pinned version:
 
 ```sh
-npm install --global @calmcraft/cli@0.2.0
+npm install --global @calmcraft/cli@0.2.1
 calmcraft view
 ```
 

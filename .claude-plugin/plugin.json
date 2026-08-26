@@ -1,6 +1,6 @@
 {
   "name": "calm-craft",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Specs as the source of truth, a chunked delivery loop, and decided-and-enforced code conventions — as portable agent skills.",
   "author": {
     "name": "Calm Tech Ltd",
