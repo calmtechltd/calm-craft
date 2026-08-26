@@ -73,7 +73,7 @@ A test that would only fail if the type checker or the linter were deleted is no
 | UI | Only if this repo has a presentational harness. See below. |
 | End-to-end | Only when I ask. |
 
-If the interesting rule lives in a helper, test the helper. If it lives on a page or in a wizard, walk it in the running app. Do not build a mock forest so a page can mount.
+If the interesting rule lives in a helper, test the helper. If it lives on a page or in a wizard, do not build a mock forest so the page can mount. Browser verification is separate and explicit-only; do not launch it unless the user asks in the current request.
 
 ## UI — use the repo's harness or write none
 
@@ -88,7 +88,7 @@ If the tree already has a presentational harness — commonly `describeUi` and c
 - Do not add a sibling `*.test.tsx` for the same leaf.
 - Do not invent checks for layout, clicks, or incidental DOM. A new leaf may be mount-only.
 
-If the repo has no such harness, do not invent one in the same change, and do not start a Testing Library page suite. Walk the UI in the app.
+If the repo has no such harness, do not invent one in the same change, and do not start a Testing Library page suite. This does not itself authorise a browser run; recommend one if useful and leave it unrun unless the user asks.
 
 ## Discover before writing
 

@@ -49,7 +49,7 @@ Starting card, in order: the ID I named; the plan's "Next up" marker; the first 
 2. Check the implementation for drift and assess existing test coverage.
 3. Add or update tests that prove the specified behaviour, but only where `write-tests` says they earn their keep. Include permission, tenancy, invariant, decision-table, and regression cases where applicable. Each cited flow transition gets a test, and each behavioural guard gets both branches, where there is a test surface for it — not a page mock, not a type the compiler already checks.
 4. Implement until the relevant tests pass. Follow the repo's conventions. If you add a dependency, use `package_manager` from the config — never guess `npm` vs `pnpm`. Do not commit `.env` or put a real secret in `.env.example`.
-5. Use browser testing for genuinely user-facing paths. Exercise the local app when the acceptance criteria require observable UI behaviour. Actually do it; don't assume.
+5. Treat browser and running-app verification as explicit-only. A user-facing path, acceptance criterion, or unresolved risk may identify a useful browser check but does not authorise starting the app, opening a URL, using browser automation, or signing in. Run it only when the user explicitly asks for browser or manual app verification in the current request; otherwise record the recommended check as unrun. When requested, batch checks once, prefer embedded or headless tooling, and never open an external GUI browser unless the user specifically asks for that too.
 6. If this repo's tests build their database from source schema (often `src/db/schema/**`), do not run `commands.db_generate` or `commands.db_migrate` merely to make tests see a schema change.
 7. Run `commands.db_generate` only when generated migration files must be verified, or when a real app or browser path needs the schema change. Run `commands.db_migrate` only when that real database needs those generated or committed migrations. Omit both steps when the config does not define them.
 8. Treat database coordination notices as informational. Do not ask me to confirm an external chat or ticket state. Keep generated migration artifacts uncommitted unless I have explicitly authorised committing them.
@@ -80,7 +80,7 @@ Do **not** mark the PR ready, push, or open a PR as part of this pass. `ready-fo
 
 - Every in-scope behaviour is implemented or explicitly recorded as blocked by a decision or external dependency.
 - Every implemented behaviour, invariant, and decision-table row has appropriate test evidence — only the tests `write-tests` would allow.
-- Required browser paths have been exercised successfully.
+- Browser paths explicitly requested by the user have been exercised successfully; other recommended browser checks are recorded as unrun.
 - Specs and implementation plans accurately describe the final behaviour and state.
 - A full branch self-review has been performed (`branch-self-review`) and verified findings have been fixed.
 - Close-out gates have been run **once at the end** and looped until green — whole-programme types, lint, knip / dead code, and the test suite, in the config's `gates` order. They were not run after each card.
