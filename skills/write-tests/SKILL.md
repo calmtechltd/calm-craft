@@ -108,7 +108,7 @@ Read the nearest tests and any shared test helpers. Copy their layer, naming, an
 
 - **A test that we didn't test X.** The instruction was the fence.
 - **Testing the type system.** The compiler already did.
-- **A page test with a mock of every import.** Extract the rule, or walk the app.
+- **A page test with a mock of every import.** Extract the rule. Recommend browser verification only when useful; never launch it without an explicit request.
 - **Asserting a literal the source hardcoded.** Not an input, not a behaviour.
 - **Filling coverage so the chunk looks done.** Coverage is not the rule; 9.3 is.
 - **Pending tests for skipped work.** Pending is for unbuilt specified behaviour, not for "don't test this".

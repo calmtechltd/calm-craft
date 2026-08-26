@@ -54,7 +54,7 @@ Starting card, in order: the ID I named; the plan's "Next up" marker; the first 
 7. Run `commands.db_generate` only when generated migration files must be verified, or when a real app or browser path needs the schema change. Run `commands.db_migrate` only when that real database needs those generated or committed migrations. Omit both steps when the config does not define them.
 8. Treat database coordination notices as informational. Do not ask me to confirm an external chat or ticket state. Keep generated migration artifacts uncommitted unless I have explicitly authorised committing them.
 9. Update the spec and implementation plan so behaviour badges, tickets, Open Questions, and completion state match reality (`spec-maintain-on-ship`). Mark the chunk complete with a dated status line and advance "Next up".
-10. Verify **this card's diff only** — keep it cheap. Run the tests that cover the behaviour you just changed (`commands.test_file` when the config has it — never `commands.test`). Lint and format only the files this card touched. If a type checker accepts paths, pass only those files. Do **not** run whole-programme `commands.types` (`tsc --noEmit` with no file list), `commands.deadcode` / knip, `commands.test`, or `ready-for-pr` after a card. Review the card's complete diff and fix verified functional, permission, tenancy, and coverage findings. Use `review.always_check` from the config.
+10. Inspect **this card's diff only**. Run one smallest directly relevant test command only when behavioural server/lib logic changed, an existing test covers the change, or this card added/updated a test; batch it after the coherent slice rather than after every edit. Do not run tests for documentation, instructions, configuration, copy, labels, static styling, or layout-only changes. Do not run lint, formatting, TypeScript, knip, `commands.test`, or `ready-for-pr` during the card. Run `git diff --check`, review the scoped diff, and apply `review.always_check` from the config.
 11. Clean only temporary or generated output created by this card whose removal is proven safe. Never delete pre-existing or unexplained files, and never discard migration artifacts blindly.
 12. If `commands.checkpoint_commit` is set, create a local checkpoint commit through that command, update the checkpoint file, and continue to the next dependency-ready card without waiting for another prompt. If it is not set, update the checkpoint and continue; do not invent a commit tool, and do not commit unless I asked.
 
@@ -64,17 +64,14 @@ Stop the card loop when every in-scope card is done, I asked for **only** one na
 
 Then run **close-out** once — not after every card.
 
-## Close-out (once, then until green)
+## Close-out (once)
 
-The cheap per-card pass does not see importers of a type you changed, unused exports, or the rest of the suite. That is what this pass is for. Run it after the last in-scope card of this run.
+1. Inspect the complete branch diff and fix verified in-scope functional, permission, tenancy, and coverage findings.
+2. Run any directly relevant targeted tests not already covered by current evidence, once. Do not run repository-wide TypeScript, lint, knip, UI, or test-suite gates.
+3. Check spec drift and coverage only for the behaviours changed by this plan. If that produces in-scope work, treat it as another card and repeat the targeted evidence affected by that work.
+4. Run `git diff --check` and record the evidence, recommended unrun checks, and blockers in the checkpoint.
 
-1. Branch self-review (`branch-self-review`) and fix verified findings.
-2. Run the config's `gates` in order — typically `setup`, then whole-programme `commands.types`, lint, `commands.deadcode` (knip), and `commands.test`. This is the expensive pass. It happens **once per close-out**, not after each card.
-3. Fix failures this branch introduced. Re-run the failed gate and any later gate the fix could have affected. Loop until green. Do not suppress types or lint to get there.
-4. Spec drift and coverage (`spec-audit-drift`, `spec-assess-coverage`). If that produces in-scope work, treat it as another card, then return here — do not skip the gates after that extra work.
-5. Record close-out evidence in the checkpoint.
-
-Do **not** mark the PR ready, push, or open a PR as part of this pass. `ready-for-pr` still owns publishing. You are running the same commands so the branch is actually green.
+Full local CI gates belong exclusively to `ready-for-pr` when the user explicitly asks for readiness or checks. Otherwise CI owns them. Do not mark the PR ready, push, or open a PR as part of this pass.
 
 ## Definition of done
 
@@ -82,8 +79,8 @@ Do **not** mark the PR ready, push, or open a PR as part of this pass. `ready-fo
 - Every implemented behaviour, invariant, and decision-table row has appropriate test evidence — only the tests `write-tests` would allow.
 - Browser paths explicitly requested by the user have been exercised successfully; other recommended browser checks are recorded as unrun.
 - Specs and implementation plans accurately describe the final behaviour and state.
-- A full branch self-review has been performed (`branch-self-review`) and verified findings have been fixed.
-- Close-out gates have been run **once at the end** and looped until green — whole-programme types, lint, knip / dead code, and the test suite, in the config's `gates` order. They were not run after each card.
+- The complete branch diff has been inspected and verified findings have been fixed.
+- Directly relevant targeted test evidence is current; full local CI gates are recorded as unrun unless the user explicitly requested `ready-for-pr`.
 - A final spec drift and coverage check (`spec-audit-drift`, `spec-assess-coverage`) finds no unaddressed in-scope gap.
 - The final checkpoint records what shipped, verification performed, generated migration artifacts left uncommitted, remaining blockers, and any developer action.
 
@@ -99,7 +96,7 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 - [ ] Schema generate and migrate ran only when the config defines them and the card actually needed them.
 - [ ] Spec badges, plan, and `.active/` checkpoint match reality after each card.
 - [ ] The skill did not stop while dependency-ready work remained, unless I asked for only one chunk.
-- [ ] Close-out ran self-review, then the heavy gates once, then looped until green; whole-programme lint, knip, and types were not run after each card. Per-card lint covered only touched files.
+- [ ] Close-out inspected the full diff and ran only warranted targeted evidence; it did not run TypeScript, lint, knip, UI, or full-suite gates without an explicit readiness request.
 
 ## Anti-patterns
 
@@ -111,8 +108,7 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 - **Committing generated migration artifacts** without explicit authorisation.
 - **Pushing or opening a pull request** as part of the loop.
 - **Using `/loop` on a wall-clock interval** instead of "next card until done".
-- **Running whole-programme lint, typecheck, knip, or the full test suite after every card.** That is the close-out pass. Lint only the files touched by the card; save repository-wide lint and `tsc --noEmit` for the end.
-- **Skipping close-out gates** because the per-card path-scoped checks were green. A shared type can still break files this card did not touch.
+- **Running lint, typecheck, knip, UI, or the full test suite as implementation ceremony.** Those are `ready-for-pr` gates and require an explicit user request.
 
 ## Related skills
 
@@ -122,5 +118,5 @@ Do not push, submit, open a PR, commit protected migration artifacts, implement 
 - `write-tests` — whether a chunk test should exist
 - `spec-maintain-on-ship` — badges in the same change
 - `spec-audit-drift` / `spec-assess-coverage` — the final gap check
-- `branch-self-review` — review the branch before anyone else
-- `ready-for-pr` — the same gates, plus marking a draft PR ready; this loop runs the gates at close-out but does not publish
+- `branch-self-review` — a separate explicit branch audit
+- `ready-for-pr` — the explicit full local CI gate and draft-readiness workflow

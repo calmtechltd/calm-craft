@@ -37,7 +37,7 @@ Restate in 5–10 bullets before chunking, and flag ambiguities. **Honour deferr
 
 ### 3. Define phases as demo-able milestones
 
-Not org-chart layers. Each phase: a letter ID, a one-line focus, and a testable outcome — what is true in the running app when it completes.
+Not org-chart layers. Each phase: a letter ID, a one-line focus, and an observable outcome — what capability exists when it completes.
 
 ### 4. Decompose into chunks
 
@@ -47,7 +47,7 @@ Every chunk carries all six. This is the part that matters most:
 - **Depends on** — chunks that must be merged and tested first
 - **Spec(s)** — paths and behaviour IDs; state and transition IDs when it touches a storyboarded journey
 - **Work** — concrete file areas, routes, helpers. Implementation language belongs here
-- **Done when** — observable acceptance criteria. For UI chunks, **manual steps in the running app**, never "tests pass" alone
+- **Done when** — observable acceptance criteria. For UI chunks, describe the expected state or interaction without turning it into automatic browser authorization. Optional manual/browser checks must be labelled **recommended and unrun unless the user explicitly requests them**.
 - **Out of scope** — an explicit fence. Omitting it invites scope creep
 
 **Vertical slice rule:** from the first user-facing milestone onward, UI ships in the same chunk as the behaviour it exposes. Exceptions are explicit foundation chunks.
@@ -71,7 +71,7 @@ Write to the plans path from `config.yaml`. Report: path, phase count, chunk cou
 - [ ] Every chunk has all six fields.
 - [ ] No chunk too large for one reviewable pass — split if Work has more than ~8 deliverables.
 - [ ] Deferred design scope appears only in later phases.
-- [ ] UI chunks have manual Done-when steps.
+- [ ] UI chunks have observable Done-when criteria; any browser check is labelled recommended and explicit-only.
 - [ ] Journey chunks cite affected flow state IDs and transition IDs, and invent no state, guard, bypass, or exit the contract lacks.
 - [ ] Storyboarded journey chunks preserve the declared goal, information, primary action, feedback, state preservation, and accessibility intent.
 - [ ] Critical path matches dependencies; no cycles.
