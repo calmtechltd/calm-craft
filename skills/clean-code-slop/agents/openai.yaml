@@ -1,0 +1,7 @@
+interface:
+  display_name: "Clean Code Slop"
+  short_description: "Find and remove unjustified code complexity"
+  default_prompt: "Use $clean-code-slop to simplify verified code slop in the requested scope while preserving behaviour and reusing focused verification."
+
+policy:
+  allow_implicit_invocation: false

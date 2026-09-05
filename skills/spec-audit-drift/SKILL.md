@@ -9,12 +9,6 @@ Does the spec still describe what the code does? **Reports only** — fixing is 
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md).
 
-## When to use
-
-- "Is this spec still accurate?"
-- Before planning work against a spec nobody has touched recently.
-- Suspicion that a journey does something the contract doesn't allow.
-
 **Not this skill:** whether tests exist (`spec-assess-coverage`), updating the spec (`spec-maintain-on-ship`), classifying a bug report (`spec-triage-bug-report`).
 
 ## Workflow
@@ -30,7 +24,7 @@ For every behaviour ID, find the code that produces it and classify:
 | Verdict         | Meaning                                                     |
 | --------------- | ----------------------------------------------------------- |
 | **Matches**     | Code produces the described outcome                         |
-| **Drifted**     | Code produces a _different_ outcome — the spec is now wrong |
+| **Drifted**     | Code and spec differ; establish which side should change |
 | **Missing**     | Badged 🟢 or 🟡 but no implementing code found              |
 | **Unspecced**   | Code produces observable behaviour no behaviour describes   |
 | **Badge wrong** | Behaviour exists but the badge overstates or understates it |
@@ -51,7 +45,9 @@ Report guard mismatches precisely: a guard the code checks more loosely than the
 
 Check storyboard coverage before its content. Once a flow uses storyboard evidence, every `screen` and `terminal` state requires a `storyboard` block; report each missing block as drift before checking the scenes themselves.
 
-For every storyboarded screen, terminal, or visible action/processing state, verify the running journey communicates the declared goal and information, exposes the named primary transition where applicable, provides the stated feedback, preserves the promised work, and follows the recorded accessibility behaviour. Do not turn visual preference into a requirement.
+For every storyboarded screen, terminal, or visible action/processing state, inspect implementation and available evidence to establish whether the journey communicates the declared goal and information, exposes the named primary transition where applicable, provides the stated feedback, preserves the promised work, and follows the recorded accessibility behaviour. Do not turn visual preference into a requirement.
+
+Reuse evidence under [write-tests](../write-tests/SKILL.md). Run a focused browser check only when needed and permitted by task/repository policy; otherwise report the evidence limit. This audit does not automatically start the app or full test suites.
 
 ### 5. Verify before reporting
 
@@ -64,26 +60,6 @@ Group by verdict, most severe first. Each finding: behaviour or transition ID, `
 That last part matters. Drift has two fixes: update the spec because the change was intended, or fix the code because it wasn't. Say which you believe and why; don't leave a bare mismatch for someone else to decide blind.
 
 End with: counts by verdict, and whether the front-matter roll-up status is still right.
-
-## Quality gate
-
-- [ ] Every behaviour ID has a verdict.
-- [ ] Unspecced behaviour actively searched for, not just spec-to-code checked.
-- [ ] Invariants checked for bypass paths, not only for enforcement.
-- [ ] Flow audited in both directions.
-- [ ] Missing required storyboard blocks reported before storyboard content was checked.
-- [ ] Storyboard content checked for every storyboarded screen, terminal, and visible action/processing state.
-- [ ] Each finding verified against current code.
-- [ ] Each drift finding says which side you think is wrong.
-- [ ] Nothing edited.
-
-## Anti-patterns
-
-- **Only checking spec → code.** Misses everything the feature grew.
-- **Reading code and spec together.** Form the expectation first.
-- **Reporting a mismatch without a recommendation.** Half a finding.
-- **Accepting an invariant as enforced** because one path enforces it.
-- **Fixing during the audit.**
 
 ## Related skills
 

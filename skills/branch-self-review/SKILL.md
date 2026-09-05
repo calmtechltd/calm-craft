@@ -1,21 +1,15 @@
 ---
 name: branch-self-review
-description: Review this branch's committed changes against the merge-base for functional bugs, permission and tenancy holes, and risky code paths, like a review bot would, before anyone else sees it. Use when the user says "review my branch", "find issues in my changes", "what could break here", or before opening a pull request. Reports only — never edits product code and never runs the gates.
+description: Review a branch or the current task's changes for functional bugs, permission and tenancy holes, and maintainability problems. Use when the user asks to review changes or an implementation workflow calls for final review. Reports findings without editing product code or running whole-repository gates.
 ---
 
 # Branch Self-Review
 
 Review your own diff before anyone else does. Functional bugs, permission and tenancy holes, risky paths, convention gaps.
 
-**Read-only for product code.** It writes a report and fixes nothing — an auditor that can edit can make its own findings disappear. It also doesn't run typecheck or tests. Whole-repo gates belong to `ready-for-pr` and to `run-implementation-plan` close-out, not to each card.
+**Read-only for product code.** Report findings; the calling implementation workflow can then fix them within its authorised scope. Do not run whole-repository gates here. A focused read-only check may be used to verify a suspected finding when its cost is justified.
 
 Default branch, report path, and always-check conventions: `.engineering/config.yaml`.
-
-## When to use
-
-- "Review my branch before I open a pull request."
-- "What could break in this diff?"
-- After finishing a chunk, before `ready-for-pr`.
 
 **Not this skill:** running gates (`ready-for-pr`), convention compliance (`conventions-audit`), processing bot feedback on an existing pull request (`coderabbit-review-triage`).
 
@@ -27,7 +21,9 @@ Default branch, report path, and always-check conventions: `.engineering/config.
 git merge-base HEAD origin/<default_branch>
 ```
 
-Then the full diff and log from that base to HEAD. **Committed changes, not the working tree**, unless I explicitly ask otherwise. If the diff is empty, say so and stop.
+For a committed branch or PR review, read the full diff and log from that base to HEAD. For a review of current work or an implementation close-out, also include task-owned staged, unstaged, and untracked files. Use the caller's scope and starting worktree baseline to distinguish task changes from unrelated work. Report what was included; do not require a commit to make changes reviewable.
+
+Only report an empty scope after checking all the requested surfaces. Read untracked task files directly because `git diff` does not include them.
 
 ### 2. Read surrounding code
 
@@ -44,8 +40,9 @@ Permission and tenancy checks usually live outside the changed lines — in midd
 | **Tenancy**         | Scoping applied on reads _and_ writes                                                                                |
 | **Secrets**         | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret |
 | **Code paths**      | Unreachable branches, missing returns, swallowed errors                                                              |
+| **Structure**      | Repeated business rules, unnecessary forwarding layers, speculative options, or inconsistent patterns; trace callers and the existing abstraction before suggesting a change |
 | **Conventions**     | Whatever `review.always_check` lists in the config                                                                   |
-| **Tests and specs** | Changed behaviour with no test, or a spec that now disagrees                                                         |
+| **Tests and specs** | Missing meaningful protection under `write-tests`, stale verification evidence, or a spec that disagrees; do not flag deliberately omitted low-value tests or repository-approved browser checks as missing unit tests |
 
 ### 4. Grade
 
@@ -62,34 +59,17 @@ Before a finding survives:
 
 1. Confirm it exists on the current branch.
 2. Check whether middleware, a shared helper, or a parent already handles it.
-3. Check sibling code — if the same omission is deliberate and consistent, that's a pattern question, not a defect.
+3. Check sibling code and the governing requirement. A consistent implementation can still contain a repeated bug; similarity alone neither proves nor excuses a defect.
 
-Drop what's already handled. **Fewer verified findings beat a long speculative list** — a reviewer that cries wolf gets ignored, which is worse than no reviewer. If unsure a Critical is real, downgrade it.
+Drop what's already handled. State confidence separately from impact: an uncertain security issue is not a minor issue merely because it needs investigation. Keep speculative concerns out of confirmed findings. For maintainability findings, name the responsibility, the avoidable maintenance cost, and a concrete simplification; short functions, literal assertions, or repeated syntax alone are not defects.
 
 ### 6. Report
 
-Write to the reports path: scope (branch, merge-base, diff stat, changed files) and findings grouped by severity with a by-file index.
+For a substantial review or when the calling workflow requires a report, write to the configured reports path with scope, findings, and evidence. A small review may be reported inline without creating an artifact.
 
 Inline: the counts, the report path, and **every Critical and Major** as a one-liner with `file:line`. Each finding carries severity, location, what, impact, and a suggested direction — no code edits.
 
-Then: fix the Critical and Major findings, run `ready-for-pr`, open the pull request.
-
-## Quality gate
-
-- [ ] Scoped against merge-base, not the working tree.
-- [ ] Changed files read with surrounding context, not diff-only.
-- [ ] Every finding verified against current code.
-- [ ] Critical and Major have concrete `file:line` and stated impact.
-- [ ] No product code modified.
-- [ ] No gates run.
-
-## Anti-patterns
-
-- **Reviewing the hunk alone.** Permissions and tenancy live elsewhere.
-- **Speculative Criticals.** If unsure, downgrade or omit.
-- **Fixing during review.**
-- **Running tests here.** Different skill, different job.
-- **Reviewing uncommitted changes** when asked for a branch review.
+Return findings to the caller. Review alone does not authorise fixes, publishing, or another workflow; an implementation task may already authorise fixing in-scope findings.
 
 ## Related skills
 

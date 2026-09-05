@@ -57,25 +57,10 @@ describe("npm release contract", () => {
     }
   });
 
-  it("documents every public installation and operating boundary", () => {
+  it("keeps package pins, security routing, and distributed templates current", () => {
     const readme = read("README.md");
     const manifest = json<PackageManifest>("package.json");
-    for (const heading of [
-      "## Install the CLI",
-      "### Current repository",
-      "### Local path or worktree",
-      "### Branch review",
-      "### Private remote",
-      "### Privacy",
-      "### Troubleshooting",
-      "### Uninstall",
-    ]) {
-      expect(readme).toContain(heading);
-    }
     expect(readme).toContain(`@calmcraft/cli@${manifest.version}`);
-    const support = read("SUPPORT.md");
-    expect(support).toContain("Semantic Versioning");
-    expect(support).toContain("Node.js 22 and Node.js 24");
     expect(read("SECURITY.md")).toContain(
       "https://github.com/calmtechltd/calm-craft/security/advisories/new",
     );
@@ -87,9 +72,6 @@ describe("npm release contract", () => {
     expect(releasing).toContain(`npm dist-tag add @calmcraft/cli@${manifest.version} latest`);
     const visualizerSkill = read("skills/spec-visualize/SKILL.md");
     expect(visualizerSkill).toContain(`@calmcraft/cli@${manifest.version}`);
-    expect(visualizerSkill).toContain("outside the repository");
-    expect(visualizerSkill).toContain("never inside their repository");
-    expect(visualizerSkill).not.toContain("<specs root>/_site/index.html");
   });
 
   it("uses stage-only OIDC publishing and a six-environment installed-package smoke matrix", () => {

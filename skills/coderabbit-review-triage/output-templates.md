@@ -15,7 +15,7 @@
 | --- | --- |
 | `01-walkthrough-summary.md` | Bot walkthrough / PR summary |
 | `02-review-body-full.md` | Full review body |
-| `03-inline-comment-*.md` | Critical inline comment(s) |
+| `03-inline-comment-*.md` | Inline findings of every severity |
 | `raw-comments/` | One file per finding |
 | `05-comments-structured.json` | Machine-readable list |
 
@@ -23,7 +23,7 @@
 
 | Category | Count |
 | --- | --- |
-| Inline (Critical) | … |
+| Inline (all severities) | … |
 | Outside Diff Range | … |
 | Major | … |
 | Nitpick | … |
@@ -51,12 +51,13 @@
 | **Obvious Fix** | N |
 | **Skip** | N |
 | **Needs Input** | N |
+| **Unverified** | N |
 
 ---
 
 ## Obvious Fixes
 
-Ordered by severity (Critical → Major → Nitpick). Include **bundled low-value nits** here (tag *Bundled low-value nit*) when substantive fixes also ship — see bundle rule in SKILL.md.
+Order by consequence. Include only verified in-scope fixes; assess nits by their actual value and governing rule.
 
 1. **`<path>`** (L<lines>) — **<title>.**
    *Rationale:* <one line>
@@ -79,9 +80,13 @@ Ordered by severity (Critical → Major → Nitpick). Include **bundled low-valu
 
 ---
 
+## Unverified
+
+- <finding ID, missing evidence, and next useful check>
+
 ## Verification notes
 
-- <what was spot-checked in code>
+- <evidence for each definitive verdict and limits on completeness>
 ```
 
 ## Needs Input question format

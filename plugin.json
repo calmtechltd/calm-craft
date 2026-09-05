@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "calm-craft",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Specs as the source of truth, a chunked delivery loop, and decided-and-enforced code conventions — as portable agent skills.",
   "author": {
     "name": "Calm Tech Ltd",

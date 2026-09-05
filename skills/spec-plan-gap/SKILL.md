@@ -5,17 +5,11 @@ description: Search the existing spec estate for overlap, conflict, or existing 
 
 # Plan a Spec for a Gap
 
-Before writing a new spec, find out whether one already covers it. Duplicate and contradictory specs are the fastest way to make an estate untrustworthy — two specs disagreeing about the same feature is worse than neither existing.
+Before writing a new spec, find out whether one already covers it. Search the existing intent before proposing another authority.
 
 This skill **plans**; it doesn't write the spec file.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md).
-
-## When to use
-
-- "This behaviour isn't specced anywhere."
-- "Do we have a spec covering X?"
-- Before any new spec, greenfield or backfill.
 
 **Not this skill:** writing the file (`spec-author-greenfield`, `spec-author-from-impl`), estate-wide health (`spec-gap-sweep`).
 
@@ -44,7 +38,7 @@ Search on **meaning**, several ways, because one angle won't find everything:
 | **Conflicts**             | An existing spec says something incompatible      | **Stop.** Resolve before authoring                         |
 | **Genuine gap**           | Nothing covers it                                 | Plan the new spec                                          |
 
-**Conflicts halt the work.** Authoring on top of a contradiction produces two specs that disagree, and the estate loses the property that makes it useful.
+Resolve conflicts before authoring dependent intent; continue independent scope analysis.
 
 ### 4. Decide extend vs create
 
@@ -59,22 +53,6 @@ For a new spec: path, `id`, `area`, one-line description, candidate behaviours i
 For an extension: which spec, which behaviours to add, and whether the roll-up status changes.
 
 Either way, name the authoring skill to run next — `spec-author-greenfield` if unbuilt, `spec-author-from-impl` if it exists.
-
-## Quality gate
-
-- [ ] Searched by meaning across several vocabularies, not one keyword.
-- [ ] Behaviour text searched, not only titles.
-- [ ] Out of Scope and Future Considerations checked.
-- [ ] Conflicts surfaced and the work halted.
-- [ ] A clear extend-or-create recommendation with a reason.
-- [ ] No spec file written.
-
-## Anti-patterns
-
-- **One keyword search.** Specs are written in product language, which varies by author.
-- **Creating a spec that overlaps an existing one.** The failure this skill exists to prevent.
-- **Ignoring a deliberate exclusion.** Someone decided that; find out why before overriding it.
-- **Authoring over a conflict.**
 
 ## Related skills
 

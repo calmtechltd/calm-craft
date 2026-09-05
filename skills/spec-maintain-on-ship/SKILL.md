@@ -5,18 +5,9 @@ description: Update a feature spec when work changes its state — a partial beh
 
 # Maintain a Spec When Work Ships
 
-Keep the spec true. A spec that drifts from reality is worse than no spec, because people rely on it.
-
-Run this **in the same pull request as the code**, not later. Later doesn't happen.
+Update documented behavior in the same change as its implementation.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md).
-
-## When to use
-
-- A behaviour shipped, fully or partly.
-- A future behaviour got prioritised.
-- An Open Question got answered, in conversation or via `spec-harvest-discussion`.
-- A journey changed shape.
 
 **Not this skill:** finding drift (`spec-audit-drift`), authoring a new spec (`spec-author-greenfield` / `spec-author-from-impl`).
 
@@ -26,13 +17,13 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 🟡 → 🟢. Remove the note on what was missing, and the ticket reference if the repo uses one.
 
-**A closed ticket is not evidence.** It means someone marked a card done. Verify the code and the test yourself before promoting anything — the tracker owns scheduling, the spec owns intent.
+**A closed ticket is not evidence.** It means someone marked a card done. Inspect the implementing code and current verification evidence before promoting anything — the tracker owns scheduling, the spec owns intent. Reuse valid evidence from the implementing agent; do not rerun checks merely to update a badge.
 
-**Verify before flipping.** 🟢 means built _and_ tested. If the tests aren't there, either write them or the badge stays 🟡 with an updated note. Flipping a badge because a pull request merged is how an estate stops being trustworthy.
+**Verify before flipping.** Apply the repository's test policy and `write-tests`: meaningful server/lib rules need appropriate automated protection, while permitted browser or static verification may establish other behaviour. Distinguish a justified omission of automation from missing required evidence. If required evidence is absent, leave the badge partial and explain the gap; a merged pull request alone is not verification.
 
 ### A future behaviour was prioritised
 
-🔵 → 🟡, with a ticket and a one-line note on what's missing. If the whole behaviour landed in one go, 🔵 → 🟢 directly is fine — but the same evidence standard applies.
+🔵 → 🟡, with a ticket only if the repository uses one, and a one-line note on what's missing. If the whole behaviour landed in one go, 🔵 → 🟢 directly is fine — but the same evidence standard applies.
 
 ### An Open Question was answered
 
@@ -56,37 +47,19 @@ When a flow uses storyboard evidence, add or update the `storyboard` block for e
 
 ### Always: reconcile the roll-up
 
-After any change, recompute front-matter `status`: `implemented` only if every behaviour is; `future` if none are; `partial` otherwise. And update the `ticket` field — remove it when nothing is in flight.
+After any change, recompute front-matter `status`: `implemented` only if every behaviour is; `future` only if every behaviour is future; `partial` otherwise. Update `ticket` only when the repository uses it; remove it when nothing is in flight.
 
 ## Workflow
 
 1. Identify which behaviours the change touches, by ID.
-2. For each, establish the **evidence** — the code that implements it and the tests that demonstrate it. State it.
+2. For each, establish the implementing code and appropriate verification evidence. State its scope, result, and any limitations without rerunning current checks.
 3. Apply the transitions above.
 4. Update flow contracts and regenerate diagrams if navigation changed.
 5. Recompute the roll-up and ticket field.
 6. Report: IDs changed with old → new badge, evidence for each, questions settled, flow changes, and the new roll-up.
 
-## Quality gate
-
-- [ ] Every 🟢 has both implementing code and a demonstrating test, named.
-- [ ] Every remaining 🟡 has a current note on what's missing.
-- [ ] Answered questions became durable spec content, not just deletions.
-- [ ] Blocked behaviours re-checked when their blocking question was settled.
-- [ ] Flow YAML updated before the diagram; unchanged IDs preserved.
-- [ ] Storyboard evidence added or updated for every affected screen, terminal, and storyboarded visible action/processing state.
-- [ ] Roll-up status and ticket field recomputed.
-
-## Anti-patterns
-
-- **Flipping to 🟢 because the pull request merged.** The badge claims tested.
-- **Deleting an answered question** and losing why.
-- **Renumbering transition IDs.** Breaks every citation, silently.
-- **Editing the Mermaid file** instead of the contract.
-- **Doing this a week later.** The evidence is gone and so is the intent.
-
 ## Related skills
 
 - `spec-audit-drift` — verify the update was honest
-- `spec-assess-coverage` — prove a 🟢 badge is earned
+- `spec-assess-coverage` — assess automated coverage and other evidence
 - `spec-gap-sweep` — catch what never got maintained

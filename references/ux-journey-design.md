@@ -58,7 +58,7 @@ answer:
 
 Do not hide missing evidence behind “try again.” When the next safe move requires a decision, make it
 an inline request with an explicit answer shape and consequence. For example, the user might add a
-required Source, correct a date, select from known values, accept a limitation, or revise the scope.
+required source document, correct a date, select from known values, accept a limitation, or revise the scope.
 
 The flow rehearsal must reach the recovery state and continue out of it. Record what is retained and
 where every retry, revise, answer, Back, and cancel action leads. Merely naming a failure transition
@@ -107,20 +107,6 @@ Use established product and platform patterns for navigation, selection, destruc
 ### Accessibility
 
 Storyboard keyboard order, focus movement, error association, reduced-motion behaviour, and screen-reader announcements when they affect a transition or recovery path. Visual polish cannot compensate for an unreachable action.
-
-## Review order
-
-1. Remove scenes that add no decision, information, safety, or feedback.
-2. Put permission and feasibility checks before the user invests work.
-3. Give each scene one clear primary action and review every other outgoing transition as a truthful secondary exit.
-4. Delay advanced choices until their branch becomes relevant.
-5. Make processing, success, failure, and partial success visible.
-6. Adversarially rehearse asynchronous work through invalid output, interruption, silent-worker
-   timeout, revision, retry, duplicate delivery, late completion, cancellation, reload, and resume
-   where applicable.
-7. Preserve valid input, diagnosis, and guidance across back, retry, and resume; invalidate approval
-   when the approved facts change.
-8. State what happened to user data at each terminal outcome.
 
 ## Turning review findings into spec changes
 

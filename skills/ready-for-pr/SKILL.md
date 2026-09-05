@@ -1,107 +1,40 @@
 ---
 name: ready-for-pr
-description: Run the same quality gates CI runs — types, lint, dead code, tests — and fix what fails until the branch would pass. Then mark the current branch's GitHub PR ready for review if it is still a draft. Use only when the user explicitly says "ready for PR", "run the checks", "is this ready to ship", or "will CI pass". A bare implementation, commit, submit, PR update, or PR opening request does not run this suite.
+description: Run requested local CI gates, fix in-scope failures, and report readiness. Mark an existing draft ready only when that action is authorized and its published head contains the validated state. Ordinary implementation or PR metadata work does not trigger this skill.
 ---
 
-# Ready for PR
+# Check PR Readiness
 
-Run the gates CI runs, fix what fails, then — only if every gate passed — mark the current branch's draft PR ready for review.
+Use for an explicit checks/readiness request or a repository-required pass. An assessment such as “will CI pass?” authorizes verification, not reviewer notifications. Do not automatically invoke this workflow after implementation, commit, submission, or a PR description edit.
 
-Commands come from `commands` in `.engineering/config.yaml`, which `engineering-setup` took from the CI workflow. If they've drifted from CI, that's a finding — report it rather than quietly running something different from what will actually gate the merge.
+## Run the required checks
 
-## When to use
+Read actual CI and `.engineering/config.yaml` when present. Identify ordered gates and their prerequisites. Report configuration drift instead of guessing commands or dropping a real failing gate. Missing commands or unavailable environments leave readiness unverified. Run setup/code generation when it is a prerequisite of the selected gates; use the owning tool and preserve unrelated generated changes.
 
-- "Is this ready for a pull request?"
-- "Run the checks" / "will CI pass?"
-- After finishing a chunk or a fix, only when I ask whether CI would pass or to mark the draft ready. Implementation workflows do not run these gates.
+Follow [write-tests](../write-tests/SKILL.md) for coordination and evidence reuse. One agent owns the pass. Reuse a passing gate only when it covers the same code, dependencies, configuration, and relevant environment. Distinct CI environments are distinct evidence. Workers run only assigned checks.
 
-Do not invoke this skill as an automatic follow-up to implementation, committing, submitting, updating PR metadata, or opening a PR. CI owns the full gates unless the user explicitly requests this local readiness pass.
+Run the configured gates in dependency order. Investigate the first failure before dependent gates. Fix failures within the authorized scope; report unrelated or unavailable prerequisites. Do not suppress type/lint errors or weaken a test merely to obtain green results. Rerun the failed check and any earlier or later evidence the fix invalidated, then continue remaining checks.
 
-**Not this skill:** reviewing for bugs (`branch-self-review`), checking conventions (`conventions-audit`), updating pull request metadata (`update-pr`). Opening or submitting the PR is a separate skill — this one only marks an existing draft ready.
+Run applicable repository-required changed-file checks even when listed outside the main gates. Do not turn unrelated optional formatting debt into a blocker. Never perform repository-wide formatting as a readiness side effect.
 
-## Workflow
+## Inspect the final state
 
-### 1. Run exactly what `gates` lists, in order
+Review the complete task diff, including staged, unstaged, and untracked task files. Check accidental scope, secrets, debug artifacts, generated output, and environment files. Do not commit or push unless authorized.
 
-The config's `gates` list names the commands that actually gate a merge, in CI's order — typically a `setup` generation step, then types, lint, dead code, tests.
+## Promote only when authorized and published
 
-**Run the `setup` command if one exists.** It's there because CI runs a generation step before the gates; skip it and a later gate fails on missing generated files, and you report a phantom failure on a perfectly clean branch.
+For a checks-only or assessment request, report results and leave the PR state unchanged.
 
-**Never run anything under `non_gating`.** Those commands exist but don't gate. A formatter failing on hundreds of pre-existing files is not this branch's problem, and reporting Blocked on it makes this skill worse than useless — people stop believing it. Mention them only if asked.
+When marking a draft ready is authorized, read the current branch and PR metadata, including `number`, `headRefName`, `headRefOid`, `isDraft`, and `url`. Establish all of the following immediately before promotion:
 
-**Stop and fix at the first failure** before continuing; a later gate's output is noise while an earlier one is broken.
+- This is the intended branch's PR and the tested commit matches its current published `headRefOid`.
+- All relevant validated changes, including generated sources needed for the result, are committed and published; no local-only repair contributes to the passing result.
+- Required checks passed for that state; later changes have not invalidated them.
 
-Skip any command the config doesn't define. Don't invent one — a guessed test command that passes proves nothing.
+If fixes remain local or the remote advanced, keep the draft and report what needs publication or revalidation. Do not publish merely to satisfy this check. With no PR, report local readiness without creating one. An already-ready PR needs no mutation.
 
-### 2. Fix the root cause
+For an eligible authorized draft, use `gh pr ready <number>` and re-read its head and draft state. Report unexpected changes rather than claiming the newly observed head was validated.
 
-Read the failure output properly and fix the actual problem.
+## Report
 
-**No suppressions to get green:** no type escape hatches, no lint disables, no widening a type to silence an error, unless I explicitly approve it. A suppression turns a gate failure into a permanent hole, which is the opposite of the point.
-
-Re-run only the failed step, then any later step the fix could have affected.
-
-Repeat until everything passes.
-
-### 3. Git sanity check
-
-Once gates pass, look at what's actually staged and changed. Flag:
-
-- Edits unrelated to the branch's purpose
-- Secrets or environment files — `.env`, `.env.local`, `.env.*.local`, key files, credentials. A new `.env.example` is expected; a value in it that looks real is not
-- A tracked `.env` that this branch did not mean to add
-- Debug logging left behind, including printed env values or tokens
-- Large or accidental files
-
-**Do not commit or push** unless I ask.
-
-### 4. Mark the PR ready (after gates pass)
-
-This is the step submit must not do. Only run it when every gate above passed.
-
-```bash
-gh pr view --json number,isDraft,url
-```
-
-- **No PR** — report Ready locally. Do not open or submit one.
-- **Draft** — `gh pr ready`, then confirm `isDraft` is false. That is what notifies reviewers and turns review bots on when they skip drafts.
-- **Already ready** — leave it. Report that the gates passed.
-- **Gates blocked** — never mark ready. A draft with failing checks is the correct state.
-
-If I asked only to **run the checks** and not to publish, skip `gh pr ready`. Report the actual PR state: no PR, still a draft, or already ready.
-
-### 5. Report
-
-Two shapes only:
-
-- **Ready** — all gates passed; whether the PR was marked ready, left ready, or does not exist yet.
-- **Blocked** — which step failed, the one-line cause, what you fixed, and what still needs a human. Include anything I must run myself, such as a migration. Do not mark the PR ready.
-
-Be accurate about what actually ran. "Ready" after skipping the test suite is the single most damaging thing this skill can say.
-
-## Quality gate
-
-- [ ] Every command in `gates` was run, in order, or its absence explained.
-- [ ] Nothing under `non_gating` was run or reported as blocking.
-- [ ] Failures fixed at the root, not suppressed.
-- [ ] Config commands match what CI runs — drift reported.
-- [ ] Git sanity check done.
-- [ ] Draft PR marked ready only after gates passed, unless I asked only to run the checks.
-- [ ] Nothing committed or pushed unasked.
-- [ ] The report states what actually ran.
-
-## Anti-patterns
-
-- **Suppressing to get green.** A permanent hole traded for a passing run.
-- **Reporting Ready having skipped a gate.** Destroys the value of the skill.
-- **Running a narrower test scope by default** because it's faster. Ask first.
-- **Continuing past a failure** to collect more output — later failures are usually downstream of the first.
-- **Fixing unrelated things** you noticed on the way. Note them instead.
-- **Calling `gh pr ready` from submit, or on a blocked draft.**
-
-## Related skills
-
-- `branch-self-review` — bugs and risk, before or after these gates
-- `update-pr` — title and body once the gates pass
-- `conventions-audit` — convention compliance
-- `engineering-setup` — when the commands here are wrong or missing
+Give current verification evidence, failures or unrun requirements, relevant local/unpublished work, and the actual PR state. Distinguish ready locally from a published PR marked ready. Do not fabricate a full pass from selected targeted checks.

@@ -36,8 +36,8 @@ To exercise only the source CLI against the last built browser bundle, use `pnpm
 CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version without installing it globally:
 
 ```sh
-npx --yes @calmcraft/cli@0.2.1 generate
-npx --yes @calmcraft/cli@0.2.1 generate --diff --base origin/main
+npx --yes @calmcraft/cli@0.3.0 generate
+npx --yes @calmcraft/cli@0.3.0 generate --diff --base origin/main
 ```
 
 `generate` writes one HTML file and opens it from disk. `--diff` bakes Branch Review into that file from the current working tree; there is no port, token, or process left running.
@@ -45,7 +45,7 @@ npx --yes @calmcraft/cli@0.2.1 generate --diff --base origin/main
 Or install the same pinned version:
 
 ```sh
-npm install --global @calmcraft/cli@0.2.1
+npm install --global @calmcraft/cli@0.3.0
 calmcraft view
 ```
 
@@ -187,10 +187,11 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                                                    |
 | `ask-questions`                   | Surface open decisions in current work and ask them, structured.                                      |
-| `run-implementation-plan`         | Complete in-scope behaviours one card at a time. Cheap checks per card; full gates once at close-out. |
+| `run-implementation-plan`         | Complete scoped behaviours with coordinated targeted checks; full gates when requested or required. |
 | `run-implementation-plan-all`     | Named entry for finishing the plan — same loop.                                                       |
-| `bug-regression-red-green`        | Failing test first, then the fix, and the test stays.                                                 |
+| `bug-regression-red-green`        | Reproduce the failure, fix it, and preserve meaningful regression protection.                        |
 | `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.                                   |
+| `clean-code-slop`                 | Explicitly requested audit or cleanup of unjustified complexity, duplication, and low-value tests.   |
 | `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                                                |
 | `update-pr`                       | Rewrite or sync the current PR title and body from the branch.                                        |
 | `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                                              |

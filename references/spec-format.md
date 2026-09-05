@@ -38,7 +38,7 @@ With a provider set, a `ticket` field becomes available in front matter and on �
 
 **What never changes:** a 🟡 behaviour always carries a one-line note on what's missing. The note is the valuable half — it describes the state of the product. The ticket is optional metadata recording that someone made a card.
 
-**The spec owns intent; the tracker owns scheduling.** A closed ticket never promotes a badge. It makes `spec-gap-sweep` report the behaviour as worth verifying, and `spec-maintain-on-ship` still demands evidence — the code and the test, named. Anything else and badges go back to being optimistic rather than honest, which is the one property worth protecting.
+**The spec owns intent; the tracker owns scheduling.** A closed ticket never promotes a badge. It makes `spec-gap-sweep` report the behaviour as worth verifying. `spec-maintain-on-ship` still requires implementing code and verification appropriate to the repository's test policy; a tracker status is not that evidence.
 
 Discussion flows the other way, through `spec-harvest-discussion`: it proposes spec changes from an issue or review thread and never writes back to the tracker.
 
@@ -61,7 +61,7 @@ Status lives at the **behaviour level**, not just the file level — a spec can 
 
 | Badge            | Meaning                                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| 🟢 `implemented` | Built and tested                                                                                             |
+| 🟢 `implemented` | Built and verified at the appropriate layer under the repository's test policy                                |
 | 🟡 `partial`     | Built but incomplete. **Must** carry a one-line note on what's missing, plus a ticket if the repo links them |
 | 🔵 `future`      | Designed, not scheduled. No ticket required                                                                  |
 
@@ -73,7 +73,9 @@ A customer can be refunded before their invoice is fully paid, up to the amount
 already received. Today the refund is recorded but no notification is sent.
 ```
 
-Front-matter `status` is the roll-up: `implemented` only if every behaviour is; `future` if nothing is built; `partial` otherwise.
+Front-matter `status` is the roll-up: `implemented` only if every behaviour is; `future` only if every behaviour is future; `partial` otherwise.
+
+Verification may be automated, static, or an observed browser check where the repository permits it. Apply `write-tests` before treating missing automation as a gap. An explicit no-test decision does not prove behaviour works; report the available evidence and its limits. Required unrun checks remain gaps. Keep verification evidence in the task report or checkpoint, without adding a test-link inventory to the spec.
 
 ## Voice — requirements, not implementation
 
@@ -87,7 +89,7 @@ If you couldn't say it to a non-developer, it doesn't belong in a spec. Implemen
 
 ## Test cross-references: none
 
-Specs are deliberately test-agnostic. Never write "tested by file X". Reasoning from a behaviour ID to matching tests is the assessor's job; if it can't find them, that _is_ the gap report. Hand-maintained test links rot.
+Specs are deliberately test-agnostic. Never write "tested by file X". The assessor finds relevant tests and other permitted verification evidence, then reports missing required protection. Absence of an automated test alone is not a gap. Hand-maintained test links rot.
 
 ## Open Question markers
 
@@ -124,6 +126,9 @@ flows:
       - id: upload
         kind: screen           # screen | action | terminal
         label: Upload File
+      - id: validate
+        kind: action
+        label: Validate File
       - id: complete
         kind: terminal
         label: Import Complete
@@ -134,6 +139,11 @@ flows:
         event: Continue
         to: validate
         guard: A supported file has been accepted.
+        covers: [B2]
+      - id: F1.T2
+        from: validate
+        event: Validation succeeds
+        to: complete
         covers: [B2]
       - id: F1.T3
         from: validate
@@ -194,7 +204,7 @@ Storyboard fields describe observable UX intent. Layout, styling, and component 
 A spec that drifts from reality is worse than no spec.
 
 - A `partial` behaviour ships → `implemented`, drop the note and ticket.
-- A `future` behaviour is prioritised → `partial`, add the note and ticket.
+- A `future` behaviour is prioritised → `partial`, add the note and a ticket only if the repository uses them.
 - An Open Question is resolved → document the decision, often as a new behaviour or invariant, and mark it `**Settled:**` or remove it.
 - A journey changes → update the YAML first, regenerate the diagram, preserve IDs for unchanged paths.
 - Specs are reviewed in the pull request for any significant feature change, alongside the code.
