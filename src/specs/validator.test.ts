@@ -108,6 +108,28 @@ function invalidEstate(): SpecEstate {
 }
 
 describe("spec estate validation", () => {
+  it.each([
+    { fallbackCount: 0, ambiguous: false },
+    { fallbackCount: 1, ambiguous: false },
+    { fallbackCount: 2, ambiguous: true },
+  ])("B8 — same-event branches with $fallbackCount fallbacks", ({ fallbackCount, ambiguous }) => {
+    const estate = invalidEstate();
+    const flow = estate.specs[0]!.flows[0]!.contract!.flows[0]!;
+    const original = flow.transitions[0]!;
+    flow.transitions = [0, 1].map((index) =>
+      Object.assign({}, original, {
+        id: `F1.T${index + 1}`,
+        guard: index < fallbackCount ? undefined : index === 0 ? "Approved" : "Not approved",
+      }),
+    );
+
+    const findings = validateSpecEstate(estate).findings.filter(
+      (finding) => finding.code === "flow.transition.guard.missing",
+    );
+    expect(findings).toHaveLength(ambiguous ? 1 : 0);
+    if (ambiguous) expect(findings[0]).toMatchObject({ severity: "error" });
+  });
+
   it("builds deterministic relationships and backlinks for valid local spec links", async () => {
     const { loadSpecEstate } = await import("./estate");
     const fixtureRoot = new URL("../../test/fixtures/spec-estate/", import.meta.url).pathname;

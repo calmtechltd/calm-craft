@@ -1,6 +1,6 @@
 ---
 name: coderabbit-review-implement-all
-description: Publish CodeRabbit review fixes and resolve the review. Runs coderabbit-review-implement first if the local fixes are not done, commits and publishes them to the current PR, resolves inline threads with GraphQL, and when necessary posts one PR-level @coderabbitai resolve summary for completed review-body-only findings. Never resolves before the remote has the fixes. Use only when the user explicitly asks to implement all, fix and resolve, or ship the review and resolve.
+description: Publish CodeRabbit review fixes and resolve the review. Runs coderabbit-review-implement first if the local fixes are not done, commits and publishes them to the current PR, resolves inline threads with GraphQL, and when necessary posts one PR-level @coderabbitai resolve summary for completed review-body-only findings. Never resolves before the remote has the fixes. Use only when explicitly invoked or the user clearly requests CodeRabbit publication and resolution; a generic implement-all request stays local.
 ---
 
 # CodeRabbit Review — Implement All
@@ -27,16 +27,8 @@ Pairs with `coderabbit-review-triage` and `coderabbit-review-implement`.
 2. **Never resolve before the remote has the fixes.** Do not reply on threads or run `resolveReviewThread` while fix changes are still uncommitted or only on the local branch.
 3. **Publish, then resolve.** If this pass produced code changes, commit them and publish so the existing PR branch on the remote contains every fix commit. Fetch and confirm that before any thread reply or resolve.
 4. **No general PR comments.** The only allowed top-level comment is the single guarded `@coderabbitai resolve` summary in step 5, after remote verification, when completed review-body-only findings exist and no finding remains blocked. Never use GitHub MCP comment tools.
-5. A request to **implement all**, **fix and resolve**, or **ship the review and resolve** authorises this commit and publish. A generic "implement the fixes" does not — use `coderabbit-review-implement`.
+5. An explicit invocation of this publication workflow, or a clear request to **publish the CodeRabbit fixes and resolve their review**, authorises its commit, publish, and review communication. A generic "implement the fixes" does not — use `coderabbit-review-implement`.
 6. Skip-only passes have nothing to publish. Resolve those only when the working tree is clean of unpublished review-fix changes.
-
-## When to use
-
-- "Implement all"
-- "Fix and resolve the CodeRabbit comments"
-- "Ship the triaged review and resolve"
-
-Do **not** use this skill after an ordinary triage hand-off, or inside a loop that only applies more local fixes.
 
 ## Workflow
 
@@ -84,6 +76,8 @@ Do **not** continue to step 4 when:
 - local fix commits are not on `origin/$branch`
 - fetch, commit, or publish failed
 
+Before resolution, refresh the PR head and review inventory. Reconcile newly added or changed CodeRabbit findings and pagination; stale triage cannot establish completeness. Reuse code evidence only if it still covers the published head. Even for skip-only/already-fixed passes, verify those decisions against the current published code, not unpublished local assumptions.
+
 ### 4. Resolve inline findings on their existing threads
 
 **Always run this step** when implementation is complete, a PR exists, **and** step 3 has confirmed either that the remote has the fix commits **or** that this was a skip-only / already-fixed-only pass with no unpublished review-fix changes.
@@ -94,7 +88,7 @@ Thread ids come from `.active/coderabbit-pr-<N>-review/05-comments-structured.js
 
 Write mutation bodies to a file and pass them with `-F` / `--input`. Never interpolate triage or bot text into the shell command line.
 
-**Pre-mutation read (required, every thread).** Before 4a or 4b, load the thread's current `isResolved` and all comments (paginate nested comments). Treat existing replies from humans **and** bots as duplicates when the body already contains the same skip rationale. Then:
+**Pre-mutation read (required, every thread).** Confirm the thread still belongs to this PR and its root author is CodeRabbit. Every finding mapped to the thread must be verified and terminal before resolving it. An unverified, needs-input, or blocked sibling finding keeps the whole thread open. Before 4a or 4b, load the thread's current `isResolved` and all comments (paginate nested comments). Treat existing replies from humans **and** bots as duplicates when the body already contains the same skip rationale. Then:
 
 - already `isResolved: true` — do not reply, do not resolve again; record `thread_resolved: true`, `mutation: none`
 - skip + matching reply already present — do not reply again; still resolve if unresolved
@@ -109,13 +103,13 @@ For each finding where `triage === "skip"` **and** `thread_id` is present **and*
 ```bash
 THREAD_ID='PRRT_…'   # from triage JSON, not the numeric comment id
 BODY_FILE=$(mktemp)
+GQL_FILE=$(mktemp)
 trap 'rm -f "$BODY_FILE" "$GQL_FILE"' EXIT
-jq -n --arg id "<finding_id>" --slurpfile triage .active/coderabbit-pr-<N>-review/05-comments-structured.json '
+jq -nr --arg id "<finding_id>" --slurpfile triage .active/coderabbit-pr-<N>-review/05-comments-structured.json '
   ($triage[0].findings[] | select(.id == $id) | .triage_rationale) as $rationale
   | "**Skipping** — " + $rationale
 ' > "$BODY_FILE"
 
-GQL_FILE=$(mktemp)
 jq -n --rawfile body "$BODY_FILE" --arg threadId "$THREAD_ID" '{
   query: "mutation($threadId:ID!, $body:String!) { addPullRequestReviewThreadReply(input: { pullRequestReviewThreadId: $threadId, body: $body }) { comment { id url } } }",
   variables: { threadId: $threadId, body: $body }
@@ -153,7 +147,7 @@ Run this step only when at least one finding has no `thread_id` and is terminal:
 - `triage === "skip"`, or
 - `triage === "obvious_fix"` with `implementation_status` `done` / `skipped_already_fixed`
 
-Because `@coderabbitai resolve` is global, **do not post it while any finding is `needs_input`, blocked, or otherwise incomplete**. Report that the review-body findings remain open instead.
+Because `@coderabbitai resolve` is global, **do not post it while any finding is `needs_input`, `unverified`, blocked, missing from the refreshed inventory, or otherwise incomplete**. Report that the review-body findings remain open instead.
 
 Step 3 must already have proven that every fix commit is on the remote. Then build one concise PR comment from the structured triage data:
 
@@ -224,31 +218,6 @@ Provide:
 - Count of inline skip-reply threads posted
 - Count of review-body-only findings and the global resolve status/comment link
 - Anything that failed verification or needs follow-up
-
-## Quality gate
-
-- [ ] Triage PR matches the current branch's PR
-- [ ] Local implement finished or was already done
-- [ ] Step 3 passed: fix commits are on the remote, or this was a skip-only / already-fixed-only pass with a clean worktree, before any resolve
-- [ ] Every **Skip** with a `thread_id` has a GraphQL thread reply (or note why not)
-- [ ] No inline replies posted on **fixed** findings
-- [ ] Each skip/fixed thread with a `thread_id` was `resolveReviewThread`'d (or already resolved)
-- [ ] If terminal review-body-only findings exist, one global resolve summary was posted after publish, or its blocked/unavailable status was recorded
-- [ ] No global resolve was posted while a finding remained blocked or incomplete
-- [ ] No top-level comment except the single guarded summary in step 5; no GitHub MCP `addComment`
-- [ ] Triage JSON + markdown updated with thread results
-
-## Anti-patterns
-
-- **Using this skill as the default after triage.** Default is `coderabbit-review-implement`.
-- **Running this in a local-fix loop.**
-- **Publishing another developer's branch.**
-- **Resolving then pushing.** Publish first.
-- **Replying inline on fixed findings.** Only skips get thread replies.
-- **Using a global resolve for inline-only findings.** Use `resolveReviewThread`; reserve the global command for completed review-body-only findings.
-- **Posting the global resolve before publish or while a finding is blocked.** It resolves broadly, so both conditions are hard stops.
-- **Treating a 403 as permission to try another comment API.** Record the capability limitation and preserve the inline results.
-- **Using REST `in_reply_to` or `/replies`.** Reply with `addPullRequestReviewThreadReply` and the `PRRT_…` thread id.
 
 ## Related skills
 

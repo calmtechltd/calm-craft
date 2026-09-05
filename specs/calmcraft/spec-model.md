@@ -42,6 +42,8 @@ Links between specs produce forward relationships and backlinks. Links to suppor
 
 CalmCraft reads sibling `.flow.yaml` contracts, validates their states and transitions, and links transition coverage to real behaviour keys. Mermaid is a generated view; a mismatch appears as a finding and YAML wins.
 
+Branches sharing a source state and event may have one unguarded fallback. Multiple unguarded fallbacks produce an ambiguity finding. Guard conditions describe product intent; CalmCraft does not execute them or prove their mutual exclusivity.
+
 ### B9 — Preserve healthy specs around errors 🟢 implemented
 
 An unreadable or malformed spec produces file-level findings. CalmCraft still exposes every spec and section it can read safely, and it marks incomplete data instead of silently omitting it.

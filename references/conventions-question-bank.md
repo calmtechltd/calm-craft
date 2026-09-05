@@ -1,10 +1,8 @@
 # Question Bank
 
-Twelve axes. They're the same in every language — what changes is how each one instantiates and which tool enforces it. TypeScript is worked out in full; the others list the questions that actually matter in that language rather than translating every TypeScript question literally.
+Select the axes and language questions relevant to the repository. Recommended defaults are marked ★; they are options, not existing rules. Record authorized defaults as `defaulted` and explicit choices as `decided`.
 
-**Recommended defaults are marked ★.** They lean strict, because a strict rule with documented exceptions is easier to live with than a loose one that means nothing. Disagreeing is the entire point — pick the other option and the generator records it as *decided*, which is worth more than agreeing with me.
-
-**Not asked, ever:** tabs vs spaces, quote style, semicolons, trailing commas, line width, brace placement. Your formatter owns these. If you don't have a formatter, that's the first question in Axis 1 and everything here follows from it.
+Reuse formatter decisions for whitespace, quotes, semicolons, and similar syntax. If no formatter is selected, start with Axis 1. Follow `conventions-decide` for question scope, provenance, and configuration ownership.
 
 ---
 
@@ -32,7 +30,7 @@ If 1.1 is "one formatter, non-negotiable", every formatting question below is se
 
 Enforcement: `no-restricted-syntax` for default exports, an import-boundary rule or `dependency-cruiser` for 2.3–2.4.
 
-Why ★ on 2.1: default exports let the same module be imported under different names, which defeats rename refactors and grep, and they make auto-import suggestions worse. The usual counter is that some frameworks require them for route files — hence the middle option, which is a perfectly good answer.
+For default exports, account for framework-required route/page exports before selecting a restriction.
 
 ---
 
@@ -130,16 +128,14 @@ A cap is a crude proxy for cohesion, and everyone knows it. It's still worth hav
 | --- | --- | --- |
 | 9.1 | Test location | ★ Colocated with the module · `__tests__/` directory · Mirrored `test/` tree |
 | 9.2 | Unit vs integration split | ★ Distinguished by filename suffix so they can be run separately · Same directory, undistinguished · Separate trees |
-| 9.3 | What *must* have a test? | ★ Bug fixes (a regression test) and any non-trivial pure logic · Everything with a coverage threshold · Judgement |
+| 9.3 | What *must* have a test? | ★ Meaningful runtime regressions and non-trivial logic, using existing coverage when sufficient · Everything with a coverage threshold · Judgement |
 | 9.4 | Coverage threshold in CI? | ★ No — it optimises for the wrong thing; use the rule in 9.3 · Yes, at a named percentage |
 | 9.5 | Naming | ★ Describe the behaviour, not the function name |
 | 9.6 | UI tests | ★ Presentational-leaf harness if the repo has one (`describeUi` or equivalent) · No component tests; walk the app · Testing Library on pages as the default |
 
-9.3 is the one worth arguing about. A coverage number is easy to game and easy to hit while testing nothing; "every bug fix gets a regression test" is checkable in review and compounds.
+For 9.3, apply `write-tests`: protect a plausible runtime failure with appropriate existing or new coverage. Prose, static guarantees, and implementation spelling do not acquire runtime tests because the change was called a bug fix.
 
-9.6 is the one agents get wrong. A page mounted behind a mock forest is not a UI test; it is a second implementation. A presentational harness (purpose, mount cases, checks that caller-supplied props rendered) is the useful middle. No harness and no ask means walk the app.
-
-The ambient skill is `write-tests` — whether a test earns its keep, including "don't test this" and "the type checker already ran".
+For 9.6, apply `write-tests`: mount-only harness entries are visual fixtures, not automated behavioral coverage. Preserve required existing UI checks. Use focused browser verification when needed and permitted by the task and repository policy; honor explicit skips.
 
 ---
 
@@ -147,7 +143,7 @@ The ambient skill is `write-tests` — whether a test earns its keep, including 
 
 These are **policies**, not a product pick. 10.1 records the manager the repo already uses — detect it, pin it, do not convert the repo to a favourite. npm, pnpm, Yarn, and Bun (and uv, Poetry, Composer, Cargo…) instantiate the same answers with different config keys; `conventions-decide` writes the one the recorded manager understands, from that manager's current docs.
 
-10.7–10.10 exist because the managers shipped them and most people have never heard of them. Offer the useful pair (a one-day cooldown and an install-script allowlist), say what each one does in a sentence, and accept "off" without a lecture. This is a helper pointing at a switch, not a security programme.
+Offer install controls relevant to the pinned manager and task. Explain their practical tradeoffs briefly; preserve existing security policy and accepted decisions.
 
 | # | Question | Options |
 | --- | --- | --- |
@@ -162,13 +158,11 @@ These are **policies**, not a product pick. 10.1 records the manager the repo al
 | 10.9 | Non-registry sources | ★ Transitive git/tarball dependencies blocked; a direct one is a recorded decision · Free |
 | 10.10 | Trust downgrade | ★ Block it where the manager can · Unchecked |
 
-10.5 is what stops the "we're four majors behind and every upgrade is now a project" outcome. Note it's a *policy* question with a *skill* answer — checking freshness is a thing you'd actually ask for, so it's one of the few items here that belongs in a skill rather than a rule.
+A freshness policy and a release cooldown serve different purposes. Record any urgent-patch exception and align the update bot with the resolver's accepted window.
 
-10.7 is the other half of the same conversation, not a contradiction. Freshness says don't rot; a cooldown says don't take a version published twenty minutes ago. Most compromised releases are yanked within hours. A one-day gate catches that smash-and-grab window without turning every security patch into a wait. Longer windows exist and are reasonable for a lockstep monorepo; they are not the default, because they *do* delay fixes. If an update bot opens PRs, its cooldown must match the resolver's, or it will keep proposing versions you cannot install.
+For install scripts, inspect which dependencies need them and use the manager's supported controls. Do not copy a generic allowlist. If an existing policy already settles the question, record it without reopening it.
 
-10.8 is the highest-value consumer-side control and the one that actually stopped worms that spread through `preinstall` / `postinstall`. An allowlist is a short, reviewable list — `esbuild`, `sharp`, a handful of others. A global "ignore all scripts" is the setting that breaks people, so it is not the recommended default. If the manager already blocks scripts unless allowlisted, record that as settled and move on.
-
-10.10 is N/A on managers that cannot enforce it. Skip the question rather than inventing a prose rule nobody can check. Do not fail the interview because a dry install surfaced a package published without provenance — that is information, not a reason to turn the default off for everyone.
+Mark unsupported controls N/A. Verify manager-specific names and behavior in current official documentation before changing configuration. A failed install check needs diagnosis; do not weaken an accepted policy merely to make it pass.
 
 ---
 
@@ -372,21 +366,3 @@ S.5 is the web-app-shaped hole: a secret behind a public prefix is a secret in t
 Also write down, once, what must never be logged — tokens, raw env values, authorization headers. Axis 7.5 already owns the user-facing half of this; the agent-facing half belongs in `AGENTS.md`: never print `.env` contents, never commit the file, never paste secrets into a ticket or a spec.
 
 If your language or tool decided something for you, don't re-decide it. Record it as settled and move on.
-
----
-
-## Turbo Pascal 6.0
-
-Included because it makes the point better than anything modern can: **the twelve axes are not a product of the current era.** Every one of them existed in 1990, with the same arguments, and mostly without tooling to settle them.
-
-- **Formatting authority (Axis 1):** none. There is no formatter. The IDE indents, and everything else is an argument you have in person. This is the world the other lists are trying not to live in.
-- **Module boundaries (Axis 2):** units. `interface` declares the public surface, `implementation` hides the rest — a genuinely good boundary, better enforced than most barrel-file conventions in this document. What earns a new unit is the same question as what earns a new module.
-- **Imports (Axis 3):** the `uses` clause, and the order matters — units initialise in the order they're used. Circular unit references are a compile error, which is Axis 2.4 decided for you at the language level.
-- **File and unit size (Axis 4):** decided for you by the 64KB segment limit. A cap you cannot argue with is, in fairness, the most effective kind.
-- **Naming (Axis 5):** the compiler is case-insensitive and only the first 63 characters are significant, so the convention is entirely for humans. Filenames are 8.3, which is a naming constraint no style guide could improve on.
-- **Type discipline (Axis 6):** `{$R+}` range checking and `{$I+}` I/O checking on in development, off in release — the original "strict in dev, fast in prod" bargain, and the original argument about whether shipping with the checks off is brave or foolish.
-- **Errors (Axis 7):** no exceptions until Turbo Pascal 7 and Delphi. Return codes and `IOResult`, checked immediately or not at all.
-- **Memory (Axis 8's era-appropriate cousin):** `New` and `Dispose`, by hand, inside 640KB. Ownership rules written down or leaks — which is precisely the WebAssembly boundary question above, forty years earlier.
-- **Escape hatches:** inline `asm` blocks and `goto`, both available, both requiring exactly the same conversation as `unsafe` in Rust and `any` in TypeScript: banned, or allowed with a written reason?
-
-The lesson isn't nostalgia. It's that these questions are structural rather than fashionable, the tooling to enforce them is recent and unevenly distributed, and a team that writes its answers down will out-live one that keeps re-litigating them — in any language, in any decade.
