@@ -5,17 +5,11 @@ description: Audit a feature spec against the test suite to find which behaviour
 
 # Assess Test Coverage Against a Spec
 
-Which parts of this spec are proven by tests? Not a coverage percentage — a named list of what is and isn't covered, by ID.
+Which requirements have automated test coverage, and which need another form of verification or further work? Report evidence by ID without treating every missing test as a defect.
 
 This works because the spec gives concrete named things to look for. Coverage tools tell you which lines executed; this tells you which _requirements_ are demonstrated.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). Test locations and patterns: `.engineering/config.yaml`.
-
-## When to use
-
-- "What's untested in this feature?"
-- Deciding where testing effort pays back most.
-- Sanity-checking 🟢 badges before relying on them.
 
 **Not this skill:** writing the tests (`spec-author-tests`), checking spec vs code (`spec-audit-drift`).
 
@@ -23,7 +17,9 @@ Format authority: [`references/spec-format.md`](../../references/spec-format.md)
 
 ### 1. Enumerate what needs coverage
 
-From the spec: every behaviour ID, every invariant, every decision-table row, and every flow transition plus **both outcomes of every guard**. That last one is routinely missed — a guard tested only on its happy branch is half-tested.
+From the scoped spec: every behaviour ID, invariant, decision-table row, and flow transition, including the distinct outcomes of behavioural guards. Read `write-tests` and the repo's verification conventions to determine which require automated coverage. Exclude unscheduled 🔵 work from actionable gaps; assess the built portion of 🟡 behaviours separately.
+
+Assess each meaningful outcome, but do not require a separate test for every guard, row, or ID. One scenario or table-driven test may cover several requirements if its assertions demonstrate each one.
 
 ### 2. Find matching tests by reasoning, not by grep
 
@@ -31,48 +27,40 @@ Specs carry no test references by design, so search on meaning: test names, desc
 
 **Read the assertions.** A test that exercises a path without asserting the outcome does not cover it, however well-named.
 
-### 3. Classify
+### 3. Classify automated coverage and verification separately
 
 | Verdict          | Meaning                                                                                                       |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Covered**      | A test exercises it and asserts the documented outcome                                                        |
 | **Partial**      | Exercised, but the assertion is weaker than the spec — happy path only, one guard branch, outcome not checked |
 | **Uncovered**    | No test                                                                                                       |
-| **Contradicted** | A test asserts something the spec doesn't say, or the opposite                                                |
+| **Contradicted** | A test asserts an outcome incompatible with the spec                                                        |
 
-**Contradicted** is the one to lead with. It means the spec and the suite disagree about intent, and one of them is wrong — a much more urgent problem than a gap.
+For each ID, also record the verification disposition and evidence:
+
+- **Automated coverage required** — the repository policy or risk calls for a runtime test; an uncovered or partial outcome is an actionable gap.
+- **Other verification appropriate** — identify the relevant static check or browser check and whether it actually ran. A recommendation or an unrun check is not evidence.
+- **No additional test warranted** — record the reason under `write-tests`, including explicit user exclusions. This is a deliberate decision, not automated coverage.
+- **Future / out of scope** — no current testing work; leave it in the spec or plan.
+
+Do not count a manual browser check or static evidence as an automated behavioural test. **Contradicted** means the spec and suite disagree about intent; lead with that finding. A test asserting extra detail the spec leaves open is not automatically contradictory, though that detail may need clarification.
 
 ### 4. Weight the gaps
 
-An uncovered gap on a 🟢 behaviour is a badge that isn't earned. An uncovered gap on a 🔵 behaviour is expected and needs no comment.
+A 🟢 behaviour needs the evidence required by the repo's badge and verification policy. A missing automated test alone does not invalidate the badge when another verification method is appropriate or an explicit no-test decision applies. Call out missing required evidence and keep unrun checks visible.
 
 Prioritise by consequence, not count: invariants and guard branches protect against the failures nobody anticipates, so an uncovered invariant usually outranks three uncovered behaviours.
 
 ### 5. Report
 
-Table by ID with verdict and the test file where one exists. Then:
+Table by in-scope ID with automated coverage verdict, verification disposition, evidence location, and any remaining action. Mention excluded future work once rather than reporting a gap for each ID. Then:
 
-- **Behaviours badged 🟢 with no covering test** — the badges to fix or the tests to write.
+- **Missing required verification** — distinguish automated test gaps from unperformed static or browser checks.
+- **Appropriate alternative verification or no-test decisions** — record the basis without claiming automated coverage.
 - **Contradictions**, with both sides quoted.
 - **Recommended order of work**, by consequence.
 
-Don't write tests here. Hand to `spec-author-tests`.
-
-## Quality gate
-
-- [ ] Every behaviour, invariant, decision-table row, and flow transition has a verdict.
-- [ ] Both branches of every guard assessed separately.
-- [ ] Assertions read, not just test names.
-- [ ] 🟢 behaviours without coverage called out explicitly.
-- [ ] Contradictions reported with both sides.
-- [ ] No tests written.
-
-## Anti-patterns
-
-- **Matching on names alone.** A confidently-named test asserting nothing is worse than no test.
-- **Counting a guard as covered** when only one branch is exercised.
-- **Reporting a percentage.** The list of names is the deliverable.
-- **Treating uncovered 🔵 behaviour as a gap.** It isn't built.
+Reuse available evidence under [write-tests](../write-tests/SKILL.md); coverage assessment does not itself require running the suite. Don't write tests or change badges here. Hand actionable automated gaps to `spec-author-tests`; use `spec-maintain-on-ship` for any badge correction supported by the evidence.
 
 ## Related skills
 

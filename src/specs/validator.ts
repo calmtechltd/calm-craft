@@ -209,13 +209,13 @@ function validateSpec(spec: SpecDocument): void {
         eventGroups.set(groupKey, [...(eventGroups.get(groupKey) ?? []), transition]);
       }
       for (const transitions of eventGroups.values()) {
-        if (transitions.length > 1 && transitions.some((transition) => !transition.guard)) {
+        if (transitions.filter((transition) => !transition.guard).length > 1) {
           addFinding(spec, {
             code: "flow.transition.guard.missing",
             severity: "error",
             path: parsedFlow.path,
-            message: `Transitions for ${transitions[0]?.event ?? "the same event"} are not fully guarded.`,
-            hint: "Give every same-event branch an explicit, mutually exclusive guard.",
+            message: `Transitions for ${transitions[0]?.event ?? "the same event"} have multiple unguarded fallbacks.`,
+            hint: "Use mutually exclusive guards with at most one unguarded fallback per source state and event.",
           });
         }
       }

@@ -1,6 +1,6 @@
 ---
 name: spec-gap-sweep
-description: Sweep every spec in the estate for maintenance debt — partial behaviours with no ticket, ageing future behaviours, roll-up statuses that disagree with their behaviours, long-standing open questions, and modules with no specs at all. Use when the user asks "what state are our specs in", "review the spec estate", "which open questions are blocking work", or on a periodic cadence. Reports only.
+description: Sweep every spec in the estate for maintenance debt — partial behaviours without a note, ageing future behaviours, roll-up statuses that disagree with their behaviours, long-standing open questions, and modules with no specs at all. Use when the user asks "what state are our specs in", "review the spec estate", "which open questions are blocking work", or on a periodic cadence. Reports only.
 ---
 
 # Sweep All Specs for Gaps
@@ -10,13 +10,6 @@ Estate-wide health. Individual spec skills go deep on one feature; this goes wid
 **Reports only.** Fixing is `spec-maintain-on-ship`.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). Spec root: `.engineering/config.yaml`.
-
-## When to use
-
-- Periodic review — monthly or quarterly.
-- "What state are our specs in?"
-- Deciding where to spend maintenance effort.
-- Finding which open questions are actually blocking work.
 
 **Not this skill:** auditing one spec against code (`spec-audit-drift`), fixing anything (`spec-maintain-on-ship`).
 
@@ -30,9 +23,9 @@ Recompute every front-matter `status` from the behaviour badges and report misma
 
 Every 🟡 requires a one-line note on what's missing. A 🟡 without one is work nobody is tracking, described nowhere else. **The note is the requirement**; a ticket reference is optional, and absent entirely when `tickets.provider` is `none`.
 
-Where a provider _is_ configured, also flag 🟡 behaviours whose ticket is closed. With `provider: github`, resolve it properly — `gh` is authenticated, so this is a real check rather than a guess. With `linear`, `jira`, or `custom`, attempt it only if credentials exist and **say plainly when you couldn't**; an unresolvable ticket is evidence of nothing.
+Where a provider _is_ configured, also flag 🟡 behaviours whose ticket is closed. With `provider: github`, use `gh` under the host's network/authentication policy and report unavailable evidence. With `linear`, `jira`, or `custom`, attempt it only if credentials exist and **say plainly when you couldn't**; an unresolvable ticket is evidence of nothing.
 
-A closed ticket means the badge is **worth verifying** and nothing more. Report it as such and hand to `spec-maintain-on-ship`, which requires the code and the test before promoting anything. Never infer a badge from tracker state — the spec owns intent, the tracker owns scheduling, and collapsing the two puts the estate back to being optimistic.
+A closed ticket means the badge is **worth verifying** and nothing more. Report it as such and hand to `spec-maintain-on-ship`, which requires implementing code and appropriate verification under the repository's test policy before promoting anything. Never infer a badge from tracker state — the spec owns intent, the tracker owns scheduling.
 
 A closed ticket with a long thread is also the best candidate for `spec-harvest-discussion`: that's where decisions were made that the spec never absorbed.
 
@@ -57,8 +50,8 @@ Rank by code volume and change frequency. A large, frequently-changed, unspecced
 ### 6. Structural problems
 
 - Specs missing required section headers.
-- Behaviour IDs that skip or repeat.
-- Flow contracts whose Mermaid sibling is older than the YAML — the diagram is stale.
+- Duplicate behaviour IDs and broken references. Preserve intentional gaps in stable IDs; do not renumber surviving behaviours.
+- Flow diagrams whose content differs from the owning generator output. Use the existing validator or compare generated content without overwriting files. File age alone does not prove drift; a storyboard-only edit may not change Mermaid.
 - `covers` references pointing at behaviour IDs that no longer exist.
 
 ## Report
@@ -67,24 +60,7 @@ Lead with **blocking questions**, then **unspecced modules by size**, then every
 
 For each item: the spec path, the ID, the evidence with dates or counts, and the specific action. End with estate-level counts — specs by status, behaviours by badge, open questions by kind — so the trend is visible when you run it again.
 
-Change nothing.
-
-## Quality gate
-
-- [ ] Every spec parsed; parse failures reported rather than skipped.
-- [ ] Roll-ups recomputed, not read.
-- [ ] Ages taken from git history, not estimated.
-- [ ] Blocking questions separated from ordinary ones and led with.
-- [ ] Unspecced modules ranked by size and change frequency.
-- [ ] Settled questions counted, not flagged as debt.
-- [ ] Nothing modified.
-
-## Anti-patterns
-
-- **Treating every open question as debt.** Settled ones are the system working; flagging them punishes recording your thinking.
-- **Reporting counts with no ranking.** A list of 200 items with no order is not actionable.
-- **Skipping unparseable specs.** Those are the most broken ones.
-- **Ignoring modules with no specs** because the sweep only looks at files that exist.
+Report parse failures and unreadable specs instead of omitting them. Change nothing.
 
 ## Related skills
 

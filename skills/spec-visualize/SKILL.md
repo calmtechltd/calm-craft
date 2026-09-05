@@ -20,9 +20,9 @@ Use the current checkout when the user names no source. Otherwise use the exact 
 ### 2. Generate and open
 
 ```sh
-npx --yes @calmcraft/cli@0.2.1 generate
-npx --yes @calmcraft/cli@0.2.1 generate /path/to/repository
-npx --yes @calmcraft/cli@0.2.1 generate --diff --base origin/main
+npx --yes @calmcraft/cli@0.3.0 generate
+npx --yes @calmcraft/cli@0.3.0 generate /path/to/repository
+npx --yes @calmcraft/cli@0.3.0 generate --diff --base origin/main
 ```
 
 The file lands in a temporary directory and opens in the default browser. Pass `--out <file>` only when the user wants to keep or share it, and put it where they ask — never inside their repository unless they say so, because it is several megabytes and easy to commit by accident.
@@ -40,21 +40,6 @@ Do not background an orphan process, upload repository data, start a public list
 ### 4. Hand back
 
 Tell the user which repository is open, whether the file is Atlas or Branch Review, and which base was requested. Report the file path. Do not invent a session URL.
-
-## Quality gate
-
-- [ ] The exact requested checkout or worktree is open.
-- [ ] Branch Review uses the requested base or reports that a base is still needed.
-- [ ] No repository content was uploaded and no server was started.
-- [ ] No repository file was generated or changed unless the user asked for `--out` there.
-- [ ] The CLI exited after writing the file.
-
-## Anti-patterns
-
-- Generating a static dashboard in the selected repository.
-- Copying private specs into a fixture, report, or hosted service.
-- Treating staged, unstaged, or untracked work as committed branch history.
-- Starting a server or sharing a tokenized local URL.
 
 ## Related skills
 

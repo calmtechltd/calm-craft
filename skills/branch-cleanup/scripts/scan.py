@@ -6,8 +6,8 @@ and every stale remote branch, along with the evidence needed to decide whether
 each is safe to delete.
 
 This script never deletes a branch, never removes a worktree, never rewrites
-history and never pushes. The only thing it changes is remote-tracking refs, via
-`git fetch --prune` (skippable with --no-fetch). Deciding and deleting is the
+history and never pushes. Fetching updates remote-tracking refs, fetch metadata and Git objects
+(skippable with --no-fetch). Deciding and deleting is the
 caller's job -- that separation is deliberate, so a bad scan can never destroy
 anything on its own.
 
@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import sqlite3
 import subprocess
@@ -54,7 +55,8 @@ def run(args, cwd=None, timeout=120):
     """Run a command, returning (returncode, stdout, stderr) with output stripped."""
     try:
         proc = subprocess.run(
-            args, cwd=cwd, capture_output=True, text=True, timeout=timeout
+            args, cwd=cwd, capture_output=True, text=True, timeout=timeout,
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"}
         )
     except (OSError, subprocess.TimeoutExpired) as err:
         return 1, "", str(err)
@@ -134,7 +136,7 @@ def gh_pull_requests(root):
 
     code, _, err = run(["gh", "auth", "status"], cwd=root, timeout=30)
     if code != 0:
-        return {}, f"gh not authenticated ({err.splitlines()[0] if err else 'unknown'})"
+        return {}, f"gh authentication unavailable ({err.splitlines()[0] if err else 'unknown'})"
 
     limit = 1000
     code, out, err = run(
@@ -147,7 +149,7 @@ def gh_pull_requests(root):
             "--limit",
             str(limit),
             "--json",
-            "number,headRefName,state,mergedAt,headRefOid,url,mergeCommit",
+            "number,headRefName,state,mergedAt,headRefOid,url,mergeCommit,baseRefName",
         ],
         cwd=root,
         timeout=180,
@@ -188,9 +190,8 @@ COMMIT_PR_LOOKUP_CAP = 25
 def gh_pr_for_commit(root, sha):
     """Ask GitHub which PR has this exact commit as its head.
 
-    Returns a PR record, or the string "unknown-commit" when GitHub has never
-    seen the commit at all -- which is itself strong evidence that the branch is
-    unpushed local work and cannot have been merged as it stands.
+    Returns a PR record or "unknown-commit" when the provider cannot find it.
+    Missing provider evidence does not prove that equivalent work is unmerged.
     """
     code, out, err = run(
         [
@@ -198,7 +199,7 @@ def gh_pr_for_commit(root, sha):
             "api",
             f"repos/{{owner}}/{{repo}}/commits/{sha}/pulls",
             "--jq",
-            ".[] | {number, state, merged_at, head_sha: .head.sha, url: .html_url}",
+            "[.[] | {number, state, merged_at, head_sha: .head.sha, url: .html_url, merge_commit_sha, base: .base.ref}]",
         ],
         cwd=root,
         timeout=30,
@@ -208,11 +209,11 @@ def gh_pr_for_commit(root, sha):
             return "unknown-commit"
         return None
 
-    for line in out.splitlines():
-        try:
-            record = json.loads(line)
-        except ValueError:
-            continue
+    try:
+        records = json.loads(out or "[]")
+    except ValueError:
+        return None
+    for record in sorted(records, key=lambda r: r.get("number", 0), reverse=True):
         if record.get("head_sha") != sha:
             continue
         state = "MERGED" if record.get("merged_at") else record.get("state", "").upper()
@@ -222,6 +223,8 @@ def gh_pr_for_commit(root, sha):
             "mergedAt": record.get("merged_at"),
             "headRefOid": record.get("head_sha"),
             "url": record.get("url"),
+            "mergeCommit": {"oid": record.get("merge_commit_sha")},
+            "baseRefName": record.get("base"),
         }
     return None
 
@@ -232,7 +235,7 @@ def gh_pr_for_commit(root, sha):
 def list_worktrees(root):
     code, out, _ = git(["worktree", "list", "--porcelain"], root)
     if code != 0:
-        return []
+        raise SystemExit("Could not inventory worktrees; no deletion advice available")
 
     worktrees = []
     current = {}
@@ -293,13 +296,13 @@ def worktree_activity(path, root):
     # The index is rewritten by nearly every git operation, so it is the best
     # single indicator that something was actively working in here.
     code, gitdir, _ = git(["rev-parse", "--absolute-git-dir"], path)
-    if code == 0:
-        index = os.path.join(gitdir, "index")
-        if os.path.exists(index):
-            try:
-                stamps.append(os.path.getmtime(index))
-            except OSError:
-                pass
+    if code != 0:
+        return None
+    index = os.path.join(gitdir, "index")
+    try:
+        stamps.append(os.path.getmtime(index))
+    except OSError:
+        return None
     return time.time() - max(stamps)
 
 
@@ -319,12 +322,12 @@ def worktree_dirty(path):
 def graphite_metadata(git_dir):
     """Read Graphite's branch metadata read-only. Returns {branch: {parent, state}}.
 
-    Graphite owns this sqlite file, so treat any deviation as "no stack info"
+    Graphite owns this sqlite file, so retain unavailable metadata as None
     rather than guessing -- being wrong about stack shape risks orphaning work.
     """
     db_path = os.path.join(git_dir, ".graphite_metadata.db")
     if not os.path.exists(db_path):
-        return {}
+        return None if os.path.exists(os.path.join(git_dir, ".graphite_repo_config")) else {}
     try:
         uri = f"file:{db_path}?mode=ro"
         with sqlite3.connect(uri, uri=True, timeout=5) as conn:
@@ -333,7 +336,7 @@ def graphite_metadata(git_dir):
             ).fetchall()
     except sqlite3.Error as err:
         print(f"warning: could not read Graphite metadata: {err}", file=sys.stderr)
-        return {}
+        return None
     return {
         name: {"parent": parent, "state": state}
         for name, parent, state in rows
@@ -381,25 +384,13 @@ def is_ancestor(root, branch, ref):
     return code == 0
 
 
-def patch_merged(root, branch, ref):
-    """Weak squash-merge hint: does the branch's whole tree already exist in trunk?
-
-    Treat this as a hint only. In practice it produces false negatives whenever
-    trunk has moved on, so it can support a decision but must never make one.
-    """
-    code, base, _ = git(["merge-base", ref, branch], root)
-    if code != 0 or not base:
-        return None
-    code, tree, _ = git(["rev-parse", f"{branch}^{{tree}}"], root)
-    if code != 0 or not tree:
-        return None
-    code, dangling, _ = git(["commit-tree", tree, "-p", base, "-m", "_"], root)
-    if code != 0 or not dangling:
-        return None
-    code, out, _ = git(["cherry", ref, dangling], root)
-    if code != 0 or not out:
-        return None
-    return out.strip().startswith("-")
+def pr_merge_reached_trunk(root, tip, pr, ref):
+    """Exact reviewed head plus a merge result reachable from the selected trunk."""
+    merge = (pr or {}).get("mergeCommit") or {}
+    oid = merge.get("oid")
+    return bool(pr and pr.get("state") == "MERGED"
+                and pr.get("headRefOid") == tip and oid
+                and is_ancestor(root, oid, ref))
 
 
 def stale_remote_branches(root, trunk, prs):
@@ -416,7 +407,8 @@ def stale_remote_branches(root, trunk, prs):
         if name in ("HEAD", trunk) or name in PROTECTED_NAMES:
             continue
         record = prs.get(name)
-        if record and record.get("state") == "MERGED":
+        code, tip, _ = git(["rev-parse", ref], root)
+        if code == 0 and pr_merge_reached_trunk(root, tip, record, trunk_ref(root, trunk)):
             stale.append(
                 {
                     "ref": ref,
@@ -456,9 +448,7 @@ def classify_branch(branch, context):
 
     pr = branch.get("pr")
     pr_state = pr.get("state") if pr else None
-    exact_merge = bool(
-        pr and pr_state == "MERGED" and pr.get("headRefOid") == branch["tip"]
-    )
+    exact_merge = branch.get("pr_merge_reached_trunk", False)
 
     if pr_state == "OPEN":
         return "keep", [f"PR #{pr['number']} is still open"]
@@ -467,14 +457,19 @@ def classify_branch(branch, context):
     if branch["ancestry_merged"]:
         reasons.append(f"tip is an ancestor of {context['trunk_ref']}")
     if exact_merge:
-        reasons.append(f"PR #{pr['number']} merged, local tip is exactly what merged")
+        reasons.append(f"PR #{pr['number']} merge result reached trunk and its head matches the local tip")
 
     proven = bool(reasons)
 
+    if branch.get("graphite_tracked") is None:
+        return "ask", reasons + ["Graphite metadata unavailable; ownership is unknown"]
+
     # Blockers apply even to proven-merged branches.
     holder = branch.get("worktree")
-    if holder and not holder.get("prunable"):
+    if holder and (not holder.get("prunable") or holder.get("locked") or os.path.lexists(holder["path"])):
         return "ask", reasons + [f"checked out in worktree {holder['path']}"]
+    if branch.get("graphite_cycle"):
+        return "ask", reasons + ["Graphite relationships contain a cycle"]
     if branch.get("unmerged_children"):
         children = ", ".join(branch["unmerged_children"])
         return "ask", reasons + [f"unmerged Graphite children depend on it: {children}"]
@@ -487,8 +482,8 @@ def classify_branch(branch, context):
     # Not proven -- work out what kind of doubt we have.
     if pr_state == "MERGED":
         return "ask", [
-            f"PR #{pr['number']} merged, but local tip {branch['tip'][:8]} differs from "
-            f"the merged head {str(pr.get('headRefOid'))[:8]} -- there may be newer local work"
+            f"PR #{pr['number']} merged, but its exact local head and merge result "
+            f"in {context['trunk_ref']} are not both verified"
         ]
     if pr_state == "CLOSED":
         return "ask", [f"PR #{pr['number']} was closed without merging"]
@@ -498,34 +493,31 @@ def classify_branch(branch, context):
 
     if branch.get("github_knows_tip") is False:
         return "keep", reasons + [
-            "GitHub has never seen this tip -- unpushed local work, so it cannot be merged as it stands"
+            "GitHub could not find this tip; merge state remains unverified"
         ]
     if branch["upstream_gone"]:
         return "ask", reasons + [
             "upstream branch was deleted on the remote (often means merged, but unproven)"
         ]
-    if branch["patch_merged"]:
-        return "ask", reasons + [
-            "content looks already applied to trunk (weak squash-merge hint only)"
-        ]
     if not branch["upstream"]:
-        return "keep", reasons + ["local-only branch, never pushed"]
+        return "keep", reasons + ["no upstream configured; merge state unverified"]
 
-    return "keep", reasons + ["not merged"]
+    return "keep", reasons + ["merge not proved"]
 
 
 def classify_worktree(worktree, context):
     path = worktree["path"]
 
-    if path == context["root"]:
+    if path in (context["root"], context.get("main_worktree")):
         return "keep", ["main worktree"]
+    if worktree["locked"]:
+        return "keep", ["worktree is locked"]
     if worktree["prunable"]:
+        if os.path.lexists(path):
+            return "ask", ["prunable entry still has a directory; inspect it before pruning"]
         return "safe", [
             f"directory is gone ({worktree['prunable_reason']}) -- only stale bookkeeping remains"
         ]
-    if worktree["locked"]:
-        return "keep", ["worktree is locked"]
-
     reasons = []
     if worktree["dirty"]:
         return "keep", ["has uncommitted changes"]
@@ -533,7 +525,9 @@ def classify_worktree(worktree, context):
         return "ask", ["could not read worktree status"]
 
     idle = worktree.get("idle_seconds")
-    if idle is not None and idle < RECENT_ACTIVITY_SECONDS:
+    if idle is None:
+        return "ask", ["could not establish worktree activity"]
+    if idle < RECENT_ACTIVITY_SECONDS:
         hours = idle / 3600
         return "keep", [
             f"active {hours:.1f}h ago -- an agent session ({worktree['agent']}) may be live in it"
@@ -542,7 +536,7 @@ def classify_worktree(worktree, context):
     if worktree["detached"]:
         return "ask", ["detached HEAD, so there is no branch whose merge state we can check"]
 
-    branch_verdict = context["branch_verdicts"].get(worktree["branch"])
+    branch_verdict = context["worktree_branch_verdicts"].get(worktree["branch"])
     if branch_verdict == "safe":
         reasons.append(f"branch {worktree['branch']} is merged")
         if idle is not None:
@@ -572,6 +566,8 @@ def build_stacks(metadata, trunk, verdicts, known):
         queue = [base]
         while queue:
             current = queue.pop(0)
+            if current in members:
+                continue
             members.append(current)
             queue.extend(sorted(children.get(current, [])))
         if len(members) < 2:
@@ -614,7 +610,9 @@ def main():
     ref = trunk_ref(root, trunk)
     prs, gh_status = gh_pull_requests(root)
     metadata = graphite_metadata(git_dir)
-    is_graphite = os.path.exists(os.path.join(git_dir, ".graphite_repo_config"))
+    is_graphite = os.path.exists(os.path.join(git_dir, ".graphite_repo_config")) or os.path.exists(os.path.join(git_dir, ".graphite_metadata.db"))
+    metadata_known = metadata is not None
+    metadata = metadata or {}
 
     code, current_branch, _ = git(["rev-parse", "--abbrev-ref", "HEAD"], root)
     if code != 0:
@@ -633,14 +631,14 @@ def main():
         branch["is_current"] = name == current_branch
         branch["worktree"] = by_branch.get(name)
         branch["ancestry_merged"] = is_ancestor(root, name, ref)
-        branch["patch_merged"] = patch_merged(root, name, ref)
+        branch["patch_merged"] = None  # Retained for report consumers; no mutating hint.
         branch["pr"] = prs.get(name)
         branch["graphite_parent"] = metadata.get(name, {}).get("parent")
         # Graphite only tracks branches it has a parent for. Branches made with
         # plain `git checkout -b` sit in a Graphite repo untracked, and `gt
         # delete` refuses them outright ("Cannot perform this operation on
         # untracked branch"), so the right delete command differs per branch.
-        branch["graphite_tracked"] = branch["graphite_parent"] is not None
+        branch["graphite_tracked"] = (branch["graphite_parent"] is not None) if metadata_known else None
         branch["github_knows_tip"] = None
 
     # Fill the gaps the bulk PR listing left. Only branches that were actually
@@ -660,6 +658,11 @@ def main():
                 branch["github_knows_tip"] = True
                 branch["pr"] = found
 
+    for branch in branches:
+        branch["pr_merge_reached_trunk"] = pr_merge_reached_trunk(
+            root, branch["tip"], branch["pr"], ref
+        )
+
     # Children must be resolved before verdicts, since a merged parent with live
     # children is not safe to delete outright.
     child_map = {}
@@ -672,7 +675,7 @@ def main():
     provisional = {}
     for branch in branches:
         verdict, reasons = classify_branch(
-            branch,
+            {**branch, "worktree": None},
             {
                 "trunk": trunk,
                 "trunk_ref": ref,
@@ -683,8 +686,17 @@ def main():
         provisional[branch["name"]] = verdict
 
     for branch in branches:
-        kids = [c for c in child_map.get(branch["name"], []) if c in known]
-        branch["graphite_children"] = kids
+        pending = list(child_map.get(branch["name"], []))
+        descendants = set()
+        while pending:
+            child = pending.pop()
+            if child in descendants or child not in known:
+                continue
+            descendants.add(child)
+            pending.extend(child_map.get(child, []))
+        kids = sorted(descendants)
+        branch["graphite_children"] = sorted(c for c in child_map.get(branch["name"], []) if c in known)
+        branch["graphite_cycle"] = branch["name"] in descendants
         branch["unmerged_children"] = [
             c for c in kids if provisional.get(c) != "safe"
         ]
@@ -694,18 +706,25 @@ def main():
         "trunk_ref": ref,
         "gh_status": gh_status,
         "root": root,
+        "main_worktree": worktrees[0]["path"] if worktrees else root,
         "branch_verdicts": {},
+        "worktree_branch_verdicts": {},
     }
     for branch in branches:
         verdict, reasons = classify_branch(branch, context)
         branch["verdict"] = verdict
         branch["reasons"] = reasons
         branch["delete_command"] = (
-            f"gt delete {branch['name']}"
+            f"gt delete {shlex.quote(branch['name'])}"
             if is_graphite and branch["graphite_tracked"]
-            else f"git branch -D {branch['name']}"
+            else f"git branch -D -- {shlex.quote(branch['name'])}"
         )
+        if verdict != "safe":
+            branch["delete_command"] = None
         context["branch_verdicts"][branch["name"]] = verdict
+        context["worktree_branch_verdicts"][branch["name"]] = classify_branch(
+            {**branch, "worktree": None}, context
+        )[0]
 
     for worktree in worktrees:
         verdict, reasons = classify_worktree(worktree, context)
@@ -721,6 +740,7 @@ def main():
         "fetch": fetch_status,
         "gh_status": gh_status,
         "graphite": is_graphite,
+        "graphite_metadata_known": metadata_known,
         "branches": branches,
         "worktrees": worktrees,
         "stacks": build_stacks(metadata, trunk, context["branch_verdicts"], known)
