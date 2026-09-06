@@ -17,7 +17,7 @@ Use the user's requested mode. Otherwise keep a substantive accurate body increm
 
 ## Establish branch evidence
 
-Refresh the actual base ref when network access is available. Use `git log origin/<base>..HEAD` for branch-only commit messages and `git diff origin/<base>...HEAD` for the merge-base diff. For another named PR, resolve its actual head rather than using this checkout's HEAD. Cross-check the published head so descriptions do not present unpublished changes as already on the PR.
+Resolve the selected PR's published `headRefOid` and refresh its actual base ref. Fetch the published head if that commit is not available locally, then use `git log origin/<base>..<published-head-oid>` for branch-only commit messages and `git diff origin/<base>...<published-head-oid>` for the merge-base diff. This applies to both the current branch's PR and another named PR. Local `HEAD` may be used only after confirming it equals the published head; otherwise use the published commit directly. If that commit cannot be verified, leave scope-dependent metadata unapplied rather than including unpublished local work.
 
 For body changes, establish a current base/head comparison through a successful base refresh or equivalent verified remote comparison. If refresh fails or is unavailable and the base cannot be verified, keep scope-dependent metadata unapplied and report the missing evidence; do not silently describe a stale local comparison as current. Title-only edits do not require a branch-scope comparison.
 

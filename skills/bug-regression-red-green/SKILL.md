@@ -58,7 +58,7 @@ During authorised cleanup, an existing regression test may be consolidated into 
 
 Keep context proportional to the bug. A descriptive name may be enough. For a subtle regression, put a short comment beside the relevant test explaining the non-obvious fixture, cause, or spec ID. Use a file header only when the whole file needs that context. For example:
 
-```
+```javascript
 // B5 — the refund limit uses the amount received, not the invoice total.
 // A partially paid fixture catches the previous over-refund calculation.
 ```
