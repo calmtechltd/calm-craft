@@ -2,7 +2,7 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
-## 0.3.0 — pending
+## 0.3.0 — 2026-09-06
 
 Includes the previously unreleased 0.2.1 skill changes.
 
