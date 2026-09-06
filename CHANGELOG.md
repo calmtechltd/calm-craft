@@ -2,10 +2,12 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
-## Unreleased
+## 0.3.1 — 2026-09-07
 
 - Bound browser verification to explicit checks and unresolved UI risks, reuse results across delivery phases, and distinguish setup blockers from product failures.
 - Withhold branch deletion advice until stale worktree registrations are pruned, require confirmed inline resolution before global review resolution, and guard PR descriptions against unverified base refs.
+- Build PR metadata from the verified published head so local commits cannot be described as part of the PR; label the regression-context example as JavaScript.
+- Repair Windows registry smoke checks by invoking JavaScript entry points and resolving temporary-directory aliases before cleanup.
 
 ## 0.3.0 — 2026-09-06
 
