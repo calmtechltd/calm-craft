@@ -28,6 +28,15 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+async function npm(arguments_, options = {}) {
+  const cli = process.env.CALMCRAFT_SMOKE_NPM_CLI;
+  if (process.platform === "win32") {
+    assert(cli, "Set CALMCRAFT_SMOKE_NPM_CLI to npm's JavaScript entry point on Windows.");
+    return run(process.execPath, [cli, ...arguments_], options);
+  }
+  return run("npm", arguments_, options);
+}
+
 async function run(command, arguments_, options = {}) {
   return execFileAsync(command, arguments_, {
     cwd: options.cwd ?? root,
@@ -149,11 +158,15 @@ function waitForSession(child, outputState) {
 }
 
 async function startCalmCraft(binary, arguments_, environment = {}) {
-  const child = spawn(binary, arguments_, {
-    env: { ...process.env, ...environment },
-    stdio: ["ignore", "pipe", "pipe"],
-    windowsHide: true,
-  });
+  const child = spawn(
+    process.platform === "win32" ? process.execPath : binary,
+    process.platform === "win32" ? [binary, ...arguments_] : arguments_,
+    {
+      env: { ...process.env, ...environment },
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    },
+  );
   children.add(child);
   const output = { stdout: "", stderr: "" };
   const url = await waitForSession(child, output);
@@ -186,15 +199,10 @@ async function stopCalmCraft(active) {
 }
 
 async function verifyProvenance() {
-  await run(process.platform === "win32" ? "npm.cmd" : "npm", ["audit", "signatures"], {
+  await npm(["audit", "signatures"], {
     cwd: join(root, "consumer"),
   });
-  const result = await run(process.platform === "win32" ? "npm.cmd" : "npm", [
-    "view",
-    packageSpecifier,
-    "dist.attestations",
-    "--json",
-  ]);
+  const result = await npm(["view", packageSpecifier, "dist.attestations", "--json"]);
   const attestations = JSON.parse(result.stdout);
   assert(
     attestations?.provenance?.predicateType === "https://slsa.dev/provenance/v1",
@@ -225,11 +233,7 @@ try {
   const consumer = join(root, "consumer");
   await mkdir(consumer);
   await writeFile(join(consumer, "package.json"), '{"name":"calmcraft-smoke","private":true}\n');
-  await run(
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["install", "--ignore-scripts", "--save-exact", packageSpecifier],
-    { cwd: consumer },
-  );
+  await npm(["install", "--ignore-scripts", "--save-exact", packageSpecifier], { cwd: consumer });
   const installedManifest = JSON.parse(
     await readFile(join(consumer, "node_modules", "@calmcraft", "cli", "package.json"), "utf8"),
   );
@@ -238,12 +242,10 @@ try {
   }
   if (expectProvenance) await verifyProvenance();
 
-  const binary = join(
-    consumer,
-    "node_modules",
-    ".bin",
-    process.platform === "win32" ? "calmcraft.cmd" : "calmcraft",
-  );
+  const binary =
+    process.platform === "win32"
+      ? join(consumer, "node_modules", "@calmcraft", "cli", installedManifest.bin.calmcraft)
+      : join(consumer, "node_modules", ".bin", "calmcraft");
   const repository = await createRepository();
   const local = await startCalmCraft(binary, [
     "view",

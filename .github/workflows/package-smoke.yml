@@ -31,13 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: v${{ inputs.version }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
       - run: npm install --global npm@11.18.0
-      - run: node scripts/installed-package-smoke.mjs --expect-provenance
+      - name: Verify installed package
+        shell: bash
+        run: |
+          export CALMCRAFT_SMOKE_NPM_CLI="$(npm root --global)/npm/bin/npm-cli.js"
+          node scripts/installed-package-smoke.mjs --expect-provenance
         env:
           CALMCRAFT_SMOKE_VERSION: ${{ inputs.version }}
