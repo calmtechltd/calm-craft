@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, rmSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -125,6 +125,19 @@ print(json.dumps([scan.classify_worktree(dict(base, **case), context)[0] for cas
 `,
     );
     expect(verdicts).toEqual(["safe", "keep", "ask", "keep", "keep", "ask", "keep"]);
+  });
+
+  it("withholds deletion advice until a stale worktree registration is pruned", async () => {
+    const root = await fixture();
+    const worktree = join(root, "stale-worktree");
+    await fixtureGit(root, ["worktree", "add", "-b", "topic", worktree, "main"]);
+    rmSync(worktree, { recursive: true });
+    expect(survey(root).branches.find((b) => b.name === "topic")?.delete_command).toBeNull();
+    await fixtureGit(root, ["worktree", "prune", "--expire=now"]);
+    expect(survey(root).branches.find((b) => b.name === "topic")).toMatchObject({
+      verdict: "safe",
+      delete_command: "git branch -D -- topic",
+    });
   });
 
   it("leaves objects, index, and checkout contents unchanged without fetch", async () => {

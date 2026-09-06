@@ -719,7 +719,7 @@ def main():
             if is_graphite and branch["graphite_tracked"]
             else f"git branch -D -- {shlex.quote(branch['name'])}"
         )
-        if verdict != "safe":
+        if verdict != "safe" or branch.get("worktree"):
             branch["delete_command"] = None
         context["branch_verdicts"][branch["name"]] = verdict
         context["worktree_branch_verdicts"][branch["name"]] = classify_branch(
