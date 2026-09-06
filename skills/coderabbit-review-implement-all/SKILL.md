@@ -124,7 +124,7 @@ Skipped review-body nitpicks with no `thread_id` get no reply.
 
 #### 4b. Resolve threads (fixes + skips)
 
-For each finding that has a `thread_id` and is either **skip** or **obvious_fix** with `implementation_status` done / already fixed, **and** the pre-mutation read shows `isResolved` is still false:
+For each finding that has a `thread_id` and is either **skip** or **obvious_fix** with `implementation_status` `done` / `skipped_already_fixed`, **and** the pre-mutation read shows `isResolved` is still false:
 
 ```bash
 GQL_FILE=$(mktemp)
@@ -148,6 +148,8 @@ Run this step only when at least one finding has no `thread_id` and is terminal:
 - `triage === "obvious_fix"` with `implementation_status` `done` / `skipped_already_fixed`
 
 Because `@coderabbitai resolve` is global, **do not post it while any finding is `needs_input`, `unverified`, blocked, missing from the refreshed inventory, or otherwise incomplete**. Report that the review-body findings remain open instead.
+
+A fresh thread read must also confirm every inline thread in the inventory is resolved. A terminal finding status is insufficient: failed, unconfirmed, or still-open thread resolutions block the global comment.
 
 Step 3 must already have proven that every fix commit is on the remote. Then build one concise PR comment from the structured triage data:
 

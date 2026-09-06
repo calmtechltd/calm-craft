@@ -104,7 +104,40 @@ Batch the smallest checks that cover a coherent change. Reuse passing evidence u
 
 Prose-only changes need diff review and applicable frontmatter/link checks, not application tests. Configuration uses its owning syntax/schema validator. Types and lint establish static guarantees; do not claim them passed unless they ran. Full local CI requires an explicit checks/readiness request or an applicable repository requirement. Release checks belong at the release boundary.
 
-Use focused browser verification when needed to establish changed user-facing behaviour and allowed by the task and repository policy. Honour an explicit skip and batch affected journeys in one coordinator-owned session. Browser evidence is separate from automated coverage; it does not authorise live mutations or new end-to-end infrastructure. Preserve required existing UI checks.
+## Focused browser verification
+
+Use the browser when correctness depends on rendered layout, navigation, click
+registration, or UI integration that targeted tests cannot establish, subject to
+the task and repository policy. Server/lib, documentation, and configuration
+changes do not need browser checks merely because they support a user-facing
+feature. Honour explicit checks and skips; preserve required existing UI checks.
+Browser evidence is separate from automated coverage and does not authorise live
+mutations or new end-to-end infrastructure.
+
+- Before opening the app, identify the changed behaviour, the uncertainty to
+  resolve, and the observable result that ends the check. Batch related cards in
+  one coordinator-owned session using the repository's documented dev command.
+- Check affected interactions and materially different UI risks. Do not enumerate
+  every route, spec transition, or server-side edge case unless the requested
+  scope requires it; use focused automated coverage for business rules.
+- Record a concise result and the code checkpoint it covers. Reuse it across
+  cards, milestones, reviews, and final smoke checks. Rerun only the affected part
+  when relevant code, configuration, environment, or data changes could alter the
+  observed result; identify that connection first. A changed dependency file or
+  a new workflow phase does not by itself require another pass.
+- Stop after observing the expected result. Capture only the state needed for the
+  next decision; avoid repeated screenshots, full-page dumps, and setup loops.
+  Shut down app processes started for the task when no longer needed, preserving
+  pre-existing or shared sessions.
+- For environment/setup blockers, make one focused diagnostic attempt. If still
+  blocked, record missing evidence and continue independent work instead of
+  cycling through logins, fixtures, and restarts. Continue environment diagnosis
+  when repairing it is itself the requested task.
+- An observed product failure is a failed check, not missing evidence. Diagnose
+  and fix introduced defects and other in-scope acceptance failures, then rerun
+  the affected check. The setup attempt limit does not apply to those fixes.
+  Preserve failure details if an external dependency blocks resolution; required
+  unrun checks remain explicitly unverified.
 
 Report tests, static checks, browser evidence, justified omissions, and required unrun checks separately. An omitted test is not a passing test; missing required evidence leaves the work unverified.
 

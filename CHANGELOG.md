@@ -2,6 +2,11 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## Unreleased
+
+- Bound browser verification to explicit checks and unresolved UI risks, reuse results across delivery phases, and distinguish setup blockers from product failures.
+- Withhold branch deletion advice until stale worktree registrations are pruned, require confirmed inline resolution before global review resolution, and guard PR descriptions against unverified base refs.
+
 ## 0.3.0 — 2026-09-06
 
 Includes the previously unreleased 0.2.1 skill changes.

@@ -19,6 +19,8 @@ Use the user's requested mode. Otherwise keep a substantive accurate body increm
 
 Refresh the actual base ref when network access is available. Use `git log origin/<base>..HEAD` for branch-only commit messages and `git diff origin/<base>...HEAD` for the merge-base diff. For another named PR, resolve its actual head rather than using this checkout's HEAD. Cross-check the published head so descriptions do not present unpublished changes as already on the PR.
 
+For body changes, establish a current base/head comparison through a successful base refresh or equivalent verified remote comparison. If refresh fails or is unavailable and the base cannot be verified, keep scope-dependent metadata unapplied and report the missing evidence; do not silently describe a stale local comparison as current. Title-only edits do not require a branch-scope comparison.
+
 Read substantive changes and relevant specs, not just filenames. Use current test/check evidence; no builds, suites, readiness passes, or CodeRabbit workflows merely to write metadata.
 
 Extract existing ticket references before drafting. Use the configured provider/pattern to discover additional legitimate references; do not invent tickets when none is configured. Preserve existing references even if no provider is configured. Preserve each relationship: `Resolves` only for an established closing relationship or work that actually completes that issue within scope. Related issues, dependencies, and deferred work remain non-closing references. A ticket appearing in a commit message alone does not prove this PR closes it.
