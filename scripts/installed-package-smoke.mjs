@@ -1,6 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { once } from "node:events";
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -217,9 +217,12 @@ async function verifyProvenance() {
 
 async function removeWindowsRemoteClone(path) {
   if (process.platform !== "win32") return;
-  const expectedParent = resolve(tmpdir());
+  const expectedParent = await realpath(tmpdir());
   const resolved = resolve(path);
-  assert(dirname(resolved) === expectedParent, `Refusing to remove unexpected path: ${resolved}`);
+  assert(
+    (await realpath(dirname(resolved))).toLowerCase() === expectedParent.toLowerCase(),
+    `Refusing to remove unexpected path: ${resolved}`,
+  );
   assert(basename(resolved).startsWith("calmcraft-remote-"), `Unexpected clone path: ${resolved}`);
   try {
     await access(resolved);
