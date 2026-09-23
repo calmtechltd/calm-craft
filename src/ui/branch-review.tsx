@@ -116,7 +116,6 @@ function BaseUnavailable({ review }: { review: BranchReview }) {
       <a aria-label="Back to Atlas" className="back-link" href="#/atlas">
         <ArrowIcon /> Atlas
       </a>
-      <p className="eyebrow">Branch Review unavailable</p>
       <h1>Choose a comparison base to review this branch.</h1>
       <p>{review.base.reason ?? "No valid local base reference could be resolved."}</p>
       <code>calmcraft generate --diff --base &lt;ref&gt;</code>
@@ -192,30 +191,32 @@ export function BranchReviewView({
         </span>
       </header>
 
-      <section aria-label="Comparison identity" className="comparison-strip">
-        <div>
-          <span>Current target</span>
-          <strong>{review.repository.branch ?? "Detached HEAD"}</strong>
+      <section aria-label="Comparison identity" className="comparison-identity">
+        <p>
+          <span>Current target </span>
+          <strong>{review.repository.branch ?? "Detached HEAD"}</strong>{" "}
           <code>{review.repository.head.slice(0, 10)}</code>
-        </div>
-        <ArrowIcon />
-        <div>
-          <span>Selected base</span>
-          <strong>{review.base.selectedBase}</strong>
+          <span aria-hidden="true" className="comparison-sep">
+            ·
+          </span>
+          <span>Selected base </span>
+          <strong>{review.base.selectedBase}</strong>{" "}
           <code>{review.base.selectedCommit?.slice(0, 10)}</code>
-        </div>
-        <div>
-          <span>Merge-base</span>
+          <span aria-hidden="true" className="comparison-sep">
+            ·
+          </span>
+          <span>Merge-base </span>
           <strong>{review.base.mergeBase?.slice(0, 10)}</strong>
-          <small>
-            {review.base.source ? `${titleCase(review.base.source)} selection` : "Resolved locally"}
-          </small>
-        </div>
-        <div>
-          <span>Comparison target</span>
-          <strong>Current filesystem</strong>
-          <small>Commits and selected local work</small>
-        </div>
+          <span>
+            {review.base.source
+              ? `, ${titleCase(review.base.source)} selection`
+              : ", resolved locally"}
+          </span>
+          <span aria-hidden="true" className="comparison-sep">
+            ·
+          </span>
+          <span>Current filesystem, commits and selected local work</span>
+        </p>
       </section>
 
       <section aria-label="Review controls" className="review-controls">
@@ -346,7 +347,6 @@ export function BranchReviewView({
 export function BranchReviewNotStarted() {
   return (
     <main className="review-unavailable" id="main-content">
-      <p className="eyebrow">Estate-only snapshot</p>
       <h1>Generate this file with a branch comparison.</h1>
       <code>calmcraft generate --diff</code>
       <a href="#/atlas">Return to Atlas</a>

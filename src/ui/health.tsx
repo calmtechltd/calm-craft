@@ -359,6 +359,10 @@ export function HealthView({
                 {selected.finding.message}
               </h2>
               <code>{selected.finding.code}</code>
+              <p className="health-repair">
+                {selected.finding.hint ??
+                  "Inspect the source contract and resolve the reported inconsistency."}
+              </p>
               <dl>
                 <div>
                   <dt>Source</dt>
@@ -372,18 +376,7 @@ export function HealthView({
                       : "File level"}
                   </dd>
                 </div>
-                <div>
-                  <dt>State</dt>
-                  <dd>{findingLabel(selected)}</dd>
-                </div>
               </dl>
-              <section>
-                <p className="eyebrow">Repair guidance</p>
-                <p>
-                  {selected.finding.hint ??
-                    "Inspect the source contract and resolve the reported inconsistency."}
-                </p>
-              </section>
               <div className="health-actions">
                 <FeatureContextLink item={selected} />
                 <ReviewContextLink item={selected} />

@@ -370,7 +370,6 @@ export function BranchChangeDetail({
   if (!change || !spec) {
     return (
       <main className="review-unavailable" id="main-content">
-        <p className="eyebrow">Change unavailable</p>
         <h1>This change is not in the selected provenance.</h1>
         <p>Restore its provenance layer or return to the branch summary.</p>
         <a href={reviewHref({ feature: selection.feature, provenance, group })}>
@@ -455,7 +454,6 @@ export function BranchChangeDetail({
 
       <div className="change-detail-layout">
         <aside className="change-rail">
-          <p className="eyebrow">Selected change set</p>
           <nav aria-label="Branch changes">
             {changes.map((candidate, index) => {
               const candidateSpec = findSpec(review, candidate.specId);
@@ -510,10 +508,7 @@ export function BranchChangeDetail({
           {selection.sourceDiff ? (
             <section className="raw-source-diff" aria-label="Raw source diff">
               <header>
-                <div>
-                  <p className="eyebrow">Exact evidence</p>
-                  <h2>Raw source diff</h2>
-                </div>
+                <h2>Raw source diff</h2>
                 <span>Markdown or YAML · read only</span>
               </header>
               <div>

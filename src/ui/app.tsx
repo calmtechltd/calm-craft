@@ -207,7 +207,6 @@ export function CalmCraftApp({
   if (!snapshot) {
     return (
       <div className="unsupported-view" id="main-content">
-        <p className="eyebrow">Branch Review</p>
         <h1>The review interface arrives in the next product milestone.</h1>
         <p>The semantic comparison is ready and remains safely available to this session.</p>
       </div>
@@ -413,7 +412,6 @@ export function CalmCraftApp({
           />
         ) : (
           <main className="route-not-found" id="main-content">
-            <p className="eyebrow">Unknown feature</p>
             <h1>This specification is not part of the active estate.</h1>
             <a href="#/atlas">Return to Atlas</a>
           </main>
@@ -434,7 +432,6 @@ export function SessionError({ message }: { message: string }) {
         <i />
         <i />
       </span>
-      <p className="eyebrow">Local session unavailable</p>
       <h1>CalmCraft could not open this estate.</h1>
       <p>{message}</p>
       <p className="error-guidance">
