@@ -208,8 +208,7 @@ function FlowExplorer({
           aria-label={`${selectedState.id} storyboard`}
           className="transition-detail state-detail"
         >
-          <p className="eyebrow">Selected state</p>
-          <h4>{selectedState.label}</h4>
+          <h3>{selectedState.label}</h3>
           {selectedState.storyboard ? (
             <dl>
               <div>
@@ -277,8 +276,7 @@ function FlowExplorer({
       </div>
       {selectedTransition ? (
         <section className="transition-detail" aria-label={`${selectedTransition.id} details`}>
-          <p className="eyebrow">Selected transition</p>
-          <h4>{selectedTransition.event}</h4>
+          <h3>{selectedTransition.event}</h3>
           <dl>
             <div>
               <dt>From</dt>
@@ -409,7 +407,9 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
           tabIndex={-1}
         >
           <div>
-            <p className="eyebrow">Health finding · {selectedFinding.severity}</p>
+            <span className={`health-severity severity-${selectedFinding.severity}`}>
+              {selectedFinding.severity}
+            </span>
             <h2>{selectedFinding.message}</h2>
             <code>{selectedFinding.code}</code>
           </div>
@@ -433,7 +433,6 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
 
       <div className="feature-layout">
         <aside className="contract-index">
-          <p className="eyebrow">On this contract</p>
           <nav aria-label="Feature sections">
             <button onClick={() => scrollToSection(`behaviours-${spec.id}`)} type="button">
               Behaviours <span>{spec.behaviours.length}</span>
@@ -474,18 +473,20 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
         <article className="contract-body">
           <section className="contract-section" id={`behaviours-${spec.id}`}>
             <header className="section-heading">
-              <div>
-                <p className="eyebrow">Observable product contract</p>
-                <h2>Behaviours</h2>
-              </div>
+              <h2>Behaviours</h2>
               <span>{spec.behaviours.length}</span>
             </header>
             <div className="behaviour-stack">
               {spec.behaviours.map((behaviour) => {
                 const blockedBy = blockers.get(behaviour.key) ?? [];
+                const emphasis = [
+                  blockedBy.length > 0 ? "is-blocked" : "",
+                  behaviour.partialNote ? "is-partial" : "",
+                  selection.behaviour === behaviour.key ? "is-selected" : "",
+                ].filter((modifier) => modifier.length > 0);
                 return (
                   <section
-                    className="behaviour-card"
+                    className={["behaviour-entry", ...emphasis].join(" ")}
                     id={`behaviour-${spec.id}-${behaviour.key}`}
                     key={behaviour.key}
                     tabIndex={-1}
@@ -506,7 +507,14 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
                     {blockedBy.length > 0 ? (
                       <div className="blocker-callout">
                         <strong>Blocked</strong>
-                        <span>{blockedBy.map((question) => question.markdown).join(" · ")}</span>
+                        {blockedBy.map((question, index) => (
+                          <RichText
+                            className="blocker-question"
+                            html={question.renderedHtml}
+                            key={`${question.location.line}-${index}`}
+                            relationships={spec.forwardLinks}
+                          />
+                        ))}
                       </div>
                     ) : null}
                     <RichText html={behaviour.renderedHtml} relationships={spec.forwardLinks} />
@@ -519,10 +527,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
           {spec.invariants.length > 0 ? (
             <section className="contract-section" id={`invariants-${spec.id}`}>
               <header className="section-heading">
-                <div>
-                  <p className="eyebrow">Always true</p>
-                  <h2>Invariants</h2>
-                </div>
+                <h2>Invariants</h2>
                 <span>{spec.invariants.length}</span>
               </header>
               <ol className="invariant-list">
@@ -538,10 +543,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
           {spec.decisionTables.length > 0 ? (
             <section className="contract-section" id={`decisions-${spec.id}`}>
               <header className="section-heading">
-                <div>
-                  <p className="eyebrow">Explicit outcomes</p>
-                  <h2>Decision tables</h2>
-                </div>
+                <h2>Decision tables</h2>
                 <span>{spec.decisionTables.length}</span>
               </header>
               {spec.decisionTables.map((table, index) => (
@@ -577,10 +579,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
           {spec.flows.length > 0 && selectedFlow ? (
             <section className="contract-section" id={`flows-${spec.id}`}>
               <header className="section-heading">
-                <div>
-                  <p className="eyebrow">YAML-owned journey</p>
-                  <h2>User flows</h2>
-                </div>
+                <h2>User flows</h2>
                 <span>{spec.flows.length}</span>
               </header>
               <div className="flow-tabs" role="list">
@@ -618,10 +617,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
 
           <section className="contract-section" id={`questions-${spec.id}`}>
             <header className="section-heading">
-              <div>
-                <p className="eyebrow">Decisions still visible</p>
-                <h2>Questions</h2>
-              </div>
+              <h2>Questions</h2>
               <span>{spec.openQuestions.length}</span>
             </header>
             {spec.openQuestions.length > 0 ? (
@@ -655,14 +651,12 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
 
           {spec.futureConsiderationsHtml ? (
             <section className="contract-section compact">
-              <p className="eyebrow">Later, deliberately</p>
               <h2>Future considerations</h2>
               <RichText html={spec.futureConsiderationsHtml} relationships={spec.forwardLinks} />
             </section>
           ) : null}
           {spec.outOfScopeHtml ? (
             <section className="contract-section compact">
-              <p className="eyebrow">Boundary</p>
               <h2>Out of scope</h2>
               <RichText html={spec.outOfScopeHtml} relationships={spec.forwardLinks} />
             </section>
@@ -671,10 +665,7 @@ export function FeatureView({ estate, selection, sources, spec }: FeatureViewPro
           {relationshipGroups.some((group) => group.relationships.length > 0) ? (
             <section className="contract-section relationships-section">
               <header className="section-heading">
-                <div>
-                  <p className="eyebrow">Product context</p>
-                  <h2>Relationships</h2>
-                </div>
+                <h2>Relationships</h2>
               </header>
               {relationshipGroups.map((group) =>
                 group.relationships.length > 0 ? (
