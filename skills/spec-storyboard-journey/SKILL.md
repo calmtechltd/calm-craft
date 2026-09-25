@@ -1,11 +1,13 @@
 ---
 name: spec-storyboard-journey
-description: Storyboard and improve a spec-governed product journey using an Apple-inspired UX review lens and authoritative flow contracts. Use for "review this flow", "improve this wizard", "storyboard this journey", or enhancing the UX of an existing multi-step feature before implementation.
+description: Storyboard and improve a spec-governed product journey using an Apple-inspired UX review lens and authoritative flow contracts. Use when the user requests a flow review, storyboard, or design proposal, or as the design stage of an authorized journey implementation. A concrete implementation suggestion about a multi-step feature does not trigger this skill by itself.
 ---
 
 # Storyboard a Product Journey
 
 Turn a stateful feature into a screen-by-screen review, then propose a smaller, clearer, and more recoverable target journey. This is design work. Do not implement the UI or silently rewrite product intent.
+
+If the original request authorizes implementation and the target journey is accepted or needs no material product decision, continue through `author-implementation-plan` and the applicable implementation runner in the same turn. During active implementation, treat a concrete, in-scope suggestion such as “improve this wizard by combining these two steps” as a request to make that change when the intended result is clear. Pause for a consequential product decision, a destructive or external action that needs authorization, or a material expansion of scope.
 
 Read [`references/ux-journey-design.md`](../../references/ux-journey-design.md) before starting. Read [`references/spec-format.md`](../../references/spec-format.md) before changing a spec or flow contract.
 
@@ -79,7 +81,7 @@ Do not create a separate storyboard file beside the spec. The flow YAML owns sta
 
 ### 10. Hand back
 
-Report the baseline problems, accepted UX decisions, changed behaviour and transition IDs, unresolved questions, and the target journey. Point to `author-implementation-plan` when delivery planning is wanted. State any remaining verification needs under the shared policy.
+Report the baseline problems, accepted UX decisions, changed behaviour and transition IDs, unresolved questions, and the target journey. Use `author-implementation-plan` when delivery planning is authorized by the original or current request. State any remaining verification needs under the shared policy.
 
 ## Related skills
 

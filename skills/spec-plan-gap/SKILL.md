@@ -1,6 +1,6 @@
 ---
 name: spec-plan-gap
-description: Search the existing spec estate for overlap, conflict, or existing coverage before authoring a new spec, then propose where the new one should live and what it should cover. Use when the user says "this isn't specced", "we need a spec for X", "is there a spec covering Y", or before starting any new spec. Pairs with spec-author-greenfield and spec-author-from-impl for the writing.
+description: Search the existing spec estate for overlap, conflict, or existing coverage, then propose where a requested spec should live and what it should cover. Use for a requested gap analysis, coverage question, or spec-authoring workflow. Documentation needs found during ordinary implementation do not trigger this skill. Pairs with spec-author-greenfield and spec-author-from-impl for writing.
 ---
 
 # Plan a Spec for a Gap
@@ -8,6 +8,8 @@ description: Search the existing spec estate for overlap, conflict, or existing 
 Before writing a new spec, find out whether one already covers it. Search the existing intent before proposing another authority.
 
 This skill **plans**; it doesn't write the spec file.
+
+If the original request authorizes writing or updating the spec, continue into `spec-author-greenfield` or `spec-author-from-impl` in the same turn. If it authorizes implementation, continue through the applicable planning and execution workflow without asking the user to repeat that authorization. Pause for a conflict or material product decision, a destructive or external action that needs authorization, or a material expansion of scope.
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md).
 
