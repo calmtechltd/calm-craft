@@ -54,7 +54,7 @@ CalmCraft renders supported Markdown tables, lists, links, code, and text. It re
 
 ### B11 — Version the content contract 🟢 implemented
 
-A repository can declare a supported `specVersion` in `calmcraft.json`. CalmCraft reports an unsupported version and does not guess how to reinterpret the content.
+A repository can declare a supported `spec_version` in `.engineering/config.yaml` or legacy `specVersion` in `calmcraft.json`. This is independent of the engineering format version. CalmCraft reports unsupported content versions and does not guess how to reinterpret the content.
 
 ### B12 — Give findings stable identities 🟢 implemented
 

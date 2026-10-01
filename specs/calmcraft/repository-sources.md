@@ -28,7 +28,7 @@ Opening, browsing, and comparing specs does not checkout a branch, stage a file,
 
 ### B5 — Select a branch-review base 🟢 implemented
 
-Branch review uses an explicit base when the developer supplies one. Otherwise CalmCraft uses the repository configuration, the symbolic origin default, or a conventional local or remote default branch in the documented order. `generate --diff` uses the same resolution and writes the comparison into the file.
+Branch review uses an explicit base when the developer supplies one. Otherwise CalmCraft uses the shared configured review base, a recorded default-branch candidate, the symbolic origin default, or a conventional local or remote default branch in the documented order. Legacy JSON review settings remain supported per field. `generate --diff` uses the same resolution and writes the comparison into the file. See [engineering configuration](./engineering-config.md) for source compatibility.
 
 ### B6 — Continue when no base exists 🟢 implemented
 
@@ -85,7 +85,8 @@ CalmCraft opens the local application unless the developer disables browser open
 | Available input                                                                        | Selected base                          |
 | -------------------------------------------------------------------------------------- | -------------------------------------- |
 | Valid `--base` value                                                                   | Explicit value                         |
-| No explicit value, valid `defaultBase` in `calmcraft.json`                             | Configured value                       |
+| No explicit value, valid shared `review_base` or legacy `defaultBase`                  | Configured comparison ref              |
+| No explicit review ref, recorded default branch resolves as `origin/<branch>`         | Recorded default-branch candidate      |
 | No configured value, symbolic `origin/HEAD` target exists                              | Symbolic target                        |
 | No symbolic target, first existing `origin/main`, `origin/master`, `main`, or `master` | First existing candidate in that order |
 | No candidate exists                                                                    | Estate-only session with base guidance |

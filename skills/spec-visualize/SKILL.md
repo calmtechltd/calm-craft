@@ -7,7 +7,7 @@ description: Open the local CalmCraft visualizer for a spec estate or branch rev
 
 Use the packaged `calmcraft` command as the visual front door to the spec estate. It writes a single self-contained HTML file outside the repository and opens it. Nothing is served, nothing keeps running, and nothing is added to the user's working tree.
 
-Format authority: [`references/spec-format.md`](../../references/spec-format.md). The CLI reads optional repository settings from `calmcraft.json`.
+Format authority: [`references/spec-format.md`](../../references/spec-format.md). Shared repository settings come from `.engineering/config.yaml`, with field-level legacy `calmcraft.json` compatibility; see [engineering configuration](../../references/engineering-config.md).
 
 Use `spec-gap-sweep` instead when the user wants an actionable maintenance report rather than an interactive view.
 
@@ -27,7 +27,7 @@ npx --yes @calmcraft/cli@0.3.1 generate --diff --base origin/main
 
 The file lands in a temporary directory and opens in the default browser. Pass `--out <file>` only when the user wants to keep or share it, and put it where they ask — never inside their repository unless they say so, because it is several megabytes and easy to commit by accident.
 
-`--diff` computes Branch Review now and writes it into the file. `--base <ref>` selects the comparison base; without it CalmCraft uses `calmcraft.json`, `origin/HEAD`, then common main-branch names. `--provenance` chooses which layers are visible when the file first opens.
+`--diff` computes Branch Review now and writes it into the file. `--base <ref>` selects the comparison base; without it use the shared review base, the recorded default-branch candidate, `origin/HEAD`, then common main-branch names. Conflicting explicit YAML/JSON settings require repair. `--provenance` chooses which layers are visible when the file first opens.
 
 Use `--no-open` when the environment cannot launch a browser; report the path instead.
 

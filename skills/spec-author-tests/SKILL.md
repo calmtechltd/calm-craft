@@ -9,6 +9,8 @@ Turn behaviours, invariants, decision-table rows, and flow transitions into test
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). Framework, patterns, and file conventions: `.engineering/config.yaml`.
 
+Read named suites and targeted command references through the [configuration contract](../../references/engineering-config.md). Use the matching suite's existing runner/layout; inspect the tree for missing metadata and resolve overlaps explicitly. Argument-array templates preserve the selected filename as one literal argument in the command's working directory. Suite metadata does not authorize adding or running unrelated browser coverage.
+
 **Not this skill:** assessing what's missing (`spec-assess-coverage`), a regression test for a reported bug (`bug-regression-red-green`), deciding a test is worth writing (`write-tests` — apply that first).
 
 ## Workflow

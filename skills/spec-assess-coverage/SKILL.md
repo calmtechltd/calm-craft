@@ -11,6 +11,8 @@ This works because the spec gives concrete named things to look for. Coverage to
 
 Format authority: [`references/spec-format.md`](../../references/spec-format.md). Test locations and patterns: `.engineering/config.yaml`.
 
+The [configuration contract](../../references/engineering-config.md) supports named suites with distinct runners and layouts. Search the relevant suites together with existing repository tests; do not assume one `test_file` template or one global layout. Suite metadata identifies coverage sources and does not itself authorize execution.
+
 **Not this skill:** writing the tests (`spec-author-tests`), checking spec vs code (`spec-audit-drift`).
 
 ## Workflow
@@ -34,7 +36,7 @@ Specs carry no test references by design, so search on meaning: test names, desc
 | **Covered**      | A test exercises it and asserts the documented outcome                                                        |
 | **Partial**      | Exercised, but the assertion is weaker than the spec — happy path only, one guard branch, outcome not checked |
 | **Uncovered**    | No test                                                                                                       |
-| **Contradicted** | A test asserts an outcome incompatible with the spec                                                        |
+| **Contradicted** | A test asserts an outcome incompatible with the spec                                                          |
 
 For each ID, also record the verification disposition and evidence:
 

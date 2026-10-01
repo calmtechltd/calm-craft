@@ -1,0 +1,60 @@
+# Local verification order for the independent Quality CI jobs.
+version: 2
+languages: [typescript]
+package_manager: pnpm
+commands:
+  types: pnpm check-types
+  lint: pnpm lint
+  unit: pnpm test:unit
+  unit_file: { argv: [pnpm, exec, vitest, run, "{file}"] }
+  build: pnpm build
+  license: pnpm license-check
+  package: pnpm release:check
+  browser_install: pnpm exec playwright install --with-deps chromium
+  browser: pnpm test:e2e
+  browser_file: { argv: [pnpm, exec, playwright, test, "{file}"] }
+  format_check: pnpm format
+gates:
+  - { id: types-node22, command: types, context: { node: "22", os: linux, job: quality } }
+  - { id: lint-node22, command: lint, context: { node: "22", os: linux, job: quality } }
+  - { id: unit-node22, command: unit, context: { node: "22", os: linux, job: quality } }
+  - { id: build-node22, command: build, context: { node: "22", os: linux, job: quality } }
+  - { id: license-node22, command: license, context: { node: "22", os: linux, job: quality } }
+  - { id: types-node24, command: types, context: { node: "24", os: linux, job: quality } }
+  - { id: lint-node24, command: lint, context: { node: "24", os: linux, job: quality } }
+  - { id: unit-node24, command: unit, context: { node: "24", os: linux, job: quality } }
+  - { id: build-node24, command: build, context: { node: "24", os: linux, job: quality } }
+  - { id: license-node24, command: license, context: { node: "24", os: linux, job: quality } }
+  - {
+      id: package-node24,
+      command: package,
+      prerequisites: [build],
+      context: { node: "24", os: linux, job: quality },
+    }
+  - {
+      id: browser-node24,
+      command: browser,
+      prerequisites: [build, browser_install],
+      context: { node: "24", os: linux, job: browser },
+    }
+tests:
+  suites:
+    unit:
+      files:
+        [
+          "src/**/*.test.ts",
+          "src/**/*.test.tsx",
+          "scripts/**/*.test.ts",
+          "test/**/*.test.ts",
+          "test/**/*.test.tsx",
+        ]
+      framework: vitest
+      location: colocated
+      command: unit
+      targeted: unit_file
+    browser:
+      files: ["test/e2e/**/*.spec.ts"]
+      framework: playwright
+      location: tests-dir
+      command: browser
+      targeted: browser_file

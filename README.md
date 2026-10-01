@@ -82,9 +82,20 @@ calmcraft generate --diff --base origin/main
 calmcraft generate --diff --provenance committed,staged
 ```
 
-The live `view` command accepts the same flags. Without `--base`, CalmCraft checks `calmcraft.json`, `origin/HEAD`, then common main-branch names. Provenance controls accept `committed`, `staged`, `unstaged`, and `untracked` as a comma-separated list.
+The live `view` command accepts the same flags. Without `--base`, CalmCraft checks the shared review base, the recorded default-branch candidate, `origin/HEAD`, then common main-branch names. Provenance controls accept `committed`, `staged`, `unstaged`, and `untracked` as a comma-separated list.
 
-An optional `calmcraft.json` can set the spec root and default base without executing repository code:
+Record shared settings in `.engineering/config.yaml`:
+
+```yaml
+version: 2
+paths:
+  specs: specs/
+vcs:
+  default_branch: main
+  review_base: origin/main
+```
+
+Run `calmcraft config validate` to validate the complete engineering contract without executing its commands. See the [format reference](references/engineering-config.md) for gates, prerequisites, test suites, and version 1 compatibility. Existing `calmcraft.json` settings remain supported per field; matching normalized values work and conflicting explicit values receive repair guidance:
 
 ```json
 {
@@ -117,7 +128,7 @@ An uncatchable hard termination cannot run application cleanup. In that case, th
 
 - `CalmCraft requires Node.js 22 or 24`: switch to one of the supported LTS lines.
 - `Not a Git repository`: run the command inside a checkout or pass its path.
-- Branch Review asks for a base: pass `--base <ref>` or set `defaultBase` in `calmcraft.json`.
+- Branch Review asks for a base: pass `--base <ref>` or set `vcs.review_base` in `.engineering/config.yaml` (legacy JSON `defaultBase` remains supported).
 - A private remote cannot authenticate: run `git ls-remote` against that URL in the same terminal first. CalmCraft uses the same Git authentication and disables interactive credential prompts.
 - The browser does not open: rerun with `--no-open` and open the printed URL in a browser on the same machine.
 - A requested port is busy: omit `--port` for an available port or choose another explicit port.

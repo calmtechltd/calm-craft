@@ -26,6 +26,7 @@ export type CliArguments =
   | StackArguments
   | ViewArguments
   | GenerateArguments
+  | { command: "config-validate"; path?: string }
   | { command: "help" }
   | { command: "version" };
 
@@ -95,6 +96,13 @@ function parseGenerateArguments(args: string[], cwd: string): GenerateArguments 
 export function parseCliArguments(args: string[], cwd = process.cwd()): CliArguments {
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") return { command: "help" };
   if (args[0] === "--version" || args[0] === "-v") return { command: "version" };
+  if (args[0] === "config") {
+    if (args.includes("--help") || args.includes("-h")) return { command: "help" };
+    if (args[1] !== "validate" || args.length > 3 || args[2]?.startsWith("-")) {
+      throw new CliArgumentError("Use config validate [file].");
+    }
+    return { command: "config-validate", path: args[2] };
+  }
   if (args[0] === "dev-all") {
     if (args.includes("--help") || args.includes("-h")) return { command: "help" };
     return parseStackArguments(args);
@@ -159,6 +167,7 @@ export const HELP_TEXT = `CalmCraft — local product-spec visualizer
 Usage:
   calmcraft generate [path] [options]
   calmcraft view [path] [options]
+  calmcraft config validate [file]
   calmcraft dev-all [--config <yaml>] [--status | --reset-slot]
   calmcraft --help
   calmcraft --version

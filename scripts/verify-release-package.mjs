@@ -18,6 +18,9 @@ function expectedPath(path) {
     "package/.codex-plugin/plugin.json",
     "package/assets/specs/_flow-template.yaml",
     "package/assets/specs/_template.md",
+    "package/assets/engineering/config.schema.json",
+    "package/assets/engineering/minimal.example.yaml",
+    "package/assets/engineering/quality.example.yaml",
     "package/CHANGELOG.md",
     "package/LICENSE",
     "package/README.md",
@@ -29,6 +32,7 @@ function expectedPath(path) {
     "package/package.json",
     "package/plugin.json",
     "package/references/conventions-question-bank.md",
+    "package/references/engineering-config.md",
     "package/references/spec-format.md",
     "package/references/ux-journey-design.md",
   ]);
@@ -62,6 +66,14 @@ try {
   assert(unexpected.length === 0, `Unexpected package paths:\n${unexpected.join("\n")}`);
   assert(paths.includes("package/dist/cli/index.js"), "The package has no CLI bundle.");
   assert(paths.includes("package/dist/ui/index.html"), "The package has no browser entry point.");
+  for (const resource of [
+    "assets/engineering/config.schema.json",
+    "assets/engineering/minimal.example.yaml",
+    "assets/engineering/quality.example.yaml",
+    "references/engineering-config.md",
+  ]) {
+    assert(paths.includes(`package/${resource}`), `The package is missing ${resource}.`);
+  }
   assert(
     paths.filter((path) => /package\/dist\/ui\/assets\/geist.+\.woff2$/u.test(path)).length === 2,
     "The package must bundle both Geist faces so it renders without a network.",
