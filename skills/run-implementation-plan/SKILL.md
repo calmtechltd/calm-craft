@@ -13,6 +13,8 @@ The card is the unit of work: one behaviour or implementation-plan chunk per pas
 
 Commands and paths: `.engineering/config.yaml`. Spec format: [`references/spec-format.md`](../../references/spec-format.md). Repo-specific extras: `paths.goal` (default `.engineering/goal.md`). Use host continuation tools only when the user has authorised that mode; an ordinary implementation request does not create a persistent goal.
 
+Use the [engineering configuration contract](../../references/engineering-config.md) for v1 compatibility, suite selection, and command definitions. Invoke `argv` directly in its recorded `cwd`; do not turn it into shell text. Keep context-specific gate evidence distinct, and do not infer authorization from a configured helper.
+
 **Not this skill:** writing a plan (`author-implementation-plan`). A named card or "the next chunk" limits the run to that card unless the user has already asked to finish the wider plan. "Finish the plan" means continue through its scoped queue.
 
 ## Host continuation

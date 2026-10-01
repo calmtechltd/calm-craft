@@ -53,7 +53,7 @@ Do this **before** any resolve comment, thread resolve, or skip reply that close
 
 If this pass produced code changes:
 
-1. Commit the review fixes. Stage named paths only. Do not include generated migration artifacts unless I opted in. If the repo has a checkpoint-commit helper (`commands.checkpoint_commit` in `.engineering/config.yaml`), use that; otherwise a normal commit of the named paths.
+1. Commit the review fixes. Stage named paths only. Do not include generated migration artifacts unless I opted in. If the repo has a checkpoint-commit helper (`commands.checkpoint_commit` in `.engineering/config.yaml`), use its shell/argument-array definition and working directory under the [configuration contract](../../references/engineering-config.md); otherwise a normal commit of the named paths.
 2. Publish those commits to the existing PR branch. If the repo has a submit skill, use it. Otherwise `git push` the current branch. Do not open a new PR.
 3. Fetch and confirm the remote branch contains every local fix commit:
 

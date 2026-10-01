@@ -7,12 +7,14 @@ description: Discover and record the repository toolchain, CI gates, paths, and 
 
 Record the repository's existing toolchain and selected workflows in `.engineering/config.yaml`. Setup does not run a delivery loop, change conventions, or migrate the repository to another package manager.
 
+Format authority: [engineering configuration](../../references/engineering-config.md). Shared spec-root and review settings also feed the CLI. Preserve legacy JSON settings per field and surface conflicts; a default branch is distinct from an explicit review base.
+
 ## Discover
 
 Read project manifests, lockfiles, CI workflows, tool configs, existing agent instructions, and contributing docs. Establish:
 
 - Languages/frameworks; package manager and pinned version; types, lint, formatting, tests, dead-code and generation commands.
-- Which commands actually gate CI and their prerequisites, including separate browser jobs.
+- Which commands actually gate CI, ordered prerequisite commands, and relevant runtime/OS/job contexts, including separate browser jobs. Use arbitrary named registry commands rather than a fixed types/lint/test checklist. A formatter is gating when CI requires it.
 - Spec, plan, report, convention, and test locations. Infer the default branch from repository configuration or `origin/HEAD`, rather than assuming main/master.
 - Existing ticket policy from documentation before sampling commit history. Default to `tickets.provider: none` when none is recorded.
 - Optional migration and checkpoint helpers, recording their commands without executing them.
@@ -22,84 +24,36 @@ When signals disagree, show the concrete conflict. Ask only consequential questi
 
 ## Write the configuration
 
-Use the existing repository paths. Omit unused keys and placeholder commands. This example describes the supported shape, not commands to execute:
+Use the existing repository paths and detected commands. New configurations use version 2 under the [format reference](../../references/engineering-config.md) and [schema](../../assets/engineering/config.schema.json). Omit unused fields and placeholders. Start with the [minimal example](../../assets/engineering/minimal.example.yaml); the [Quality example](../../assets/engineering/quality.example.yaml) shows multiple CI contexts and test suites, not requirements to copy into every repo.
 
 ```yaml
-version: 1
-languages: [typescript]
-
-# Detected, never prescribed. Skills that install or add a package use
-# this instead of guessing. Omit on repos with no package manager.
-package_manager: pnpm     # npm | pnpm | yarn | bun | uv | poetry | composer | cargo | ...
-
+version: 2
+package_manager: pnpm
 paths:
   specs: specs/
-  plans: .plans/
-  reports: .reports/
-  conventions: .engineering/conventions.yaml
-  # Optional. A short note /goal and run-implementation-plan read for
-  # repo-specific loop constraints. Omit if you have none.
-  goal: .engineering/goal.md
-
 commands:
-  # Record existing commands; gates below select the CI requirements.
-  # `setup` is any generation or codegen step CI runs BEFORE the gates.
-  # Skip it and later gates fail on missing generated files — a phantom
-  # failure on a perfectly clean branch.
-  setup: <pre-gate generation command, if any>
-  types: <type check command>
-  lint: <lint command>
-  deadcode: <dead code command>
-  test: <full test command>
-  test_file: "<command with {file} placeholder>"
-  # Optional delivery-loop commands. Omit if the repo has none.
-  # Tests that build their database from source schema must not run
-  # these merely to see a change. checkpoint_commit is a local
-  # Graphite-style helper (e.g. calm-commit), not a push.
-  db_generate: <schema / migration generate>
-  db_migrate: <apply migrations to a real database>
-  checkpoint_commit: <local checkpoint commit>
-
-# Commands that gate a merge, in order. Remove nonexistent example entries.
-gates: [setup, types, lint, deadcode, test]
-
-# Other commands. Run only when relevant and required for the task.
-# A formatter failing on hundreds of pre-existing files, and absent from CI,
-# belongs here — treating it as a gate blocks every branch on unrelated drift.
-non_gating:
-  format_check: <command>
-  format_fix: <command>
-
-vcs:
-  default_branch: <branch>
-  pr_cli: gh              # or none
-
-tickets:
-  # none is the default and a perfectly good answer. With `none`, specs carry
-  # no ticket field at all — a field nobody fills in is worse than no field.
-  provider: none          # none | github | linear | jira | custom
-  # github needs nothing else — inferred from the repo, and `gh` is already
-  # authenticated, so skills can resolve issue state.
-  # linear | jira | custom also need:
-  # pattern: "<regex, e.g. ABC-\\d+>"
-  # url: "<url template with {id}>"
-
+  test: pnpm test
+  test_file: {argv: [pnpm, exec, vitest, run, "{file}"]}
+gates: [test]
 tests:
-  location: colocated     # colocated | tests-dir | mirrored-tree
-  unit: "<pattern, e.g. *.test.ts>"
-  integration: "<pattern, e.g. *.integration.test.ts>"
-
-review:
-  # Conventions a reviewer must check every time in this codebase.
-  always_check:
-    - <e.g. permission checks on new endpoints>
-    - <e.g. multi-tenancy scoping on queries>
-    - <e.g. new dependencies against the install-script allowlist>
+  suites:
+    unit:
+      files: ["src/**/*.test.ts"]
+      framework: vitest
+      location: colocated
+      command: test
+      targeted: test_file
 ```
+
+Substitute the detected manager, runner, paths, and real CI gates. Record arbitrary command names, working directories, ordered prerequisite references, and relevant environment context. Helpers such as `db_generate`, `db_migrate`, and `checkpoint_commit` belong in the same registry when already present; they do not become gates or gain execution authorization merely by being recorded.
+
+Keep `vcs.default_branch` as a plain branch name; record `vcs.review_base` only for an intentional comparison ref. Shared YAML settings and legacy JSON values must agree where both are explicit. Keep engineering `version` independent of content `spec_version`. Do not duplicate service or environment-sync mappings from `.engineering/dev.yaml`.
+
+Preserve version 1 files unless migration is part of the requested setup/edit. For an authorized migration, normalize `non_gating` into `commands`, retain gate membership, and convert legacy test metadata into a suite. Inspect unknown repository extensions: preserve them in an appropriate repository-owned source or leave migration unresolved, never silently drop them. Do not rewrite configuration during validation.
 
 ## Verify definitions without running unrelated operations
 
-Check that scripts/executables exist, syntax is appropriate, prerequisites are represented, and `gates` matches CI. A `test_file` entry is a template: substitute a real in-scope file only when that test run is needed.
+Run `calmcraft config validate` when the available CLI supports it; otherwise inspect the packaged schema and record validation as unverified. This read-only command validates definitions and compatibility without executing them. Check that scripts/executables exist, prerequisites and contexts are represented, and `gates` matches actual CI. A targeted command is a template: substitute a real in-scope file only when that test run is needed. Select the matching suite explicitly when patterns overlap; inspect existing tests when metadata is incomplete.
 
 Apply [write-tests](../write-tests/SKILL.md) for verification ownership and scope. Execute a safe check only when necessary to establish the setup result and permitted by the task. Do not run full suites, migration/generation helpers, or checkpoint commits merely to validate their names. A configured command is not authorization to execute it.
 

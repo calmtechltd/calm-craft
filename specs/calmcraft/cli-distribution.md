@@ -28,7 +28,7 @@ The `view` command accepts one local repository path or supported Git remote URL
 
 ### B5 — Load declarative configuration 🟢 implemented
 
-CalmCraft reads an optional `calmcraft.json` containing `specVersion`, `specsRoot`, and `defaultBase`. It rejects unsupported fields or invalid values and never executes repository configuration code.
+CalmCraft reads shared settings from optional `.engineering/config.yaml` and retains field-level compatibility with `calmcraft.json` (`specVersion`, `specsRoot`, `defaultBase`). It rejects invalid consumed values and conflicting explicit settings without executing recorded commands. See [engineering configuration](./engineering-config.md) for validation, versions, and compatibility.
 
 ### B6 — Provide useful command help and errors 🟢 implemented
 
@@ -103,12 +103,12 @@ A contributor can run one documented development command against any local check
 
 ### Configuration source
 
-| CLI option        | `calmcraft.json` value | Effective value                                         |
-| ----------------- | ---------------------- | ------------------------------------------------------- |
-| Present and valid | Any                    | CLI option                                              |
-| Absent            | Present and valid      | Configuration value                                     |
-| Absent            | Absent                 | Documented default                                      |
-| Any               | Invalid configuration  | Explain invalid field and exit before repository access |
+| CLI option        | Shared YAML/JSON settings  | Effective value                                 |
+| ----------------- | ------------------------- | ----------------------------------------------- |
+| Present and valid | Valid and consistent      | CLI option                                      |
+| Absent            | Present and valid         | Shared configuration value                      |
+| Absent            | Absent                    | Documented default                              |
+| Any               | Invalid or conflicting    | Explain the field and exit before estate access |
 
 ## User Flows
 

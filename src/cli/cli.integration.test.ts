@@ -103,6 +103,44 @@ afterEach(async () => {
 });
 
 describe("CalmCraft CLI", () => {
+  it("B2 — uses the YAML spec root in live and generated estates without changing the checkout", async () => {
+    const root = await repository();
+    await writeFixtureFile(
+      root,
+      ".engineering/config.yaml",
+      "version: 2\npaths: {specs: product/specs/}\nvcs: {default_branch: main}\n",
+    );
+    await writeFixtureFile(
+      root,
+      "product/specs/core/custom.md",
+      canonicalSpec("fixture-custom", "Custom root", "YAML selected source"),
+    );
+    const before = await fixtureGit(root, ["status", "--porcelain"]);
+    const active = await startViewCommand(
+      { command: "view", source: root, diff: false, openBrowser: false },
+      { assetsRoot: await assets(), io: { stdout: () => undefined, stderr: () => undefined } },
+    );
+    sessions.push(active);
+    const response = await fetch(
+      `http://127.0.0.1:${active.port}/api/session?token=${active.token}`,
+    );
+    const live = await response.text();
+    expect(live).toContain("fixture-custom");
+    expect(live).not.toContain("fixture-original");
+    const assetsRoot = await browserAssets();
+    const out = join(assetsRoot, "estate.html");
+    expect(
+      await runCli(["generate", root, "--out", out, "--no-open"], {
+        assetsRoot,
+        io: { stdout: () => undefined, stderr: () => undefined },
+      }),
+    ).toBe(0);
+    const html = await readFile(out, "utf8");
+    expect(html).toContain("fixture-custom");
+    expect(html).not.toContain("fixture-original");
+    expect(await fixtureGit(root, ["status", "--porcelain"])).toBe(before);
+  });
+
   it("parses view controls and produces useful help and version output", async () => {
     expect(
       parseCliArguments([

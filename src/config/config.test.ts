@@ -1,4 +1,4 @@
-import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -19,6 +19,42 @@ afterEach(async () => {
 });
 
 describe("calmcraft.json", () => {
+  it("B2 — resolves shared settings per field and keeps branch names distinct from explicit review refs", async () => {
+    const repositoryRoot = await root();
+    await mkdir(join(repositoryRoot, ".engineering"));
+    const yamlPath = join(repositoryRoot, ".engineering/config.yaml");
+    await writeFile(
+      yamlPath,
+      "version: 2\npaths: {specs: product/specs/}\nvcs: {default_branch: develop}\ngates: invalid\n",
+    );
+    expect(await loadConfig(repositoryRoot)).toMatchObject({
+      specsRoot: "product/specs",
+      defaultBase: "origin/develop",
+    });
+    await writeFile(
+      join(repositoryRoot, "calmcraft.json"),
+      JSON.stringify({ specsRoot: "./product/specs", defaultBase: "upstream/release" }),
+    );
+    expect(await loadConfig(repositoryRoot)).toMatchObject({
+      specsRoot: "product/specs",
+      defaultBase: "upstream/release",
+    });
+    await writeFile(yamlPath, "version: 1\nvcs: {review_base: upstream/release}\n");
+    expect(await loadConfig(repositoryRoot)).toMatchObject({
+      specsRoot: "product/specs",
+      defaultBase: "upstream/release",
+    });
+    await writeFile(yamlPath, "version: 2\npaths: {specs: elsewhere}\n");
+    await expect(loadConfig(repositoryRoot)).rejects.toThrow(
+      /Conflicting.*paths.specs.*calmcraft.json specsRoot/u,
+    );
+    await writeFile(yamlPath, "version: 2\nvcs: {review_base: origin/main}\n");
+    await expect(loadConfig(repositoryRoot)).rejects.toThrow(
+      /Conflicting.*vcs.review_base.*defaultBase/u,
+    );
+    await writeFile(yamlPath, "version: 2\npaths: {specs: ../escape}\n");
+    await expect(loadConfig(repositoryRoot)).rejects.toThrow(/beneath the repository/u);
+  });
   it("uses documented defaults and accepts the versioned declarative fields", async () => {
     const repositoryRoot = await root();
     await expect(loadConfig(repositoryRoot)).resolves.toEqual({

@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Calm Craft engineering configuration",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": { "enum": [1, 2] },
+    "spec_version": { "const": 1 },
+    "languages": { "$ref": "#/definitions/strings" },
+    "package_manager": { "$ref": "#/definitions/text" },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specs": { "$ref": "#/definitions/text" },
+        "plans": { "$ref": "#/definitions/text" },
+        "reports": { "$ref": "#/definitions/text" },
+        "conventions": { "$ref": "#/definitions/text" },
+        "goal": { "$ref": "#/definitions/text" }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/name" },
+      "additionalProperties": { "$ref": "#/definitions/command" }
+    },
+    "gates": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/gate" }
+    },
+    "non_gating": { "$ref": "#/definitions/stringMap" },
+    "vcs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_branch": { "$ref": "#/definitions/text" },
+        "review_base": { "$ref": "#/definitions/text" },
+        "pr_cli": { "enum": ["gh", "none"] }
+      }
+    },
+    "tickets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": { "enum": ["none", "github", "linear", "jira", "custom"] },
+        "pattern": { "$ref": "#/definitions/text" },
+        "url": { "$ref": "#/definitions/text" }
+      }
+    },
+    "tests": { "type": "object" },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "always_check": { "$ref": "#/definitions/strings" } }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "version": { "const": 1 } } },
+      "then": {
+        "properties": {
+          "commands": { "$ref": "#/definitions/stringMap" },
+          "gates": { "$ref": "#/definitions/strings" },
+          "tests": { "$ref": "#/definitions/legacyTests" }
+        }
+      },
+      "else": {
+        "propertyNames": {
+          "enum": [
+            "version",
+            "spec_version",
+            "languages",
+            "package_manager",
+            "paths",
+            "commands",
+            "gates",
+            "vcs",
+            "tickets",
+            "tests",
+            "review"
+          ]
+        },
+        "properties": {
+          "tests": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "suites": {
+                "type": "object",
+                "propertyNames": { "$ref": "#/definitions/name" },
+                "additionalProperties": { "$ref": "#/definitions/suite" }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "name": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+    "strings": { "type": "array", "items": { "$ref": "#/definitions/text" } },
+    "stringMap": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/definitions/name" },
+      "additionalProperties": { "$ref": "#/definitions/text" }
+    },
+    "command": {
+      "anyOf": [
+        { "$ref": "#/definitions/text" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "argv": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "shell": { "$ref": "#/definitions/text" },
+            "cwd": { "$ref": "#/definitions/text" }
+          },
+          "oneOf": [{ "required": ["argv"] }, { "required": ["shell"] }]
+        }
+      ]
+    },
+    "gate": {
+      "anyOf": [
+        { "$ref": "#/definitions/name" },
+        {
+          "type": "object",
+          "required": ["id", "command"],
+          "additionalProperties": false,
+          "properties": {
+            "id": { "$ref": "#/definitions/name" },
+            "command": { "$ref": "#/definitions/name" },
+            "prerequisites": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "$ref": "#/definitions/name" }
+            },
+            "context": { "$ref": "#/definitions/stringMap" }
+          }
+        }
+      ]
+    },
+    "suite": {
+      "type": "object",
+      "required": ["files"],
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/text" }
+        },
+        "framework": { "$ref": "#/definitions/text" },
+        "location": { "enum": ["colocated", "tests-dir", "mirrored-tree"] },
+        "command": { "$ref": "#/definitions/name" },
+        "targeted": { "$ref": "#/definitions/name" }
+      }
+    },
+    "legacyTests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "location": { "enum": ["colocated", "tests-dir", "mirrored-tree"] },
+        "unit": { "$ref": "#/definitions/text" },
+        "integration": { "$ref": "#/definitions/text" }
+      }
+    }
+  }
+}

@@ -20,6 +20,7 @@ const EXPECTED_SPECS = [
   "branch-review.md",
   "cli-distribution.md",
   "dev-all.md",
+  "engineering-config.md",
   "local-session-security.md",
   "repository-sources.md",
   "spec-model.md",

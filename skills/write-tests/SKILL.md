@@ -9,6 +9,8 @@ Choose tests that protect meaningful runtime behavior. Use `spec-author-tests` o
 
 Framework, location, and helpers: `.engineering/config.yaml` and the tests already in the tree. Read those before inventing a style.
 
+Use [engineering configuration](../../references/engineering-config.md) for named test suites and legacy shorthand. Match repository-relative file patterns; resolve zero matches by inspecting existing tests and select explicitly when matches overlap. A suite's full-run/targeted references identify commands, not permission to run every suite. For v2 targeted commands, replace the whole `{file}` argument in `argv` with one literal filename relative to `cwd`, safely prefixed with `./`; never join it into shell text. Legacy shell templates require correct quoting and option handling for the actual runner, or remain unverified.
+
 **Not this skill:** assessing which spec IDs have tests (`spec-assess-coverage`), the red-green bug workflow (`bug-regression-red-green`).
 
 ## Honour an explicit skip
@@ -16,7 +18,7 @@ Framework, location, and helpers: `.engineering/config.yaml` and the tests alrea
 If I said not to test something:
 
 - Do not write a test for it.
-- Do not write a test that we are *not* testing it.
+- Do not write a test that we are _not_ testing it.
 - Do not add a `skip` / `todo` / pending case that restates the instruction. That is still a test I asked you not to write.
 - Mention the skip once in the hand-back. Then stop.
 
@@ -31,7 +33,7 @@ Do not test:
 - That a required field is required on a type.
 - That a function accepts the arguments it is declared to accept.
 - Exhaustiveness, assignability, or narrowing the compiler already enforces.
-- `expectTypeOf` / type-only suites unless this repo already has that convention *and* the type is a public contract that can break without a compile error.
+- `expectTypeOf` / type-only suites unless this repo already has that convention _and_ the type is a public contract that can break without a compile error.
 
 A Zod refine, a parse boundary, or a runtime guard can earn a test when it protects a meaningful failure the compiler cannot prevent. "The parameter is a `string`" does not.
 
@@ -63,13 +65,13 @@ A runtime test that only duplicates a static guarantee adds no protection.
 
 ## Pick the layer
 
-| Layer | When |
-| --- | --- |
-| Static | Types and lint. Run the relevant checks; do not duplicate their guarantees. |
-| Unit | Pure logic. Cheap, deterministic. The default for helpers. |
-| Integration | Crosses the database, auth, or several steps, *and* this repo already tests that way. |
-| UI | Only if this repo has a presentational harness. See below. |
-| End-to-end | Add only when requested; preserve and run existing required coverage under repository policy. |
+| Layer       | When                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| Static      | Types and lint. Run the relevant checks; do not duplicate their guarantees.                   |
+| Unit        | Pure logic. Cheap, deterministic. The default for helpers.                                    |
+| Integration | Crosses the database, auth, or several steps, _and_ this repo already tests that way.         |
+| UI          | Only if this repo has a presentational harness. See below.                                    |
+| End-to-end  | Add only when requested; preserve and run existing required coverage under repository policy. |
 
 If the interesting rule lives in a helper, test the helper. If it lives on a page or in a wizard, follow the repository's UI verification policy. Browser verification is separate from automated test coverage; use it when the task or standing repository instructions authorise it.
 

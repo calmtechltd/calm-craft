@@ -1,10 +1,11 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runStackCommand } from "../dev-all";
 import { loadConfig } from "../config";
+import { loadEngineeringConfig } from "../config/engineering";
 import { createBranchReview } from "../diff";
 import {
   cloneRemoteRepository,
@@ -265,6 +266,27 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
     }
     if (parsed.command === "version") {
       io.stdout(`${CALMCRAFT_VERSION}\n`);
+      return 0;
+    }
+    if (parsed.command === "config-validate") {
+      assertSupportedNode(dependencies.nodeVersion ?? process.version);
+      const path = parsed.path === undefined ? undefined : resolve(parsed.path);
+      const repository = await discoverRepository(
+        path === undefined ? process.cwd() : dirname(path),
+      );
+      const config = await loadEngineeringConfig(repository.root, false, path, false);
+      await loadConfig(
+        repository.root,
+        config!.shared,
+        path === undefined ? undefined : relative(repository.root, await realpath(path)),
+      );
+      for (const warning of config!.warnings)
+        io.stdout(
+          `Warning ${warning.field}:${warning.line}:${warning.column}: ${warning.message}\n`,
+        );
+      io.stdout(
+        `Engineering configuration v${config!.version}: valid (${config!.gates.length} gates, ${Object.keys(config!.suites).length} suites).\n`,
+      );
       return 0;
     }
     if (parsed.command === "dev-all") {

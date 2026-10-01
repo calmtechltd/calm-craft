@@ -11,9 +11,13 @@ Use for an explicit checks/readiness request or a repository-required pass. An a
 
 Read actual CI and `.engineering/config.yaml` when present. Identify ordered gates and their prerequisites. Report configuration drift instead of guessing commands or dropping a real failing gate. Missing commands or unavailable environments leave readiness unverified. Run setup/code generation when it is a prerequisite of the selected gates; use the owning tool and preserve unrelated generated changes.
 
+Use the [engineering configuration contract](../../references/engineering-config.md) for command/gate lookup and version 1 normalization. Gate strings reference the command registry; objects carry a stable ID, command, ordered prerequisite references, and relevant environment context. Execute an argument array directly in its recorded `cwd`; retain shell semantics only for shell definitions. Do not treat a `{file}` template as a full gate command. Commands outside `gates` remain optional unless repository policy separately requires them; a formatter required by CI belongs in the gates.
+
 Follow [write-tests](../write-tests/SKILL.md) for coordination and evidence reuse. One agent owns the pass. Reuse a passing gate only when it covers the same code, dependencies, configuration, and relevant environment. Distinct CI environments are distinct evidence. Workers run only assigned checks.
 
 Run the configured gates in dependency order. Investigate the first failure before dependent gates. Fix failures within the authorized scope; report unrelated or unavailable prerequisites. Do not suppress type/lint errors or weaken a test merely to obtain green results. Rerun the failed check and any earlier or later evidence the fix invalidated, then continue remaining checks.
+
+Report results by gate ID and context. Check prerequisites in the same relevant context and reuse current equivalent evidence. A Node 24/macOS pass does not establish a required Node 22/Linux pass. Unavailable environments remain unverified; the recorded list does not automatically create or switch runtimes. Keep valid commands that expose code failures, and record missing CI entries as configuration drift.
 
 Run applicable repository-required changed-file checks even when listed outside the main gates. Do not turn unrelated optional formatting debt into a blocker. Never perform repository-wide formatting as a readiness side effect.
 

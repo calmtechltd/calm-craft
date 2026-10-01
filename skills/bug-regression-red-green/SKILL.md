@@ -9,6 +9,8 @@ Apply [write-tests](../write-tests/SKILL.md) first. When automated protection is
 
 Test framework, layers, and locations: `.engineering/config.yaml`.
 
+Select the matching named suite using the [configuration contract](../../references/engineering-config.md); inspect repository tests when metadata is absent and resolve overlapping matches explicitly. Use its targeted command with a literal file argument in the recorded working directory. Preserve legacy runner behavior without guessing unsafe shell-template substitution.
+
 **Not this skill:** new features (`spec-author-tests`), deciding whether it _is_ a bug (`spec-triage-bug-report`). Apply `write-tests` first, including explicit skips and the repo's layer rules. Visual or click-only bugs follow the repo's browser verification policy instead of acquiring a component test solely to satisfy this workflow.
 
 ## Workflow

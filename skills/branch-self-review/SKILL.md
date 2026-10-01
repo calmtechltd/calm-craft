@@ -11,6 +11,8 @@ Review your own diff before anyone else does. Functional bugs, permission and te
 
 Default branch, report path, and always-check conventions: `.engineering/config.yaml`.
 
+Follow the [engineering configuration contract](../../references/engineering-config.md). Prefer an explicit `vcs.review_base` when selecting the comparison ref; `vcs.default_branch` remains a plain branch name. Resolve legacy JSON overlap by the documented field-level rules rather than silently choosing one file.
+
 **Not this skill:** running gates (`ready-for-pr`), convention compliance (`conventions-audit`), processing bot feedback on an existing pull request (`coderabbit-review-triage`).
 
 ## Workflow
@@ -18,7 +20,7 @@ Default branch, report path, and always-check conventions: `.engineering/config.
 ### 1. Scope against the merge-base
 
 ```
-git merge-base HEAD origin/<default_branch>
+git merge-base HEAD <review_base_or_origin/default_branch>
 ```
 
 For a committed branch or PR review, read the full diff and log from that base to HEAD. For a review of current work or an implementation close-out, also include task-owned staged, unstaged, and untracked files. Use the caller's scope and starting worktree baseline to distinguish task changes from unrelated work. Report what was included; do not require a commit to make changes reviewable.
@@ -33,15 +35,15 @@ Permission and tenancy checks usually live outside the changed lines — in midd
 
 ### 3. Review
 
-| Dimension           | Look for                                                                                                             |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Functional**      | Edge cases, null and undefined, async and error handling, partial failure, idempotency                               |
-| **Permissions**     | Authorisation checked; nothing trusting a client-supplied identity                                                   |
-| **Tenancy**         | Scoping applied on reads _and_ writes                                                                                |
-| **Secrets**         | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret |
-| **Code paths**      | Unreachable branches, missing returns, swallowed errors                                                              |
-| **Structure**      | Repeated business rules, unnecessary forwarding layers, speculative options, or inconsistent patterns; trace callers and the existing abstraction before suggesting a change |
-| **Conventions**     | Whatever `review.always_check` lists in the config                                                                   |
+| Dimension           | Look for                                                                                                                                                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Functional**      | Edge cases, null and undefined, async and error handling, partial failure, idempotency                                                                                                                                 |
+| **Permissions**     | Authorisation checked; nothing trusting a client-supplied identity                                                                                                                                                     |
+| **Tenancy**         | Scoping applied on reads _and_ writes                                                                                                                                                                                  |
+| **Secrets**         | `.env` or credentials in the diff; a real value in `.env.example`; a new `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` secret                                                                                                   |
+| **Code paths**      | Unreachable branches, missing returns, swallowed errors                                                                                                                                                                |
+| **Structure**       | Repeated business rules, unnecessary forwarding layers, speculative options, or inconsistent patterns; trace callers and the existing abstraction before suggesting a change                                           |
+| **Conventions**     | Whatever `review.always_check` lists in the config                                                                                                                                                                     |
 | **Tests and specs** | Missing meaningful protection under `write-tests`, stale verification evidence, or a spec that disagrees; do not flag deliberately omitted low-value tests or repository-approved browser checks as missing unit tests |
 
 ### 4. Grade
