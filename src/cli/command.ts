@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { runStackCommand } from "../dev-all";
 import { loadConfig } from "../config";
 import { createBranchReview } from "../diff";
 import {
@@ -253,8 +254,9 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
     cancellation.abort();
     void session?.close();
   };
-  process.once("SIGINT", stop);
-  process.once("SIGTERM", stop);
+  // A bridge or a second Ctrl+C can repeat a signal during asynchronous cleanup.
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
   try {
     const parsed = parseCliArguments(args);
     if (parsed.command === "help") {
@@ -264,6 +266,16 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
     if (parsed.command === "version") {
       io.stdout(`${CALMCRAFT_VERSION}\n`);
       return 0;
+    }
+    if (parsed.command === "dev-all") {
+      assertSupportedNode(dependencies.nodeVersion ?? process.version);
+      return await runStackCommand(
+        parsed,
+        io,
+        dependencies.signal
+          ? AbortSignal.any([dependencies.signal, cancellation.signal])
+          : cancellation.signal,
+      );
     }
     if (parsed.command === "generate") {
       await runGenerateCommand(parsed, dependencies);

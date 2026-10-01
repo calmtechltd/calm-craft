@@ -13,4 +13,8 @@
 | [`calmcraft/local-session-security.md`](./calmcraft/local-session-security.md) | Loopback server, session token, path boundary, browser policy, privacy, and sanitization          |
 | [`calmcraft/cli-distribution.md`](./calmcraft/cli-distribution.md)             | CLI commands, failures, packaging, runtime support, provenance, and release contract              |
 
+## Local development
+
+[`calmcraft/dev-all.md`](./calmcraft/dev-all.md) defines project-owned YAML stacks, stable worktree slots, process ownership and shared-service boundaries.
+
 The source design lives outside this public repository while delivery is in progress. Each spec below carries the observable contract needed to implement and review v1 without that private planning context.

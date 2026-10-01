@@ -224,3 +224,53 @@ Keep these workflow boundaries within a turn. If the user's request authorizes a
 ## Licence
 
 MIT — see [LICENSE](LICENSE). Free for any use, including commercial. The only condition is keeping the copyright notice.
+
+## Run a project's local service stack
+
+Calm Craft owns the runner; each project owns `.engineering/dev.yaml`. Install the CLI as a development dependency when this command is released, then use `"dev:all": "calmcraft dev-all"` in the project's package scripts. To use the source checkout before publication, run `pnpm build:cli` in Calm Craft and invoke its built `dist/cli/index.js dev-all` from the project directory.
+
+```yaml
+version: 1
+project: my-project
+slots: 11
+ports:
+  app: { base: 3100, step: 1 }
+  inngest: { base: 8388, step: 2 }
+  inngest-connect: { base: 8389, step: 2 }
+  gateway-grpc: { base: 50252, step: 2 }
+  executor-grpc: { base: 50253, step: 2 }
+services:
+  app:
+    command: [node, node_modules/vite/bin/vite.js, dev, --port, '${ports.app}', --strictPort]
+    reloadEnv: true
+    env:
+      BETTER_AUTH_URL: '${urls.app}'
+      INNGEST_DEV: '${urls.inngest}'
+      INNGEST_BASE_URL: '${urls.inngest}'
+    ready: { url: '${urls.app}/api/inngest' }
+  inngest:
+    dependsOn: [app]
+    command: [npx, --yes, inngest-cli@latest, dev, --port, '${ports.inngest}', --connect-gateway-port, '${ports.inngest-connect}', --connect-gateway-grpc-port, '${ports.gateway-grpc}', --connect-executor-grpc-port, '${ports.executor-grpc}', --no-discovery, --sdk-url, '${urls.app}/api/inngest']
+    ready: { url: '${urls.inngest}/' }
+```
+
+The primary checkout keeps slot 0. Linked worktrees remember slots 1–10, including all service ports. A restart keeps the same URLs. Repeating the command reports an already-running registered stack and succeeds without spawning another instance. A port occupied by an unrelated or unregistered process is caught before launch instead of moving the browser. Configure distinct ranges for different projects, and make managed commands bind strictly. Add any number of Node apps or a PartyKit service as another command and port. Commands are argument arrays, not shell scripts; keep credentials in ignored environment files.
+
+`calmcraft dev-all --status` shows this checkout's slot and URLs. `--reset-slot` forgets its assignment only while stopped; reset a disposable worktree before removing it when its slot should become available. `--config path/to/stack.yaml` selects another config. Slot state lives under the project's shared Git metadata, not in committed files.
+
+An existing shared dependency can be declared like this alongside the managed services:
+
+```yaml
+ports:
+  partykit: { base: 1999, shared: true }
+services:
+  partykit:
+    shared: true
+    ready: { url: '${urls.partykit}/' }
+```
+
+This checks PartyKit but never starts or stops it. Mark both the fixed port and service shared, omit its command, and declare `dependsOn: [partykit]` on clients that need it. Shared services must already be available. Use isolated PartyKit ports and per-slot persistence paths when collaboration data should be separate per worktree.
+
+The runner supports macOS and Linux on Calm Craft's supported Node versions. It starts dependencies after HTTP readiness, stops its owned process groups together, and reloads only services marked `reloadEnv` when local environment files change. Failed startup or a managed-service crash stops this stack. An interrupted registry write reports its lock directory for deliberate repair; stale process leases recover automatically.
+
+Separate ports do not isolate data. Run your project's database-branch setup once and save that worktree's Neon URL in its ignored `.env`. The runner doesn't provision databases or change campaign state. Docker-specific lifecycle, tunnels and shared-service provisioning are outside version 1.

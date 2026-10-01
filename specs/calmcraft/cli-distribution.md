@@ -62,6 +62,10 @@ A contributor can run one documented development command against any local check
 
 `calmcraft generate` writes one HTML file that opens from the filesystem with no server, port, or token. `--diff` and `--base` bake Branch Review into that file. Without `--out`, the file lands in a temporary directory so it is not committed by accident.
 
+### B13 — Run a project service stack 🟢 implemented
+
+`calmcraft dev-all` reads the current project's YAML service stack, remembers Git worktree port slots, and manages only its owned local processes. See `dev-all.md` B1–B5 for configuration, ownership, shared-service and environment-reload contracts.
+
 ## Rules (Invariants)
 
 - The executable name is `calmcraft`.

@@ -1,3 +1,4 @@
+import { parseStackArguments, type StackArguments } from "../dev-all";
 import type { Provenance } from "../diff/model";
 
 export type ViewArguments = {
@@ -22,6 +23,7 @@ export type GenerateArguments = {
 };
 
 export type CliArguments =
+  | StackArguments
   | ViewArguments
   | GenerateArguments
   | { command: "help" }
@@ -93,6 +95,10 @@ function parseGenerateArguments(args: string[], cwd: string): GenerateArguments 
 export function parseCliArguments(args: string[], cwd = process.cwd()): CliArguments {
   if (args.length === 0 || args[0] === "--help" || args[0] === "-h") return { command: "help" };
   if (args[0] === "--version" || args[0] === "-v") return { command: "version" };
+  if (args[0] === "dev-all") {
+    if (args.includes("--help") || args.includes("-h")) return { command: "help" };
+    return parseStackArguments(args);
+  }
   if (args[0] !== "view" && args[0] !== "generate") {
     throw new CliArgumentError(`Unknown command: ${args[0]}`);
   }
@@ -153,6 +159,7 @@ export const HELP_TEXT = `CalmCraft — local product-spec visualizer
 Usage:
   calmcraft generate [path] [options]
   calmcraft view [path] [options]
+  calmcraft dev-all [--config <yaml>] [--status | --reset-slot]
   calmcraft --help
   calmcraft --version
 
@@ -164,11 +171,17 @@ Options:
   --no-open           Print the path or session URL without opening a browser
   --port <number>     Request one loopback port; conflicts fail (view)
   --branch <name>     Select a branch for a remote source (view)
+  --config <yaml>     Local service config (dev-all; .engineering/dev.yaml)
+  --status            Show this checkout's remembered slot and service URLs
+  --reset-slot        Forget this checkout's stopped slot assignment
 
 Defaults and privacy:
   path defaults to the current repository. generate writes a file and exits.
   view binds to 127.0.0.1. CalmCraft sends no telemetry and never writes a
-  selected local repository. A supplied remote URL uses installed Git
+  selected local repository in view/generate. dev-all executes trusted project
+  commands and saves slots/leases inside local Git metadata, never secrets.
+  dev-all supports macOS/Linux; it stops only its own service processes.
+  A supplied remote URL uses installed Git
   authentication and a clone removed on shutdown.
 
 Examples:
