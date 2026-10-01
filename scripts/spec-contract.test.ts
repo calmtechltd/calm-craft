@@ -19,6 +19,7 @@ const REQUIRED_SECTIONS = [
 const EXPECTED_SPECS = [
   "branch-review.md",
   "cli-distribution.md",
+  "dev-all.md",
   "local-session-security.md",
   "repository-sources.md",
   "spec-model.md",
@@ -30,7 +31,7 @@ function readSpec(name: string): string {
 }
 
 describe("CalmCraft v1 product contracts", () => {
-  it("contains the six scoped specs", () => {
+  it("contains the scoped product specs", () => {
     const names = readdirSync(SPECS_ROOT)
       .filter((name) => name.endsWith(".md") && !name.endsWith(".flow.mmd"))
       .toSorted();
