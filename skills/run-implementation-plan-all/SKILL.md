@@ -1,20 +1,16 @@
 ---
 name: run-implementation-plan-all
-description: Finish the current implementation plan — one chunk per pass, then the next, across turns until the plan is done. Use when the user says "run them all", "finish the plan", "run-implementation-plan-all", or starts /goal without naming a single chunk.
+description: Run the selected implementation plan in a host goal until its agreed executable queue is implemented and appropriately verified. Use for "run them all", "finish the plan in a goal", "run-implementation-plan-all", or /goal with an implementation plan.
 ---
 
 # Run an Implementation Plan — All
 
-Finish the plan. This is the same loop as [`run-implementation-plan`](../run-implementation-plan/SKILL.md). Follow that skill in full — the queue, the twelve card steps, the definition of done, and the host continuation.
+Run [`run-implementation-plan`](../run-implementation-plan/SKILL.md) in a goal that completes the selected plan's agreed executable queue. The goal provides persistence; the selected plan and governing spec retain their scope and authority.
 
-Continue in the current session. Use host goal tools only when that mode is already authorised, with the same scope and checkpoint.
+1. Establish the selected queue through `run-implementation-plan`'s scope boundary. Keep deferred context separate from executable work.
+2. Start a host goal for that assignment, or continue the existing goal for the same assignment. Its objective names the selected plan and scope; its completion condition is the run skill's definition of done. Use the same checkpoint across continuation turns. If host goals are unavailable, continue the same scoped loop in the current session and report the limitation.
+3. Follow `run-implementation-plan` in full for execution, verification and close-out. Complete dependency-ready work within the agreed queue. Report blocked or unverified work as incomplete and honour user changes to the assignment.
 
-Verification follows `run-implementation-plan`: the coordinating agent owns the check scope and reuses current worker evidence. Run applicable targeted checks and inspect the complete task diff. Apply [write-tests](../write-tests/SKILL.md) for full-check thresholds: explicit requests, applicable repository requirements, and release boundaries.
+Execution and review rules live in `run-implementation-plan`. This wrapper adds goal continuation without adding deliverables, audit scope or a separate verification cycle.
 
-**Not this skill:** writing a plan (`author-implementation-plan`), or a request for one named card without a wider plan request (`run-implementation-plan`).
-
-## Related skills
-
-- `run-implementation-plan` — the loop
-- `write-tests` — whether a chunk test should exist
-- `author-implementation-plan` — writes the plan
+For an assignment currently scoped to one named card, use `run-implementation-plan`. Planning uses `author-implementation-plan`.
