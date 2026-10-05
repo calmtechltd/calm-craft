@@ -1,4 +1,5 @@
 import { parseStackArguments, type StackArguments } from "../dev-all";
+import { parseSyncArguments, type SyncArguments } from "../env-sync";
 import type { Provenance } from "../diff/model";
 
 export type ViewArguments = {
@@ -24,6 +25,7 @@ export type GenerateArguments = {
 
 export type CliArguments =
   | StackArguments
+  | SyncArguments
   | ViewArguments
   | GenerateArguments
   | { command: "config-validate"; path?: string }
@@ -107,6 +109,10 @@ export function parseCliArguments(args: string[], cwd = process.cwd()): CliArgum
     if (args.includes("--help") || args.includes("-h")) return { command: "help" };
     return parseStackArguments(args);
   }
+  if (args[0] === "env-sync") {
+    if (args.includes("--help") || args.includes("-h")) return { command: "help" };
+    return parseSyncArguments(args);
+  }
   if (args[0] !== "view" && args[0] !== "generate") {
     throw new CliArgumentError(`Unknown command: ${args[0]}`);
   }
@@ -169,6 +175,7 @@ Usage:
   calmcraft view [path] [options]
   calmcraft config validate [file]
   calmcraft dev-all [--config <yaml>] [--status | --reset-slot]
+  calmcraft env-sync --target <name> --env <name|all> [--var <KEY>] [--apply]
   calmcraft --help
   calmcraft --version
 
@@ -180,7 +187,12 @@ Options:
   --no-open           Print the path or session URL without opening a browser
   --port <number>     Request one loopback port; conflicts fail (view)
   --branch <name>     Select a branch for a remote source (view)
-  --config <yaml>     Local service config (dev-all; .engineering/dev.yaml)
+  --config <yaml>     Project config (dev-all/env-sync; .engineering/dev.yaml)
+  --target <name>     Configured envSync target (env-sync)
+  --env <name|all>    Destination environment(s) on that target (env-sync)
+  --var <KEY>         Sync only this variable (env-sync)
+  --apply             Read 1Password and write remote values (env-sync)
+  --dry-run           Show variable names/selectors; the env-sync default
   --status            Show this checkout's remembered slot and service URLs
   --reset-slot        Forget this checkout's stopped slot assignment
 
@@ -190,6 +202,8 @@ Defaults and privacy:
   selected local repository in view/generate. dev-all executes trusted project
   commands and saves slots/leases inside local Git metadata, never secrets.
   dev-all supports macOS/Linux; it stops only its own service processes.
+  env-sync defaults to a dry run. --apply sets configured remote variables;
+  it never prints values, deletes unrelated keys or deploys automatically.
   A supplied remote URL uses installed Git
   authentication and a clone removed on shutdown.
 

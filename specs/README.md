@@ -15,7 +15,7 @@
 
 ## Local development
 
-[`calmcraft/dev-all.md`](./calmcraft/dev-all.md) defines project-owned YAML stacks, stable worktree slots, process ownership and shared-service boundaries.
+[`calmcraft/dev-all.md`](./calmcraft/dev-all.md) defines project-owned YAML stacks, stable worktree slots, process ownership, shared-service boundaries and environment sync to remote services.
 
 ## Engineering workflows
 

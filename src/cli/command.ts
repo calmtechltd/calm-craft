@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { runStackCommand } from "../dev-all";
+import { runSyncCommand } from "../env-sync";
 import { loadConfig } from "../config";
 import { loadEngineeringConfig } from "../config/engineering";
 import { createBranchReview } from "../diff";
@@ -298,6 +299,14 @@ export async function runCli(args: string[], dependencies: ViewDependencies = {}
           ? AbortSignal.any([dependencies.signal, cancellation.signal])
           : cancellation.signal,
       );
+    }
+    if (parsed.command === "env-sync") {
+      assertSupportedNode(dependencies.nodeVersion ?? process.version);
+      return await runSyncCommand(parsed, io, {
+        signal: dependencies.signal
+          ? AbortSignal.any([dependencies.signal, cancellation.signal])
+          : cancellation.signal,
+      });
     }
     if (parsed.command === "generate") {
       await runGenerateCommand(parsed, dependencies);

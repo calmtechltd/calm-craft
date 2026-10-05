@@ -32,6 +32,18 @@ Environment files are read in configured order (defaults: `.env`, `.env.local`, 
 
 A service marked `shared: true` has a readiness check and no command. Its readiness port is also marked shared and has a fixed base rather than a worktree offset. The runner checks it before its dependants, but never reserves its port, starts it, restarts it or stops it. Unavailable shared services block startup with repair guidance. Shared does not mean the runner silently starts a singleton; its lifecycle belongs outside this stack.
 
+### B6 — Declare secret sources and remote destinations in the stack YAML 🟢 implemented
+
+The same versioned stack YAML optionally declares named 1Password sources and named service targets. An item source includes all fields with valid environment variable labels when its `variables` list is omitted. The optional list accepts exact names and case-sensitive `*` patterns matching whole labels; overlapping selectors select each field once. An optional `exclude` list accepts the same names and patterns for item and template sources; exclusions take precedence over inclusion and single-variable selection before value validation or writes. Dry runs show the exclusions. Item metadata and notes are ignored. Sources can also use existing templates of secret references and public values. Each target maps its destination environments to named sources. Development, preview and production may use different sources, share one explicitly, or be omitted. GitHub environment names retain their configured case. Unsupported providers, unknown source mappings and ambiguous source declarations are refused.
+
+### B7 — Sync a selected target and environment deliberately 🟢 implemented
+
+`calmcraft env-sync` requires a named target and an environment, or an explicit selection of all environments mapped on that target. It reads the dev-all YAML, supports Vercel project variables and GitHub Actions environment secrets, and can restrict the selection to one variable. The default dry run shows names or wildcard selectors and destinations without reading secrets or contacting providers. Applying discovers wildcard item fields, resolves selected values and sets the selected remote variables. A single-variable selection narrows discovery before validating values, so an empty unrelated field does not block it. Starting `dev-all` never triggers sync. Values and raw provider responses are never printed; secret values stay out of subprocess arguments and saved state.
+
+### B8 — Report sync failures without hiding partial changes 🟢 implemented
+
+Missing source fields, unreadable templates, absent selected variables, unmatched patterns, duplicate selected item labels and empty secret values fail before remote writes. Every selected secret is resolved before any write begins, retaining original whitespace and newlines. Vercel records spanning multiple environments are refused before writing, rather than risking another environment's value; branch-specific overrides are preserved. Writes update selected keys without deleting unrelated keys or automatically redeploying. A provider failure, including a failure inside a successful HTTP response, stops the run and reports the failed variable and number of confirmed writes. Earlier writes remain applied and an unconfirmed request may have applied; retrying sets the selected values again.
+
 ## Rules (Invariants)
 
 - No deployment, Docker lifecycle or database provisioning adapters in version 1.

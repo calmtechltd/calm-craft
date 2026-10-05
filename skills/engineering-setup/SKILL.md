@@ -18,6 +18,7 @@ Read project manifests, lockfiles, CI workflows, tool configs, existing agent in
 - Spec, plan, report, convention, and test locations. Infer the default branch from repository configuration or `origin/HEAD`, rather than assuming main/master.
 - Existing ticket policy from documentation before sampling commit history. Default to `tickets.provider: none` when none is recorded.
 - Optional migration and checkpoint helpers, recording their commands without executing them.
+- Existing local service declarations and secret-sync workflows when these are in the requested setup scope. `.engineering/dev.yaml` owns the local stack and optional `envSync` source/destination mappings; see [environment sync](../../references/environment-sync.md). Preserve existing 1Password item references and per-service variable selection. Do not assume every project has three items or every destination supports the same environments.
 - Existing package-manager install controls and secrets hygiene. Surface a tracked secret file without printing its contents or silently deleting it. Do not add controls, scanners, or example keys outside the requested setup scope.
 
 When signals disagree, show the concrete conflict. Ask only consequential questions that inspection and existing instructions cannot answer. Present a draft config for correction when needed; do not require another confirmation of decisions already supplied. The user may select conventions, specs, delivery, or any subset.
