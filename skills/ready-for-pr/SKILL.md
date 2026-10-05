@@ -25,6 +25,10 @@ Run applicable repository-required changed-file checks even when listed outside 
 
 Review the complete task diff, including staged, unstaged, and untracked task files. Check accidental scope, secrets, debug artifacts, generated output, and environment files. Do not commit or push unless authorized.
 
+## Check review closure before declaring merge readiness
+
+Ready for review and ready to merge are separate outcomes. A draft can be promoted for review while feedback is open; passing CI alone does not establish merge readiness. For an existing PR, follow the [review merge gate](../../references/review-merge-gate.md) before reporting it merge-ready or executing a separately authorised merge. Include unresolved threads from every author, not just the reviewers supported by the bot-fix workflow.
+
 ## Promote only when authorized and published
 
 For a checks-only or assessment request, report results and leave the PR state unchanged.

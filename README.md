@@ -206,7 +206,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                                              |
 | `update-pr`                       | Rewrite or sync the current PR title and body from the branch.                                      |
 | `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                                            |
-| `coderabbit-review-triage`        | Download a CodeRabbit review, verify, classify. Writes `.active/` only.                             |
+| `coderabbit-review-triage`        | Download CodeRabbit and Codex reviews, verify, classify. Writes `.active/` only.                    |
 | `coderabbit-review-implement`     | Apply obvious fixes locally. No commit, push, or resolve.                                           |
 | `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.                                                |
 
