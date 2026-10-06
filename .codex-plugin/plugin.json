@@ -1,6 +1,6 @@
 {
   "name": "calm-craft",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Portable skills for writing specs, planning delivery, reviewing code, and keeping conventions enforceable.",
   "author": {
     "name": "Calm Tech Ltd",
@@ -13,12 +13,20 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Calm Craft",
-    "shortDescription": "Turn decisions into specs and shipped work.",
-    "longDescription": "Calm Craft gives Codex a practical set of skills for writing and maintaining specifications, planning implementation, reviewing changes, and enforcing team conventions.",
+    "shortDescription": "Specs, plans, and code review",
+    "longDescription": "Calm Craft is Calmtech's toolkit for building and maintaining software with your AI coding assistant. It provides portable workflows for Codex, Claude Code, Cursor, and other compatible clients.\n\nWhat you can do:\n\n- Write a feature specification before implementation, or document an existing feature from its code.\n- Turn agreed requirements into a chunked implementation plan and work through it.\n- Review a branch, investigate bugs, and run relevant checks before preparing a pull request.\n- Choose coding conventions and enforce them with your repository's tools.\n- Audit specifications for implementation drift, coverage gaps, and maintenance debt.\n- Explore specifications and branch changes with the local CalmCraft visualizer.\n\nTry asking: \"Write a spec for this feature\", \"Turn this spec into an implementation plan\", or \"Review this branch for bugs and permission gaps.\"\n\nCalm Craft works with your project's code and documentation. Individual workflows may use your existing GitHub, issue-tracker, and development tools. Access to Calm Compliance records is provided separately by Calm Connect.",
     "developerName": "Calmtech",
     "category": "Developer Tools",
     "capabilities": ["Specifications", "Planning", "Code review"],
     "websiteURL": "https://github.com/calmtechltd/calm-craft",
-    "defaultPrompt": "Help me turn this work into a clear spec and implementation plan."
+    "defaultPrompt": [
+      "Help me write a specification for this feature.",
+      "Turn this spec into a chunked implementation plan.",
+      "Review this branch for bugs and permission gaps."
+    ],
+    "brandColor": "#00BC72",
+    "brandColorDark": "#00BC72",
+    "logo": "./assets/branding/calm-craft-icon.png",
+    "composerIcon": "./assets/branding/calm-craft-icon.png"
   }
 }

@@ -16,6 +16,7 @@ function expectedPath(path) {
   const exact = new Set([
     "package/.claude-plugin/plugin.json",
     "package/.codex-plugin/plugin.json",
+    "package/assets/branding/calm-craft-icon.png",
     "package/assets/specs/_flow-template.yaml",
     "package/assets/specs/_template.md",
     "package/assets/engineering/config.schema.json",
@@ -110,6 +111,22 @@ try {
   assert(packagedManifest.publishConfig?.provenance === true, "npm provenance is disabled.");
 
   const skills = paths.filter((path) => path.endsWith("/SKILL.md"));
+  const pluginManifest = JSON.parse(
+    await readFile(join(extractionRoot, "package", ".codex-plugin", "plugin.json"), "utf8"),
+  );
+  const portableManifest = JSON.parse(
+    await readFile(join(extractionRoot, "package", "plugin.json"), "utf8"),
+  );
+  assert(
+    JSON.stringify(portableManifest.extensions?.["com.openai"]?.interface) ===
+      JSON.stringify(pluginManifest.interface),
+    "Portable and Codex listing metadata must match.",
+  );
+  for (const field of ["logo", "composerIcon"]) {
+    const asset = pluginManifest.interface?.[field];
+    assert(typeof asset === "string" && asset.startsWith("./assets/"), `Missing plugin ${field}.`);
+    assert(paths.includes(`package/${asset.slice(2)}`), `The package is missing ${asset}.`);
+  }
   const assets = (await readdir(join(extractionRoot, "package", "dist", "ui", "assets"))).length;
   process.stdout.write(
     `Verified ${metadata.name}@${metadata.version}: ${paths.length} files, ${skills.length} skills, ${assets} browser assets, executable mode ${cliMode.toString(8)}.\n`,
