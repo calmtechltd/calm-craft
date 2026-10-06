@@ -149,9 +149,9 @@ Run this step only when at least one **CodeRabbit** finding has no `thread_id` a
 - `triage === "skip"`, or
 - `triage === "obvious_fix"` with `implementation_status` `done` / `skipped_already_fixed`
 
-Because `@coderabbitai resolve` is global for CodeRabbit, **do not post it while any finding is `needs_input`, `unverified`, blocked, missing from the refreshed inventory, or otherwise incomplete**. Report that the review-body findings remain open instead.
+Because `@coderabbitai resolve` is global for CodeRabbit, **do not post it while any CodeRabbit finding is `needs_input`, `unverified`, blocked, missing from the refreshed inventory, or otherwise incomplete**. Report that the CodeRabbit review-body findings remain open instead.
 
-A fresh thread read must also confirm every inline thread in the inventory is resolved. A terminal finding status is insufficient: failed, unconfirmed, or still-open thread resolutions block the global comment.
+A fresh thread read must also confirm every CodeRabbit inline thread in the inventory is resolved. A terminal finding status is insufficient: failed, unconfirmed, or still-open CodeRabbit thread resolutions block the global comment.
 
 Step 3 must already have proven that every fix commit is on the remote. Then build one concise PR comment from the structured triage data:
 
