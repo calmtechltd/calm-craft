@@ -198,8 +198,8 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | --------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                                                  |
 | `ask-questions`                   | Surface open decisions in current work and ask them, structured.                                    |
-| `run-implementation-plan`         | Complete scoped behaviours with coordinated targeted checks; full gates when requested or required. |
-| `run-implementation-plan-all`     | Named entry for finishing the plan — same loop.                                                     |
+| `run-implementation-plan`        | Implement one selected chunk and verify its existing acceptance criteria.                           |
+| `run-implementation-plan-all`    | Loop run-implementation-plan in a goal through the selected delivery scope.                         |
 | `bug-regression-red-green`        | Reproduce the failure, fix it, and preserve meaningful regression protection.                       |
 | `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.                                 |
 | `clean-code-slop`                 | Explicitly requested audit or cleanup of unjustified complexity, duplication, and low-value tests.  |
