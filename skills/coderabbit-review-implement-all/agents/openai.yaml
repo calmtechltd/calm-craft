@@ -1,6 +1,6 @@
 interface:
-  display_name: "CodeRabbit Review Implement All"
-  short_description: "Publish CodeRabbit fixes and resolve threads."
+  display_name: "CodeRabbit and Codex Review Implement All"
+  short_description: "Publish CodeRabbit and Codex fixes and resolve threads."
 
 policy:
   allow_implicit_invocation: false

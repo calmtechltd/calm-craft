@@ -1,11 +1,11 @@
 ---
 name: coderabbit-review-implement
-description: Apply verified CodeRabbit triage fixes locally. Use when the user requests local review fixes; does not commit, publish, reply, or resolve unless a separate operation is explicitly authorized.
+description: Apply verified CodeRabbit and ChatGPT/Codex triage fixes locally. Use when the user requests local review fixes; does not commit, publish, reply, or resolve unless a separate operation is explicitly authorized.
 ---
 
-# Implement CodeRabbit Fixes Locally
+# Implement CodeRabbit and Codex Fixes Locally
 
-Read `00-pr-metadata.json`, `05-comments-structured.json`, and `06-triage-decisions.md` under `.active/coderabbit-pr-<N>-review/`. Confirm the triage belongs to the current branch and PR; do not switch to another developer's branch. Preserve unrelated work.
+Read `00-pr-metadata.json`, `05-comments-structured.json`, and `06-triage-decisions.md` under `.active/coderabbit-pr-<N>-review/`. Confirm the triage belongs to the current branch and PR; do not switch to another developer's branch. Preserve unrelated work. The existing folder covers both supported reviewers: `coderabbitai` (CodeRabbit) and `chatgpt-codex-connector` (ChatGPT/Codex). If an older triage filtered out Codex, refresh it through `coderabbit-review-triage` before claiming completeness. Honour an explicitly narrowed reviewer scope.
 
 Implement `obvious_fix` findings and input items the user has since settled to fix. Leave `skip`, unresolved `needs_input`, and `unverified` findings untouched. Continue independent settled work while gathering missing decisions or evidence. Do not treat “implement all” without publication context as permission to publish.
 
@@ -19,6 +19,6 @@ Follow [write-tests](../write-tests/SKILL.md). One coordinator owns verification
 
 ## Handoff
 
-Update the triage artifacts with `implementation_status: done | skipped_already_fixed | blocked`, evidence, and remaining decisions. Preserve the original finding IDs and thread mappings. Report changed files, verified fixes, failures/limits, and unpublished work.
+Update the triage artifacts with `implementation_status: done | skipped_already_fixed | blocked`, evidence, and remaining decisions. Preserve the original finding IDs, thread mappings, reviewer and source-author attribution. A shared fix can cover findings from both reviewers; update each affected entry. Report changed files, verified fixes by reviewer, failures/limits, and unpublished work.
 
 No commit, push, PR submission, reply, global resolve comment, or `resolveReviewThread` in this workflow. An explicit publication-and-resolution request uses `coderabbit-review-implement-all`; do not trigger it automatically. Preserve protected generated/migration artifacts and use their owning tools if needed.
