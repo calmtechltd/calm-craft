@@ -1,6 +1,6 @@
 # GitHub Review Communication
 
-Read after verified publication and a complete refreshed triage. Use `gh` with the host's network/authentication rules. Use the PR's base repository for API reads and mutations, even when its head branch is in a fork.
+Read after verified publication and a complete refreshed triage. Follow [GitHub review access](../../references/github-review-access.md) for desktop/cloud credentials and separate API capabilities. Use the PR's base repository for API reads and mutations, even when its head branch is in a fork.
 
 ## Existing inline threads
 
@@ -14,6 +14,8 @@ Resolve only when every request on the thread is verified as addressed or has an
 - Human feedback: reply with the published fix/evidence or agreed skip rationale before resolving. This includes human follow-up concerns on a bot-rooted thread.
 - An equivalent reply already exists: reuse it if it covers the current findings and no later comment disputes it.
 - Missing permission, reply failure, or GraphQL error: keep the thread open and record the limitation. A successful reply does not imply successful resolution.
+
+Check `viewerCanReply` before a required reply and `viewerCanResolve` before resolution. A false capability prevents that operation; it does not invalidate successful reads or independent permitted operations. If a required reply is unavailable, keep its thread open even when resolution is permitted.
 
 Build a response body from the reviewed triage into a temporary UTF-8 file. Do not interpolate review text into shell source. Post with a structured JSON payload, using the **thread ID**, not its numeric comment ID:
 

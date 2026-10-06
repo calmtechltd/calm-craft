@@ -5,7 +5,7 @@ description: Download and triage PR feedback from CodeRabbit, Codex, and human r
 
 # PR Review Triage
 
-Turn PR review feedback into an actionable triage package: raw comments on disk, a categorized breakdown, and a verdict per finding (**Obvious Fix**, **Skip**, **Needs Input**, or **Unverified**). Pairs with `coderabbit-review-implement` for local fixes and `coderabbit-review-implement-all` for publication and GitHub communication. Skill names and the existing triage folder remain unchanged.
+Turn PR review feedback into an actionable triage package: raw comments on disk, a categorized breakdown, and a verdict per finding (**Obvious Fix**, **Skip**, **Needs Input**, or **Unverified**). Pairs with `coderabbit-review-implement` for local fixes and `coderabbit-review-publish-resolve` for publication and GitHub communication. The triage and implement names and existing triage folder remain unchanged.
 
 This skill is **read-only** for product code — it may write files under `.active/` only.
 
@@ -36,18 +36,22 @@ For small reviews (≤10 items), inline triage is fine.
 
 ### 1. Identify the PR
 
+Read [GitHub review access](../../references/github-review-access.md) for host credentials, detached cloud checkouts, API permissions, and pagination. Prefer the explicit PR URL/number when supplied; otherwise discover it from the attached branch:
+
 ```bash
 git branch --show-current
-gh pr view --json number,title,url,headRefName,baseRefName
+gh pr view --json number,title,url,headRefName,baseRefName,headRefOid,headRepository,headRepositoryOwner,isCrossRepository
 ```
 
-If no PR exists for the branch, ask the user for the PR number or URL.
+If neither task context nor branch discovery identifies the PR, ask the user for its number or URL. Verify its repository and head against this checkout.
 
 ### 2. Download review material
 
 Use `gh` (requires network). On hosts with sandbox restrictions, follow their GitHub authentication/network instructions; a sandbox or token-capability failure does not by itself mean authentication is invalid.
 
 Fetch the original review material in parallel, using read-only REST requests:
+
+Set `<owner>/<repo>` from the selected PR's base repository, not from a fork's checkout remote. Supply the explicit PR URL or `--repo <owner>/<repo>` to `gh pr view` when branch discovery is unavailable or points elsewhere.
 
 ```bash
 gh api repos/<owner>/<repo>/pulls/<N>/comments --paginate
@@ -58,8 +62,8 @@ gh api repos/<owner>/<repo>/pulls/<N>/reviews --paginate
 Also fetch GraphQL **review threads**. REST comment IDs and comment node IDs are not thread IDs; preserve the thread `id` for later replies and resolution. Map REST inline comments to threads by `databaseId`, never by path/line alone.
 
 ```bash
-owner=$(gh repo view --json owner --jq .owner.login)
-repo=$(gh repo view --json name --jq .name)
+owner='<verified PR base repository owner>'
+repo='<verified PR base repository name>'
 pr=<N>
 
 gh api graphql -F owner="$owner" -F repo="$repo" -F pr="$pr" -F cursor=null -f query='
@@ -87,23 +91,25 @@ query($owner:String!, $repo:String!, $pr:Int!, $cursor:String) {
 
 Repeat with the thread connection's `endCursor` until `hasNextPage` is false. Paginate nested comments independently for each thread via `node(id: $threadId) { ... on PullRequestReviewThread { comments(first:100, after:$cursor) { ... } } }`. Accumulate every page, including resolved/outdated threads for context, before filtering actionable work. A partial fetch cannot establish that the review is complete.
 
+Check GraphQL `errors` as well as transport success. Record failed or inaccessible sources as missing evidence in `00-pr-metadata.json`, retain successful material, and mark affected findings **Unverified**. Do not treat a permission-denied source as having no findings.
+
 ### Reviewers and comment sources
 
 Include all actionable feedback on the selected PR unless the user narrows the reviewer scope. Do not require CodeRabbit to be present. CodeRabbit, Codex, other bots, and human reviewers can all raise findings; keep their authorship and source URLs.
 
-| Reviewer | GraphQL login | REST login |
-| --- | --- | --- |
-| CodeRabbit | `coderabbitai` | `coderabbitai[bot]` |
-| Codex | `chatgpt-codex-connector` | `chatgpt-codex-connector[bot]` |
-| Human / other bot | Actual author login and type | Actual author login and type |
+| Reviewer          | GraphQL login                | REST login                     |
+| ----------------- | ---------------------------- | ------------------------------ |
+| CodeRabbit        | `coderabbitai`               | `coderabbitai[bot]`            |
+| Codex             | `chatgpt-codex-connector`    | `chatgpt-codex-connector[bot]` |
+| Human / other bot | Actual author login and type | Actual author login and type   |
 
 Use these known bot logins for attribution, not as an inclusion allowlist. The root comment identifies a thread's original reviewer; later replies may add a human request or contradict an earlier disposition. Read the whole discussion. Keep deleted/unknown authors explicit rather than silently dropping their feedback.
 
-| Source | Content |
-| --- | --- |
+| Source                | Content                                               |
+| --------------------- | ----------------------------------------------------- |
 | Top-level PR comments | Summaries, actionable requests, and review discussion |
-| Review bodies | Actionable findings, including outside-diff comments |
-| Inline threads | Findings of every severity and subsequent discussion |
+| Review bodies         | Actionable findings, including outside-diff comments  |
+| Inline threads        | Findings of every severity and subsequent discussion  |
 
 Retain informational comments as context without manufacturing defects. Top-level comments and review-body findings without an inline thread cannot be marked individually resolved with `resolveReviewThread`. Their communication is recorded separately during the full pass.
 
@@ -160,12 +166,12 @@ Mark stale or already-fixed findings as **Skip** with a one-line rationale citin
 
 Exactly one verdict per finding:
 
-| Verdict | When |
-| --- | --- |
-| **Obvious Fix** | Valid, clear, minimal change aligned with the repository's recorded conventions |
-| **Skip** | Already fixed, bot misunderstood code, intentional design, or no current render/behavior gap |
-| **Needs Input** | Genuine product/design fork — not just "we could do it either way" |
-| **Unverified** | Missing code or review evidence prevents a definitive verdict; record what is missing |
+| Verdict         | When                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| **Obvious Fix** | Valid, clear, minimal change aligned with the repository's recorded conventions              |
+| **Skip**        | Already fixed, bot misunderstood code, intentional design, or no current render/behavior gap |
+| **Needs Input** | Genuine product/design fork — not just "we could do it either way"                           |
+| **Unverified**  | Missing code or review evidence prevents a definitive verdict; record what is missing        |
 
 **Be conservative with Needs Input.** Convention nits already decided by this repository are **Obvious Fix**, not Needs Input. Read its rules and `.engineering/conventions.yaml` where present; do not impose another project's conventions.
 
@@ -175,13 +181,13 @@ CodeRabbit often tags doc-only or lint-only items as nitpicks or "low value" (JS
 
 After classifying all findings, count **substantive** obvious fixes — anything that changes runtime behaviour, UX, types at boundaries, or security (Major, Minor, Critical, outside-diff behaviour items). **Do not** count pure-doc/lint nits in that count.
 
-| Situation | Low-value nitpick verdict |
-| --- | --- |
-| **≥1 substantive Obvious Fix** on the PR | **Obvious Fix** — bundle with the same implement pass; cheap polish while the branch is already dirty |
-| **No substantive Obvious Fix** (only nitpicks would ship) | **Skip** — do not recommend a PR that only lands JSDoc/README/comment nits |
-| Substantive fix exists but nit is **over-scoped** (e.g. generic form typing refactor) | **Skip** — bundling rule does not apply |
+| Situation                                                                             | Low-value nitpick verdict                                                                             |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **≥1 substantive Obvious Fix** on the PR                                              | **Obvious Fix** — bundle with the same implement pass; cheap polish while the branch is already dirty |
+| **No substantive Obvious Fix** (only nitpicks would ship)                             | **Skip** — do not recommend a PR that only lands JSDoc/README/comment nits                            |
+| Substantive fix exists but nit is **over-scoped** (e.g. generic form typing refactor) | **Skip** — bundling rule does not apply                                                               |
 
-Record bundled nits in `06-triage-decisions.md` under **Obvious Fixes** with a note such as *Bundled low-value nit (substantive fixes also shipping).*
+Record bundled nits in `06-triage-decisions.md` under **Obvious Fixes** with a note such as _Bundled low-value nit (substantive fixes also shipping)._
 
 `coderabbit-review-implement` should implement these bundled items together with other obvious fixes, not defer them.
 
@@ -233,7 +239,7 @@ Write `06-triage-decisions.md` with summary counts by reviewer and four sections
 
 1. Share summary counts and path to `06-triage-decisions.md`
 2. For **Needs Input** items only: ask **one question at a time**, wait for an answer, update triage if the user reclassifies, then move to the next
-3. When decisions are settled, hand off to `coderabbit-review-implement` for local fixes. `coderabbit-review-implement-all` publishes verified fixes before replying or resolving. Report unverified items and missing pages explicitly; do not claim completion while they remain.
+3. When decisions are settled, hand off to `coderabbit-review-implement` for local fixes. `coderabbit-review-publish-resolve` publishes verified fixes before replying or resolving. Report unverified items and missing pages explicitly; do not claim completion while they remain.
 
 Do **not** start implementing fixes in this skill.
 
@@ -261,7 +267,7 @@ Before handing back:
 ## Related skills
 
 - `coderabbit-review-implement` — implement **Obvious Fix** items locally
-- `coderabbit-review-implement-all` — publish fixes, then communicate and resolve addressed review threads
+- `coderabbit-review-publish-resolve` — publish fixes, then communicate and resolve addressed review threads
 - `spec-triage-bug-report` — triage user bug reports against specs (different input, same classify-then-act pattern)
 
 ## Additional resources

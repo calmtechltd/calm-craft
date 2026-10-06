@@ -37,6 +37,7 @@ function expectedPath(path) {
     "package/references/conventions-question-bank.md",
     "package/references/engineering-config.md",
     "package/references/environment-sync.md",
+    "package/references/github-review-access.md",
     "package/references/review-merge-gate.md",
     "package/references/spec-format.md",
     "package/references/ux-journey-design.md",
@@ -77,6 +78,7 @@ try {
     "assets/engineering/minimal.example.yaml",
     "assets/engineering/quality.example.yaml",
     "references/engineering-config.md",
+    "references/github-review-access.md",
   ]) {
     assert(paths.includes(`package/${resource}`), `The package is missing ${resource}.`);
   }
