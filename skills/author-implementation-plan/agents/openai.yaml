@@ -1,0 +1,6 @@
+interface:
+  display_name: "Author Implementation Plan"
+  short_description: "Turn a design into manageable implementation steps"
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"

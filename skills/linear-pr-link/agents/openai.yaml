@@ -1,3 +1,6 @@
 interface:
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"
   display_name: "Linear PR Link"
   short_description: "Find a Linear ticket before creating a pull request"

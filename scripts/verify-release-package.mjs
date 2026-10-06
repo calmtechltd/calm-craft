@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 import { promisify } from "node:util";
 
+import { parse as parseYaml } from "yaml";
+
 const execFileAsync = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
 const temporaryRoot = await mkdtemp(join(tmpdir(), "calmcraft-release-package-"));
@@ -45,6 +47,7 @@ function expectedPath(path) {
     /^package\/dist\/ui\/assets\/geist(?:-mono)?-[A-Za-z0-9_-]+\.woff2$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/SKILL\.md$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/agents\/openai\.yaml$/u.test(path) ||
+    /^package\/skills\/[a-z0-9-]+\/assets\/calm-craft-icon\.png$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/[A-Za-z0-9._-]+\.md$/u.test(path) ||
     /^package\/skills\/[a-z0-9-]+\/scripts\/[A-Za-z0-9._-]+\.py$/u.test(path)
   );
@@ -127,6 +130,22 @@ try {
     assert(typeof asset === "string" && asset.startsWith("./assets/"), `Missing plugin ${field}.`);
     assert(paths.includes(`package/${asset.slice(2)}`), `The package is missing ${asset}.`);
   }
+  await Promise.all(
+    skills.map(async (skill) => {
+      const skillRoot = skill.slice(0, -"/SKILL.md".length);
+      const metadataPath = `${skillRoot}/agents/openai.yaml`;
+      assert(paths.includes(metadataPath), `Missing skill display metadata: ${metadataPath}.`);
+      const skillMetadata = parseYaml(await readFile(join(extractionRoot, metadataPath), "utf8"));
+      for (const field of ["icon_small", "icon_large"]) {
+        const asset = skillMetadata.interface?.[field];
+        assert(
+          typeof asset === "string" && asset.startsWith("./assets/"),
+          `Missing ${skillRoot} ${field}.`,
+        );
+        assert(paths.includes(`${skillRoot}/${asset.slice(2)}`), `Missing ${skillRoot}/${asset}.`);
+      }
+    }),
+  );
   const assets = (await readdir(join(extractionRoot, "package", "dist", "ui", "assets"))).length;
   process.stdout.write(
     `Verified ${metadata.name}@${metadata.version}: ${paths.length} files, ${skills.length} skills, ${assets} browser assets, executable mode ${cliMode.toString(8)}.\n`,

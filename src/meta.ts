@@ -1,2 +1,2 @@
 export const CALMCRAFT_NAME = "CalmCraft";
-export const CALMCRAFT_VERSION = "0.4.2";
+export const CALMCRAFT_VERSION = "0.4.3";

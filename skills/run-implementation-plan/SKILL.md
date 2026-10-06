@@ -1,15 +1,15 @@
 ---
 name: run-implementation-plan
 description: >-
-  Execute the next incomplete chunk from an implementation plan. Finds the
-  chunk, reads linked specs, implements within scope, and marks it complete.
-  Use when the user says do the next chunk, next thing, continue the plan,
-  ship B4, or run the implementation plan.
+  Execute one chunk or, when explicitly requested, finish the selected
+  implementation plan. Read linked specs, implement within scope, and verify
+  each chunk before marking it complete. Use when asked to run, continue, or
+  finish a plan, implement a named or next chunk, or execute a plan in a host goal.
 ---
 
 # Run Implementation Plan
 
-Pick up an existing `*-implementation-plan.md` and **implement exactly one chunk**. Pair with `author-implementation-plan` (wrote the plan) and `spec-maintain-on-ship` (badge updates in the same PR).
+Pick up an existing `*-implementation-plan.md` and implement **one chunk per pass**. Pair with `author-implementation-plan` (wrote the plan) and `spec-maintain-on-ship` (badge updates in the same PR).
 
 ## When to use
 
@@ -17,8 +17,18 @@ Pick up an existing `*-implementation-plan.md` and **implement exactly one chunk
 - "Continue the standards plan."
 - "Ship B4" / "Run E1."
 - "Run the implementation plan."
+- "Finish the selected plan."
+- "Run this plan in a host goal."
 
-**Not this skill:** writing a new plan (`author-implementation-plan`), multi-chunk sprints without explicit ask, or generic tasks with no plan file.
+**Not this skill:** writing a new plan (`author-implementation-plan`) or generic tasks with no plan file.
+
+## Select execution scope
+
+- **One chunk (default):** a named chunk, "next chunk", or an ordinary "run" / "continue the plan" request selects one chunk unless the user has already authorized finishing the wider scope. Verify and record that chunk, then report the next one.
+- **Finish the plan:** an explicit "finish the plan" or "run all remaining chunks" request selects the plan's agreed delivery scope. Repeat the workflow below one chunk at a time; verify and record each chunk before starting the next. Continue without another prompt until the selected scope is complete or blocked. Do not start deferred phases or backlog work outside that scope.
+- **Host goal:** when the user explicitly requests a host goal, start or continue one whose objective names the plan and selected delivery scope. Follow the same chunk workflow on each pass, preserve progress across passes, and honor changes to the user's assignment. Complete the goal only when every selected chunk satisfies its existing **Done when**. Follow the host's goal lifecycle and blocker rules. Finishing a plan in the current session does not by itself authorize creating a persistent goal.
+
+The former `run-implementation-plan-all` workflow is now the finish-plan mode of this skill.
 
 ## Workflow
 
@@ -52,13 +62,13 @@ Before coding:
 
 Restate in three lines: **chunk ID**, **goal**, **Done when**. Then implement — no waiting for approval unless the user invoked `planning.mdc` for step-by-step execution.
 
-### 4. Implement (one chunk only)
+### 4. Implement the selected chunk
 
 - Stay inside **Work**; treat **Out of scope** as hard walls.
 - Foundation chunks may be API-only; UI chunks ship routes/pages in the same PR.
 - Follow project rules (permissions, audit, ServerDataGrid patterns, etc.).
 - Do **not** run `drizzle generate` or `drizzle migrate` — warn the user if schema changed.
-- Do **not** start the following chunk.
+- Do **not** start the following chunk until this chunk is verified and recorded, and only when the user authorized the wider scope.
 
 Use a subagent only if the chunk's **Work** list is large enough that context would explode — still one chunk.
 
@@ -90,11 +100,14 @@ Return:
 - What shipped (files/areas, one short paragraph)
 - **Done when** — confirm how you verified
 - User actions needed (migrate, seed, manual smoke)
-- Next chunk ID (do not implement it)
+- Next chunk ID, or completion of the selected delivery scope
+
+In one-chunk mode, stop here. In finish-plan mode, repeat from chunk selection while work remains in the selected scope. In goal mode, keep the same scope and progress across passes; blocked or unverified chunks remain incomplete.
 
 ## Anti-patterns
 
-- Implementing two chunks because the second is "small"
+- Expanding a one-chunk assignment because the next chunk is "small"
+- Starting the next chunk before verifying and recording the current one
 - Pulling deferred-phase work forward because it is convenient
 - Marking complete on tests alone when **Done when** requires the app
 - Re-litigating **Open decisions** without user input

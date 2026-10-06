@@ -1,13 +1,13 @@
-# CodeRabbit and Codex Triage — Output Templates
+# PR Review Triage — Output Templates
 
 ## `04-categorized-breakdown.md` (header)
 
 ```markdown
-# CodeRabbit and Codex Review Breakdown — PR #<N>
+# PR Review Breakdown — PR #<N>
 
 **PR:** [<title>](<url>)
 **Branch:** `<branch>`
-**Total findings:** <count> (CodeRabbit: <count>; Codex: <count>)
+**Total findings:** <count> (counts by CodeRabbit, Codex, human, other bot, unknown)
 
 ## Source Files
 
@@ -15,9 +15,9 @@
 | --- | --- |
 | `01-walkthrough-summary.md` | Bot walkthrough / PR summary |
 | `02-review-body-full.md` | Full review body |
-| `03-inline-comment-*.md` | Inline findings of every severity |
+| `03-inline-comment-*.md` | Inline comments of every severity |
 | `raw-comments/` | One file per finding |
-| `05-comments-structured.json` | Machine-readable list with reviewer and exact source-author attribution |
+| `05-comments-structured.json` | Machine-readable list |
 
 ## Overview
 
@@ -38,16 +38,15 @@
 ## `06-triage-decisions.md`
 
 ```markdown
-# CodeRabbit and Codex PR #<N> — Triage Decisions
+# PR #<N> — Triage Decisions
 
 **PR:** [<title>](<url>)
 **Branch:** `<branch>`
 **Triaged:** <date> (against current workspace code)
-**Reviewers:** CodeRabbit (`coderabbitai`), ChatGPT/Codex (`chatgpt-codex-connector`); state any explicitly narrowed scope.
+**Scope:** <requested reviewers; all by default>
+**Sources:** <author logins, source URLs, PR head, pagination status>
 
 ## Summary
-
-Report totals and counts per reviewer. Preserve source-author and thread mappings even when one fix covers findings from both reviewers.
 
 | Category | Count |
 | --- | --- |
@@ -60,7 +59,7 @@ Report totals and counts per reviewer. Preserve source-author and thread mapping
 
 ## Obvious Fixes
 
-Order by consequence. Include only verified in-scope fixes; assess nits by their actual value and governing rule.
+Ordered by severity (Critical → Major → Nitpick). Include **bundled low-value nits** here (tag *Bundled low-value nit*) when substantive fixes also ship — see bundle rule in SKILL.md.
 
 1. **`<path>`** (L<lines>) — **<title>.**
    *Rationale:* <one line>
@@ -85,11 +84,12 @@ Order by consequence. Include only verified in-scope fixes; assess nits by their
 
 ## Unverified
 
-- <finding ID, missing evidence, and next useful check>
+- <finding ID, missing evidence, and next check>
 
 ## Verification notes
 
-- <evidence for each definitive verdict and limits on completeness>
+- <code evidence for each definitive verdict; unresolved discussion>
+- <preserved finding IDs, source authors/URLs, and inline thread mappings>
 ```
 
 ## Needs Input question format

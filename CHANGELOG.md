@@ -2,6 +2,12 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.3 — pending
+
+- Merge single-chunk and finish-plan execution into `run-implementation-plan`, retaining explicit host-goal authorization.
+- Restore Ben's review triage and implementation structure, include human and Codex feedback, and verify published fix commits before GitHub replies or thread resolution.
+- Add consistent Calm Craft display icons to every skill.
+
 ## 0.4.2 — pending
 
 - Limit CodeRabbit global review resolution to CodeRabbit findings and inline threads; retain the all-author merge-readiness check.

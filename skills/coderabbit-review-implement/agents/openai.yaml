@@ -1,6 +1,9 @@
 interface:
-  display_name: "CodeRabbit and Codex Review Implement"
-  short_description: "Apply triaged CodeRabbit and Codex fixes locally."
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"
+  display_name: "PR Review Implement"
+  short_description: "Apply triaged fixes from bots and human reviewers locally"
 
 policy:
   allow_implicit_invocation: false
