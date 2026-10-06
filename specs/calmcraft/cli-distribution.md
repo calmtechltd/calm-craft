@@ -66,6 +66,10 @@ A contributor can run one documented development command against any local check
 
 `calmcraft dev-all` reads the current project's YAML service stack, remembers Git worktree port slots, and manages only its owned local processes. See `dev-all.md` B1–B5 for configuration, ownership, shared-service and environment-reload contracts.
 
+### B14 — Sync selected environment variables from the stack YAML 🟢 implemented
+
+`calmcraft env-sync` uses the same YAML to map named 1Password sources to Vercel or GitHub destination environments. It defaults to a dry run and requires `--apply` for remote writes. See `dev-all.md` B6–B8 for source selection, secret handling and partial-failure recovery.
+
 ## Rules (Invariants)
 
 - The executable name is `calmcraft`.
@@ -103,7 +107,7 @@ A contributor can run one documented development command against any local check
 
 ### Configuration source
 
-| CLI option        | Shared YAML/JSON settings  | Effective value                                 |
+| CLI option        | Shared YAML/JSON settings | Effective value                                 |
 | ----------------- | ------------------------- | ----------------------------------------------- |
 | Present and valid | Valid and consistent      | CLI option                                      |
 | Absent            | Present and valid         | Shared configuration value                      |

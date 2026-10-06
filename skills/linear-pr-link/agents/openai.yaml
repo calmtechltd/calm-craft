@@ -1,0 +1,3 @@
+interface:
+  display_name: "Linear PR Link"
+  short_description: "Find a Linear ticket before creating a pull request"

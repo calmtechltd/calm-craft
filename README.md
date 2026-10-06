@@ -285,3 +285,15 @@ This checks PartyKit but never starts or stops it. Mark both the fixed port and 
 The runner supports macOS and Linux on Calm Craft's supported Node versions. It starts dependencies after HTTP readiness, stops its owned process groups together, and reloads only services marked `reloadEnv` when local environment files change. Failed startup or a managed-service crash stops this stack. An interrupted registry write reports its lock directory for deliberate repair; stale process leases recover automatically.
 
 Separate ports do not isolate data. Run your project's database-branch setup once and save that worktree's Neon URL in its ignored `.env`. The runner doesn't provision databases or change campaign state. Docker-specific lifecycle, tunnels and shared-service provisioning are outside version 1.
+
+### Environment sync
+
+The same `.engineering/dev.yaml` can declare an optional `envSync` section for 1Password sources and remote service targets. Named vault items sync all environment fields by default, with optional exact names or `*` patterns to select a subset. Sources can also reuse existing `.env.*.tpl` files. Each target maps its environments to sources: use separate development, preview and production items, reuse a source, or omit environments the project does not have.
+
+```sh
+calmcraft env-sync --target vercel --env preview          # plan only
+calmcraft env-sync --target vercel --env preview --apply  # set remote values
+calmcraft env-sync --target github --env Preview --apply
+```
+
+Vercel project variables and GitHub Actions environment secrets are supported. Dry runs show names or wildcard selectors and destinations without reading secrets or making network requests. Applying discovers wildcard fields and resolves selected secrets before writes, preserves multiline values, and reports partial failures without printing values. `dev-all` never triggers remote sync. See [environment-sync configuration and calm-app template examples](references/environment-sync.md) for the YAML, authentication and recovery rules.

@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { parse } from "yaml";
+import { validateEnvSyncConfig, type EnvSyncConfig } from "../env-sync/config";
 
 export type PortMap = Record<string, number>;
 export type Service = {
@@ -17,6 +18,7 @@ export type StackConfig = {
   envFiles: string[];
   ports: Record<string, { base: number; step: number; shared: boolean }>;
   services: Record<string, Service>;
+  envSync?: EnvSyncConfig;
 };
 const identifier = /^[a-z][a-z0-9-]{0,63}$/u;
 function object(input: unknown, keys?: string[]): Record<string, unknown> {
@@ -82,7 +84,15 @@ export function serviceOrder(config: StackConfig): string[] {
   return order;
 }
 export function validateStackConfig(input: unknown): StackConfig {
-  const raw = object(input, ["version", "project", "slots", "envFiles", "ports", "services"]);
+  const raw = object(input, [
+    "version",
+    "project",
+    "slots",
+    "envFiles",
+    "ports",
+    "services",
+    "envSync",
+  ]);
   if (raw.version !== 1)
     throw new Error("Unsupported dev-all configuration version. Use version: 1.");
   const project = text(raw.project);
@@ -147,6 +157,7 @@ export function validateStackConfig(input: unknown): StackConfig {
   if (!Object.keys(ports).length || !Object.keys(services).length)
     throw new Error("Configure at least one service and port.");
   const config: StackConfig = { version: 1, project, slots, envFiles, ports, services };
+  if (raw.envSync !== undefined) config.envSync = validateEnvSyncConfig(raw.envSync);
   const used = new Set<number>();
   for (let slot = 0; slot < slots; slot++) {
     const mapped = slotPorts(config, slot);
