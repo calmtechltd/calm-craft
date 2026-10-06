@@ -2,6 +2,12 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.1 — pending
+
+- Add a Calm Craft icon with a hammer badge to the plugin listing and composer.
+- Expand the plugin description with supported specification, planning, review, conventions, and visualizer workflows, and starter prompts.
+- Include matching portable listing metadata and verify that packaged icons are present.
+
 ## 0.4.0 — pending
 
 - Restore Ben's implementation planning and execution workflows with agreed requirements and the selected plan as the delivery boundary; keep `run-implementation-plan-all` as a host goal loop around the runner.
