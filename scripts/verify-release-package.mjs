@@ -34,6 +34,7 @@ function expectedPath(path) {
     "package/references/conventions-question-bank.md",
     "package/references/engineering-config.md",
     "package/references/environment-sync.md",
+    "package/references/review-merge-gate.md",
     "package/references/spec-format.md",
     "package/references/ux-journey-design.md",
   ]);

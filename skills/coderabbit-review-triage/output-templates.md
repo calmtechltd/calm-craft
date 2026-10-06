@@ -1,13 +1,13 @@
-# CodeRabbit Triage — Output Templates
+# CodeRabbit and Codex Triage — Output Templates
 
 ## `04-categorized-breakdown.md` (header)
 
 ```markdown
-# CodeRabbit Review Breakdown — PR #<N>
+# CodeRabbit and Codex Review Breakdown — PR #<N>
 
 **PR:** [<title>](<url>)
 **Branch:** `<branch>`
-**Total findings:** <count>
+**Total findings:** <count> (CodeRabbit: <count>; Codex: <count>)
 
 ## Source Files
 
@@ -17,7 +17,7 @@
 | `02-review-body-full.md` | Full review body |
 | `03-inline-comment-*.md` | Inline findings of every severity |
 | `raw-comments/` | One file per finding |
-| `05-comments-structured.json` | Machine-readable list |
+| `05-comments-structured.json` | Machine-readable list with reviewer and exact source-author attribution |
 
 ## Overview
 
@@ -38,13 +38,16 @@
 ## `06-triage-decisions.md`
 
 ```markdown
-# CodeRabbit PR #<N> — Triage Decisions
+# CodeRabbit and Codex PR #<N> — Triage Decisions
 
 **PR:** [<title>](<url>)
 **Branch:** `<branch>`
 **Triaged:** <date> (against current workspace code)
+**Reviewers:** CodeRabbit (`coderabbitai`), ChatGPT/Codex (`chatgpt-codex-connector`); state any explicitly narrowed scope.
 
 ## Summary
+
+Report totals and counts per reviewer. Preserve source-author and thread mappings even when one fix covers findings from both reviewers.
 
 | Category | Count |
 | --- | --- |
