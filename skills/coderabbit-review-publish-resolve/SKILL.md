@@ -1,15 +1,19 @@
 ---
-name: coderabbit-review-implement-all
-description: Publish triaged PR review fixes, then reply and resolve addressed CodeRabbit, Codex, and human review feedback. Use when explicitly asked to publish and resolve the review or to run this full pass; ordinary local fixes use coderabbit-review-implement.
+name: coderabbit-review-publish-resolve
+description: Triage, implement, verify, commit and publish PR review fixes, then reply and resolve addressed CodeRabbit, Codex, and human feedback in one pass. Use when explicitly asked for the complete publish-and-resolve workflow; ordinary local fixes use coderabbit-review-implement.
 ---
 
 # PR Review — Publish and Resolve
 
-Complete Ben's review implementation workflow with publication **before** GitHub communication. Use `coderabbit-review-implement` for local fixes, then follow this pass only when the user requests publication and resolution. The original skill names and `.active/coderabbit-pr-<N>-review/` paths remain compatible.
+Complete Ben's review implementation workflow with publication **before** GitHub communication. Use `coderabbit-review-implement` for local fixes, then follow this pass only when the user requests publication and resolution. The triage and implement skill names and `.active/coderabbit-pr-<N>-review/` paths remain compatible. This skill replaces `coderabbit-review-implement-all`; there is no second alias in the skill picker.
 
-## 1. Confirm the PR and requested review scope
+One invocation runs **triage → implement → verify → commit → publish → reply/resolve → report**. Reuse valid completed work instead of asking the user to launch each stage separately. Explicit invocation of this full workflow authorizes its review-fix commits, publication to the existing PR, and review communication; it does not authorize unrelated changes or merging. Unsettled decisions and unavailable capabilities remain reported blockers, not assumed approvals.
 
-Read `00-pr-metadata.json`, `05-comments-structured.json`, and `06-triage-decisions.md`. Confirm the current checkout is the requested PR branch. Do not switch to another developer's branch or publish unrelated changes.
+## 1. Confirm the PR and complete triage
+
+Read [GitHub review access](../../references/github-review-access.md) before API requests or publication. Use the explicit PR identity for detached cloud checkouts and the host's supplied credentials.
+
+Confirm the current checkout belongs to the requested PR. Do not switch to another developer's branch or publish unrelated changes. If `00-pr-metadata.json`, `05-comments-structured.json`, or `06-triage-decisions.md` is missing, run `coderabbit-review-triage` for this PR in the same invocation. If they exist, read them and verify their PR identity, requested scope, and fetch completeness before reusing them.
 
 ```bash
 git branch --show-current
@@ -18,16 +22,20 @@ gh pr view --json number,url,headRefName,headRefOid,headRepository,headRepositor
 
 Compare the repository, PR number, head repository, and branch with triage. Refresh old CodeRabbit-only or CodeRabbit/Codex-only triage when the request includes human feedback. Respect an explicitly narrowed reviewer scope; otherwise include all actionable review feedback.
 
+Refresh stale or incomplete review material through `coderabbit-review-triage` before relying on it. Preserve finding IDs, settled user decisions, implementation evidence, and confirmed communication URLs when reconciling refreshed sources. Resolve genuine Needs Input questions through that workflow; missing evidence remains Unverified. Do not resolve affected threads while either is outstanding.
+
+Pass the verified PR URL to `gh pr view` for detached cloud checkouts instead of relying on the current branch name. Before publication, establish that the checkout belongs to that PR's head and select its existing head branch as the destination.
+
 ## 2. Implement and verify
 
 Run `coderabbit-review-implement` if local fixes are incomplete. Retain Ben's implementation priorities, batching, and verification. Do not implement skipped findings or guess unresolved decisions. Record `done`, `skipped_already_fixed`, or `blocked` for each fix.
 
 ## 3. Publish before replying or resolving
 
-If there are local review-fix changes:
+Identify the review-fix paths and commits, including fixes committed earlier but not yet pushed. A clean working tree alone does not prove publication.
 
-1. Commit only the named review-fix paths after verification. Follow the repository's commit workflow and generated-file rules.
-2. Publish to the **existing PR's head repository and branch**, using the repository's submit workflow or the matching Git remote. Do not create a new PR or assume the head is `origin/<local-branch>`: fork PRs and differently named remotes must use the actual head repository/branch from step 1. Do not force-push.
+1. If review-fix changes remain uncommitted, commit only the named paths after verification. Follow the repository's commit workflow and generated-file rules. Reuse existing verified fix commits; do not create an empty commit for already published fixes or skips.
+2. Publish any review-fix commits missing from the **existing PR's head repository and branch**, using the repository's submit workflow or the matching Git remote. Do not create a new PR or assume the head is `origin/<local-branch>`: fork PRs and differently named remotes must use the actual head repository/branch from step 1. Do not force-push.
 3. Refresh the live PR's `headRefOid`. Fetch the actual head branch into `FETCH_HEAD` and confirm it agrees with that live head. Record the verified published SHA and confirm every review-fix commit is contained in it.
 
 For example, after selecting the actual PR head repository URL and branch:
@@ -55,6 +63,8 @@ Read [GitHub communication](github-communication.md) now. It implements Ben's sk
 - Preserve the CodeRabbit summary/resolve command only for a fully addressed CodeRabbit review, after publication and confirmed thread results. It does not resolve Codex or human feedback.
 
 A failed reply must not be followed by resolving that thread. A permission error is recorded as a capability limit; do not try another identity or assume another API bypasses it.
+
+If the cloud token permits inline operations but denies the single top-level summary, retain confirmed replies and resolutions and report the summary as unavailable. The denied summary does not erase those results or authorize repeated attempts with another identity.
 
 ## 5. Update triage artifacts
 

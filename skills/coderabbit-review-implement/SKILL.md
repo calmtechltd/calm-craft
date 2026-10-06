@@ -1,6 +1,6 @@
 ---
 name: coderabbit-review-implement
-description: Implement verified PR review fixes from CodeRabbit, Codex, and human reviewers using completed triage. Keep changes local; publication, replies, and resolution use coderabbit-review-implement-all when requested.
+description: Implement verified PR review fixes from CodeRabbit, Codex, and human reviewers using completed triage. Keep changes local; publication, replies, and resolution use coderabbit-review-publish-resolve when requested.
 ---
 
 # PR Review — Implement Fixes Locally
@@ -54,7 +54,7 @@ The foreground agent:
 3. After all complete: run the project's configured type check and relevant targeted tests
 4. Update triage with implementation status and verification evidence
 5. Summarize the local changes and any blockers
-6. Hand off to `coderabbit-review-implement-all` only when publication and resolution are requested
+6. Hand off to `coderabbit-review-publish-resolve` only when publication and resolution are requested
 
 ---
 
@@ -140,7 +140,7 @@ Provide:
 - Files touched (grouped)
 - Checks performed and anything needing follow-up
 - Manual QA needed on affected flows, where appropriate
-- The fixes remain local; publishing and resolving is the separate `coderabbit-review-implement-all` pass
+- The fixes remain local; publishing and resolving is the separate `coderabbit-review-publish-resolve` pass
 
 Do not commit, push, post GitHub comments, or resolve threads in this workflow.
 
@@ -179,12 +179,12 @@ Before marking complete:
 - **Implementing without reading triage.** Skips exist for a reason.
 - **Re-triaging during implement.** If a finding looks wrong mid-fix, note it and ask rather than silently expanding scope.
 - **Reintroducing behavior that conflicts with the target repository's rules.**
-- **Publishing or resolving from a local fix pass.** Use `coderabbit-review-implement-all` for the explicitly requested full pass.
+- **Publishing or resolving from a local fix pass.** Use `coderabbit-review-publish-resolve` for the explicitly requested full pass.
 
 ---
 
 ## Related skills
 
 - `coderabbit-review-triage` — download, parse, and classify review feedback first
-- `coderabbit-review-implement-all` — publish verified fixes, then reply and resolve
+- `coderabbit-review-publish-resolve` — publish verified fixes, then reply and resolve
 - `spec-maintain-on-ship` — if a triage fix also updates spec wording (e.g. org-policy terminology)
