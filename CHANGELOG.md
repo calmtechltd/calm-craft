@@ -2,6 +2,10 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.2 — pending
+
+- Limit CodeRabbit global review resolution to CodeRabbit findings and inline threads; retain the all-author merge-readiness check.
+
 ## 0.4.1 — pending
 
 - Add a Calm Craft icon with a hammer badge to the plugin listing and composer.
