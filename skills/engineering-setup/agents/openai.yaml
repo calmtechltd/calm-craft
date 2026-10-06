@@ -1,0 +1,6 @@
+interface:
+  display_name: "Engineering Setup"
+  short_description: "Record a repository toolchain, checks, and instructions"
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"

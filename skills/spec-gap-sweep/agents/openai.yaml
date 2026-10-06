@@ -1,0 +1,6 @@
+interface:
+  display_name: "Spec Gap Sweep"
+  short_description: "Find maintenance gaps across the specification estate"
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"

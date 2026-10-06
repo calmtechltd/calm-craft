@@ -1,6 +1,9 @@
 interface:
-  display_name: "CodeRabbit and Codex Review Triage"
-  short_description: "Triage CodeRabbit and Codex review feedback."
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"
+  display_name: "PR Review Triage"
+  short_description: "Triage CodeRabbit, Codex, and human review feedback"
 
 policy:
   allow_implicit_invocation: false

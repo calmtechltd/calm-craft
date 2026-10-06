@@ -36,8 +36,8 @@ To exercise only the source CLI against the last built browser bundle, use `pnpm
 CalmCraft supports the Node.js 22 and Node.js 24 LTS lines. Run a pinned version without installing it globally:
 
 ```sh
-npx --yes @calmcraft/cli@0.4.2 generate
-npx --yes @calmcraft/cli@0.4.2 generate --diff --base origin/main
+npx --yes @calmcraft/cli@0.4.3 generate
+npx --yes @calmcraft/cli@0.4.3 generate --diff --base origin/main
 ```
 
 `generate` writes one HTML file and opens it from disk. `--diff` bakes Branch Review into that file from the current working tree; there is no port, token, or process left running.
@@ -45,7 +45,7 @@ npx --yes @calmcraft/cli@0.4.2 generate --diff --base origin/main
 Or install the same pinned version:
 
 ```sh
-npm install --global @calmcraft/cli@0.4.2
+npm install --global @calmcraft/cli@0.4.3
 calmcraft view
 ```
 
@@ -198,17 +198,18 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | --------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `author-implementation-plan`      | Design doc → chunks sized for one reviewable pass.                                                  |
 | `ask-questions`                   | Surface open decisions in current work and ask them, structured.                                    |
-| `run-implementation-plan`        | Implement one selected chunk and verify its existing acceptance criteria.                           |
-| `run-implementation-plan-all`    | Loop run-implementation-plan in a goal through the selected delivery scope.                         |
+| `run-implementation-plan`         | Implement one chunk by default; explicitly finish the selected plan or run it in a host goal.       |
 | `bug-regression-red-green`        | Reproduce the failure, fix it, and preserve meaningful regression protection.                       |
 | `branch-self-review`              | Review your own diff before anyone else does. Reports; never fixes.                                 |
 | `clean-code-slop`                 | Explicitly requested audit or cleanup of unjustified complexity, duplication, and low-value tests.  |
 | `ready-for-pr`                    | Run the gates CI runs; fix what fails.                                                              |
 | `update-pr`                       | Rewrite or sync the current PR title and body from the branch.                                      |
 | `branch-cleanup`                  | Delete locally what is provably in trunk; never remotes.                                            |
-| `coderabbit-review-triage`        | Download CodeRabbit and Codex reviews, verify, classify. Writes `.active/` only.                    |
-| `coderabbit-review-implement`     | Apply obvious fixes locally. No commit, push, or resolve.                                           |
-| `coderabbit-review-implement-all` | Publish the fixes, then resolve threads via GraphQL.                                                |
+| `coderabbit-review-triage`        | Download bot and human PR feedback, verify, classify. Writes `.active/` only.                       |
+| `coderabbit-review-implement`     | Apply triaged bot and human review fixes locally. No commit, push, or resolve.                      |
+| `coderabbit-review-implement-all` | Publish verified fixes, then reply and resolve addressed review threads via GraphQL.                |
+
+`run-implementation-plan-all` has been merged into `run-implementation-plan`. Use `$run-implementation-plan` for the next chunk, `$run-implementation-plan finish the selected plan` for the remaining delivery scope, or explicitly request a host goal. Each mode verifies and records one chunk before starting the next.
 
 ## Boundaries this plugin defends
 

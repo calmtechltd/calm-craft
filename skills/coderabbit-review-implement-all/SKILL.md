@@ -1,235 +1,85 @@
 ---
 name: coderabbit-review-implement-all
-description: Publish CodeRabbit and ChatGPT/Codex review fixes and resolve their supported inline threads. Runs coderabbit-review-implement first if the local fixes are not done, commits and publishes them to the current PR, resolves inline threads with GraphQL, and when necessary posts one PR-level @coderabbitai resolve summary for completed CodeRabbit review-body-only findings. Never resolves before the remote has the fixes. Use only when explicitly invoked or the user clearly requests publication and resolution of these bot reviews; a generic implement-all request stays local.
+description: Publish triaged PR review fixes, then reply and resolve addressed CodeRabbit, Codex, and human review feedback. Use when explicitly asked to publish and resolve the review or to run this full pass; ordinary local fixes use coderabbit-review-implement.
 ---
 
-# CodeRabbit and Codex Review — Implement All
+# PR Review — Publish and Resolve
 
-The outward-facing pass: local implement, publish this branch, resolve both supported reviewers' **review threads** with GraphQL, then close completed CodeRabbit review-body-only findings with one PR-level summary when the environment permits it.
+Complete Ben's review implementation workflow with publication **before** GitHub communication. Use `coderabbit-review-implement` for local fixes, then follow this pass only when the user requests publication and resolution. The original skill names and `.active/coderabbit-pr-<N>-review/` paths remain compatible.
 
-Use the narrowest mutation that can represent the result:
+## 1. Confirm the PR and requested review scope
 
-- reply on an **existing** thread: `addPullRequestReviewThreadReply`
-- mark a thread resolved: `resolveReviewThread`
-- close completed CodeRabbit findings that exist only in the review body: one final `@coderabbitai resolve` PR comment containing the fixed/skipped summary
-
-The first two take the GraphQL thread id (`PRRT_…`) from triage and remain the primary path. A top-level comment uses GitHub's `addComment` permission, which some cloud agent tokens lack. Attempt it only in the guarded review-body case below; a 403 is a reported capability limitation, not a reason to undo successful inline resolutions or try other comment APIs.
-
-This skill can change a live PR. Use it only for the **current branch's** review, and only when I explicitly asked for the full pass. A loop of ordinary implement work must stay on `coderabbit-review-implement`.
-
-**Prerequisite:** A completed triage folder at `.active/coderabbit-pr-<N>-review/` with `06-triage-decisions.md` and `05-comments-structured.json`. The PR number in `00-pr-metadata.json` must be this branch's PR.
-
-Pairs with `coderabbit-review-triage` and `coderabbit-review-implement`. The skill names and `.active/coderabbit-pr-<N>-review/` path remain unchanged for compatibility. Accepted GraphQL root authors are exactly `coderabbitai` (CodeRabbit) and `chatgpt-codex-connector` (ChatGPT/Codex), as defined in [Supported reviewers](../coderabbit-review-triage/SKILL.md#supported-reviewers). Process both unless the user explicitly narrows the reviewer scope. Refresh older CodeRabbit-only triage so it does not silently omit Codex findings.
-
-## Hard rules
-
-1. **Current branch only.** Confirm `git branch --show-current` and `gh pr view` match the triage PR. Stop if the triage folder is for another PR or another developer's branch.
-2. **Never resolve before the remote has the fixes.** Do not reply on threads or run `resolveReviewThread` while fix changes are still uncommitted or only on the local branch.
-3. **Publish, then resolve.** If this pass produced code changes, commit them and publish so the existing PR branch on the remote contains every fix commit. Fetch and confirm that before any thread reply or resolve.
-4. **No general PR comments.** The only allowed top-level comment is the single guarded `@coderabbitai resolve` summary in step 5, after remote verification, when completed CodeRabbit review-body-only findings exist and no finding remains blocked. Never use GitHub MCP comment tools.
-5. An explicit invocation of this publication workflow, or a clear request to **publish the CodeRabbit/Codex fixes and resolve their review**, authorises its commit, publish, and review communication. A generic "implement the fixes" does not — use `coderabbit-review-implement`.
-6. Skip-only passes have nothing to publish. Resolve those only when the working tree is clean of unpublished review-fix changes.
-
-## Workflow
-
-### 1. Confirm this is the current branch's PR
+Read `00-pr-metadata.json`, `05-comments-structured.json`, and `06-triage-decisions.md`. Confirm the current checkout is the requested PR branch. Do not switch to another developer's branch or publish unrelated changes.
 
 ```bash
-branch=$(git branch --show-current)
-gh pr view --json number,url,headRefName
+git branch --show-current
+gh pr view --json number,url,headRefName,headRefOid,headRepository,headRepositoryOwner,isCrossRepository
 ```
 
-Stop if `headRefName` is not `$branch`, or if `.active/coderabbit-pr-<N>-review/00-pr-metadata.json` names a different PR.
+Compare the repository, PR number, head repository, and branch with triage. Refresh old CodeRabbit-only or CodeRabbit/Codex-only triage when the request includes human feedback. Respect an explicitly narrowed reviewer scope; otherwise include all actionable review feedback.
 
-### 2. Run local implement if needed
+## 2. Implement and verify
 
-If Obvious Fix items are still unimplemented, run `coderabbit-review-implement` to completion first. Do not skip verification there.
+Run `coderabbit-review-implement` if local fixes are incomplete. Retain Ben's implementation priorities, batching, and verification. Do not implement skipped findings or guess unresolved decisions. Record `done`, `skipped_already_fixed`, or `blocked` for each fix.
 
-If implement already finished and the worktree matches that triage status, continue.
+## 3. Publish before replying or resolving
 
-### 3. Publish the fixes to the remote
+If there are local review-fix changes:
 
-Do this **before** any resolve comment, thread resolve, or skip reply that closes a review comment. The PR must not look mergeable while the fixes exist only locally.
+1. Commit only the named review-fix paths after verification. Follow the repository's commit workflow and generated-file rules.
+2. Publish to the **existing PR's head repository and branch**, using the repository's submit workflow or the matching Git remote. Do not create a new PR or assume the head is `origin/<local-branch>`: fork PRs and differently named remotes must use the actual head repository/branch from step 1. Do not force-push.
+3. Refresh the live PR's `headRefOid`. Fetch the actual head branch into `FETCH_HEAD` and confirm it agrees with that live head. Record the verified published SHA and confirm every review-fix commit is contained in it.
 
-If this pass produced code changes:
-
-1. Commit the review fixes. Stage named paths only. Do not include generated migration artifacts unless I opted in. If the repo has a checkpoint-commit helper (`commands.checkpoint_commit` in `.engineering/config.yaml`), use its shell/argument-array definition and working directory under the [configuration contract](../../references/engineering-config.md); otherwise a normal commit of the named paths.
-2. Publish those commits to the existing PR branch. If the repo has a submit skill, use it. Otherwise `git push` the current branch. Do not open a new PR.
-3. Fetch and confirm the remote branch contains every local fix commit:
+For example, after selecting the actual PR head repository URL and branch:
 
 ```bash
-branch=$(git branch --show-current)
-git fetch origin "$branch" || {
-  echo "FETCH FAILED — do not resolve review comments"
-  exit 1
-}
-git rev-list --left-right --count "origin/$branch...HEAD"
+git fetch "$pr_head_repository_url" "$pr_head_branch" || exit 1
+fetched_head_oid=$(git rev-parse FETCH_HEAD) || exit 1
+test "$fetched_head_oid" = "$published_head_oid" || exit 1
+git merge-base --is-ancestor "$fix_commit" "$fetched_head_oid" || exit 1
 ```
 
-The right-hand count must be `0` (no local-only commits). A non-zero left-hand count means the remote has commits this checkout lacks — stop and do not resolve.
+Repeat the ancestry check for every fix commit. A failed fetch/publish, head mismatch, uncommitted review fix, or missing fix commit prevents communication or resolution. Reconcile remote changes the checkout lacks before relying on its code evidence.
 
-If this pass produced no code changes (skips only), confirm the working tree has no unpublished review-fix changes, then continue.
+For a skip-only or already-fixed pass, no new commit is needed, but verify the rationale against the **published PR head**, not an unpublished working-tree fix. Unrelated pre-existing changes do not authorize committing them or using them as resolution evidence.
 
-Do **not** continue to step 4 when:
+## 4. Refresh the review, then communicate and resolve
 
-- fix changes are still uncommitted
-- local fix commits are not on `origin/$branch`
-- fetch, commit, or publish failed
+Re-fetch the complete review inventory and thread discussions using the triage workflow, including all pages and human replies. Reconcile new or changed requests. Evidence must still cover the current published head; an outdated thread is not automatically addressed.
 
-Before resolution, refresh the PR head and review inventory. Reconcile newly added or changed findings from both supported reviewers and pagination; stale triage cannot establish completeness. Reuse code evidence only if it still covers the published head. Even for skip-only/already-fixed passes, verify those decisions against the current published code, not unpublished local assumptions.
+Read [GitHub communication](github-communication.md) now. It implements Ben's skip replies and single summary with the GitHub compatibility fixes:
 
-### 4. Resolve inline findings on their existing threads
+- Reply on existing inline threads using `addPullRequestReviewThreadReply`; resolve them with `resolveReviewThread` and their actual GraphQL thread IDs.
+- Handle human feedback as well as CodeRabbit and Codex. Human threads get a concise response linking the published fix or explaining the disposition before resolution. Unsettled disagreements remain open.
+- Keep top-level PR comments and review-body findings distinct from inline threads. They have no individual thread-resolution mutation.
+- Preserve the CodeRabbit summary/resolve command only for a fully addressed CodeRabbit review, after publication and confirmed thread results. It does not resolve Codex or human feedback.
 
-**Always run this step** when implementation is complete, a PR exists, **and** step 3 has confirmed either that the remote has the fix commits **or** that this was a skip-only / already-fixed-only pass with no unpublished review-fix changes.
+A failed reply must not be followed by resolving that thread. A permission error is recorded as a capability limit; do not try another identity or assume another API bypasses it.
 
-Requires `gh api graphql` and network. **Forbidden in this step:** top-level comments, GitHub MCP `addComment`, REST POST of a new issue/PR comment, `POST .../pulls/comments` (the REST in-reply-to path), and `/pulls/comments/{id}/replies`. The guarded PR-level summary, if needed, belongs only in step 5.
+## 5. Update triage artifacts
 
-Thread ids come from `.active/coderabbit-pr-<N>-review/05-comments-structured.json` (`thread_id`). If a finding has no `thread_id`, skip GraphQL for that item and record it as a review-body-only finding with its source reviewer; step 5's global command applies only to CodeRabbit.
+Append implementation and GitHub communication tables to `06-triage-decisions.md`. Preserve the source IDs, reviewer authorship, source URLs, and thread mappings in `05-comments-structured.json`.
 
-Write mutation bodies to a file and pass them with `-F` / `--input`. Never interpolate triage or bot text into the shell command line.
+Record:
 
-**Pre-mutation read (required, every thread).** Confirm the thread still belongs to this PR and its root author is exactly `coderabbitai` or `chatgpt-codex-connector`, matching the triaged `source_author_login` and requested reviewer scope. A reply from a supported bot cannot authorise resolving a human-rooted or other-bot-rooted thread. If author attribution is missing or changed, refresh and reconcile triage before mutation. Every finding mapped to the thread must be verified and terminal before resolving it. An unverified, needs-input, or blocked sibling finding keeps the whole thread open. Before 4a or 4b, load the thread's current `isResolved` and all comments (paginate nested comments). Treat existing replies from humans **and** bots as duplicates when the body already contains the same skip rationale. Then:
+- `implementation_status` and verification evidence for each fix
+- `published_head_oid` and published fix commits
+- `github_reply_url` for posted thread replies, and `github_skip_reply_url` for skips
+- `thread_resolved: true` only after a confirmed mutation or fresh read shows resolution; otherwise `false` with the error/blocker
+- Body-only/top-level `communication_status: addressed | needs_input | unavailable`, without claiming they have a resolved thread
+- `global_resolve_status: posted | not_needed | blocked | unavailable` and the CodeRabbit summary URL/error, if applicable
 
-- already `isResolved: true` — do not reply, do not resolve again; record `thread_resolved: true`, `mutation: none`
-- skip + matching reply already present — do not reply again; still resolve if unresolved
-- skip + unresolved + no matching reply — 4a then 4b
-- obvious_fix (done / already fixed) + unresolved — 4b only, never 4a
-- GraphQL error — do not retry as `addComment`; record `thread_resolved: false` and the error
+An attempted command is not proof that a thread was resolved. Refresh the final PR head and complete review inventory; report new or still-open findings. If the head changed during communication, reconcile that state before claiming completion.
 
-#### 4a. Inline thread replies (skipped items only)
+## 6. Report
 
-For each finding where `triage === "skip"` **and** `thread_id` is present **and** the pre-mutation read did not skip the reply:
+Provide counts by reviewer of implemented, already fixed, skipped, blocked, and unverified findings; changed files and checks; the PR link; published fix evidence; reply/summary links; confirmed resolutions; and remaining discussion or capability failures.
 
-```bash
-THREAD_ID='PRRT_…'   # from triage JSON, not the numeric comment id
-BODY_FILE=$(mktemp)
-GQL_FILE=$(mktemp)
-trap 'rm -f "$BODY_FILE" "$GQL_FILE"' EXIT
-jq -nr --arg id "<finding_id>" --slurpfile triage .active/coderabbit-pr-<N>-review/05-comments-structured.json '
-  ($triage[0].findings[] | select(.id == $id) | .triage_rationale) as $rationale
-  | "**Skipping** — " + $rationale
-' > "$BODY_FILE"
-
-jq -n --rawfile body "$BODY_FILE" --arg threadId "$THREAD_ID" '{
-  query: "mutation($threadId:ID!, $body:String!) { addPullRequestReviewThreadReply(input: { pullRequestReviewThreadId: $threadId, body: $body }) { comment { id url } } }",
-  variables: { threadId: $threadId, body: $body }
-}' > "$GQL_FILE"
-
-gh api graphql --input "$GQL_FILE"
-```
-
-- **Never** reply on threads for `obvious_fix` items that were implemented — resolve those in 4b only.
-
-Skipped review-body nitpicks with no `thread_id` get no reply.
-
-#### 4b. Resolve threads (fixes + skips)
-
-For each finding that has a `thread_id` and is either **skip** or **obvious_fix** with `implementation_status` `done` / `skipped_already_fixed`, **and** the pre-mutation read shows `isResolved` is still false:
-
-```bash
-GQL_FILE=$(mktemp)
-jq -n --arg threadId "$THREAD_ID" '{
-  query: "mutation($threadId:ID!) { resolveReviewThread(input: { threadId: $threadId }) { thread { id isResolved } } }",
-  variables: { threadId: $threadId }
-}' > "$GQL_FILE"
-
-gh api graphql --input "$GQL_FILE"
-```
-
-Resolve **per thread**. Do not post a summary issue comment in this step. Record the mutation result in triage artifacts (`thread_resolved` true or false).
-
-If a mutation returns 403, stop that path and report it. Do not fall back to `gh pr comment` or GitHub MCP.
-
-### 5. Close completed CodeRabbit review-body-only findings
-
-`@coderabbitai resolve` addresses CodeRabbit only. Never use it to close Codex findings, invent a Codex resolve command, or include Codex findings in the CodeRabbit summary. Codex findings with no inline thread may be implemented and published, but record their `review_body_resolution_status: "manual"` and report that no supported automatic body-resolution action is available.
-
-Run this step only when at least one **CodeRabbit** finding has no `thread_id` and is terminal. A Codex-only review does not trigger a PR-level comment:
-
-- `triage === "skip"`, or
-- `triage === "obvious_fix"` with `implementation_status` `done` / `skipped_already_fixed`
-
-Because `@coderabbitai resolve` is global for CodeRabbit, **do not post it while any CodeRabbit finding is `needs_input`, `unverified`, blocked, missing from the refreshed inventory, or otherwise incomplete**. Report that the CodeRabbit review-body findings remain open instead.
-
-A fresh thread read must also confirm every CodeRabbit inline thread in the inventory is resolved. A terminal finding status is insufficient: failed, unconfirmed, or still-open CodeRabbit thread resolutions block the global comment.
-
-Step 3 must already have proven that every fix commit is on the remote. Then build one concise PR comment from the structured triage data:
-
-```markdown
-@coderabbitai resolve
-
-## CodeRabbit triage — implementation summary
-
-Reviewed <TOTAL> findings: **<FIXED> fixed** and **<SKIPPED> skipped**.
-
-### Fixed
-
-| File | Finding | What changed |
-| --- | --- | --- |
-| `path/to/file.ts` | Short title | One-sentence implementation summary |
-
-### Skipped
-
-| File | Finding | Why skipped |
-| --- | --- | --- |
-| `path/to/file.ts` | Short title | One-sentence code-backed rationale |
-```
-
-Include all fixed and skipped **CodeRabbit** findings so the comment is a useful audit summary, but keep each row to one sentence and omit empty sections. Generate the body from `05-comments-structured.json` into a temporary file; never interpolate bot text into shell source.
-
-Post exactly once with `gh pr comment <PR> --body-file <file>`. Before posting, inspect existing top-level PR comments and do not duplicate a matching CodeRabbit triage summary. Record the comment URL.
-
-If posting returns 403 or the token otherwise lacks permission:
-
-- do not retry through GitHub MCP, REST, or another identity
-- retain the successful per-thread GraphQL results from step 4
-- record `global_resolve_status: "unavailable"` and the error in the triage artifacts
-- report: `Inline CodeRabbit threads resolved; PR-level CodeRabbit resolve unavailable with this token.`
-
-### 6. Update triage artifacts
-
-Append thread communication to `06-triage-decisions.md`:
-
-```markdown
-## Thread communication
-
-| Item                          | Result                                      |
-| ----------------------------- | ------------------------------------------- |
-| Skip reply: `file.ts`         | comment url, or `none` (duplicate / already resolved) |
-| Resolved thread: `file.ts`    | `isResolved: true`                          |
-| Failed resolve: `file.ts`     | `isResolved: false` — GraphQL error text    |
-| Global resolve summary        | comment URL, `not needed`, `blocked`, or `unavailable` |
-```
-
-Update `05-comments-structured.json`:
-
-- Skips: `"github_skip_reply_url"` when a thread reply was posted; omit or `null` if the reply was skipped as a duplicate
-- `"thread_resolved": true` when the thread is resolved (mutation or already resolved)
-- `"thread_resolved": false` when resolve was not performed or the mutation failed
-- `"graphql_error"`: string when a mutation returned an error; omit when none
-- At the top level, `"global_resolve_status"` (CodeRabbit only): `"posted" | "not_needed" | "blocked" | "unavailable"`
-- At the top level, `"global_resolve_comment_url"` when posted
-- At the top level, `"global_resolve_error"` when unavailable
-
-### Check the final review state
-
-After publication and permitted thread mutations, refresh the live PR head and complete review inventory. Report remaining unresolved threads from every author, including humans and other bots; do not resolve those threads through this supported-bot workflow. Keep incomplete or unverified review-body findings explicit. Apply the [review merge gate](../../references/review-merge-gate.md) before declaring the PR merge-ready. This workflow does not authorise merging or bypassing protection.
-
-### 7. Report
-
-Provide:
-
-- Count implemented vs already fixed vs blocked, with counts per reviewer
-- Files touched (grouped)
-- Confirmation that fix commits were on the remote before resolve
-- One PR link
-- Count of inline skip-reply threads posted
-- Count of review-body-only findings per reviewer, the CodeRabbit global resolve status/comment link, and any Codex body-only findings needing manual resolution
-- Anything that failed verification or needs follow-up
+This pass does not merge the PR or dismiss a human's review approval/request-changes state. Resolved conversations alone do not establish merge readiness. Apply the [review merge gate](../../references/review-merge-gate.md) before declaring the PR merge-ready.
 
 ## Related skills
 
-- `coderabbit-review-triage` — download, parse, and classify review feedback first
-- `coderabbit-review-implement` — apply obvious fixes locally; no publish or resolve
-- `update-pr` — refresh the PR description after the review lands
-- `ready-for-pr` — run the gates if I want merge-readiness as well
+- `coderabbit-review-triage` — download and classify review feedback
+- `coderabbit-review-implement` — Ben's implementation workflow, kept local
+- `update-pr` — update PR wording when requested
+- `ready-for-pr` — assess readiness when requested
