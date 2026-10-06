@@ -2,6 +2,13 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.0 — pending
+
+- Restore Ben's implementation planning and execution workflows with agreed requirements and the selected plan as the delivery boundary; keep `run-implementation-plan-all` as a host goal loop around the runner.
+- Continue work that is already authorized across skill boundaries.
+- Add the reusable `calmcraft dev-all` development stack launcher and the shared engineering configuration contract with validation.
+- Let the visualizer lead with the product contract and branch changes.
+
 ## 0.3.1 — 2026-09-07
 
 - Bound browser verification to explicit checks and unresolved UI risks, reuse results across delivery phases, and distinguish setup blockers from product failures.
