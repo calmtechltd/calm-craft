@@ -118,6 +118,9 @@ export function validateEnvSyncConfig(input: unknown): EnvSyncConfig {
       };
     } else if (value.provider === "github") {
       object(value, ["provider", "repo", "environments"]);
+      const names = Object.keys(environments).map((environment) => environment.toLowerCase());
+      if (new Set(names).size !== names.length)
+        throw new Error("GitHub envSync environment names must be unique ignoring case.");
       const repo = text(value.repo);
       if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/u.test(repo))
         throw new Error("GitHub envSync repo must be owner/repository.");

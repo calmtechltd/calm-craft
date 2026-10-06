@@ -132,6 +132,132 @@ describe("dev-all environment sync", () => {
       expect(() => validateEnvSyncConfig(invalid)).toThrow();
   });
 
+  it("B6 rejects GitHub environment aliases even when they map to different sources", () => {
+    for (const source of ["production", "preview"]) {
+      const config = syncConfig();
+      expect(() =>
+        validateEnvSyncConfig({
+          ...config,
+          targets: {
+            github: {
+              ...config.targets.github,
+              environments: { Preview: "production", preview: source },
+            },
+          },
+        }),
+      ).toThrow(/unique ignoring case/u);
+    }
+  });
+
+  it("B7/B8 rejects browser-public secret names before Vercel requests across source forms", async () => {
+    const root = await fixture("NEXT_PUBLIC_API_KEY=op://Engineering/Preview Env/API_KEY\n");
+    const config = syncConfig();
+    for (const source of [
+      config.sources.preview,
+      { vault: "Engineering", item: "Preview Env", variables: ["API_KEY", "VITE_API_KEY"] },
+      { vault: "Engineering", item: "Preview Env", variables: ["*"] },
+    ]) {
+      await writeFile(
+        join(root, "dev.yaml"),
+        stringify(
+          stack({
+            ...config,
+            sources: { ...config.sources, preview: source },
+          }),
+        ),
+      );
+      const execute = vi.fn(async (request: ProcessRequest) =>
+        request.args[0] === "item"
+          ? JSON.stringify({
+              fields: [
+                { label: "API_KEY", value: "private-secret" },
+                { label: "VITE_API_KEY", value: "private-secret" },
+              ],
+            })
+          : "private-secret",
+      );
+      const remote = vi.fn<typeof fetch>(async (_url, init) =>
+        init?.method === "POST"
+          ? confirmed(JSON.parse(String(init.body)).key)
+          : Response.json({ envs: [] }),
+      );
+      await expect(
+        runSyncCommand(args({ apply: true }), io(), {
+          root,
+          execute,
+          fetch: remote,
+          environment: { VERCEL_TOKEN: "token" },
+        }),
+      ).rejects.toThrow(/browser-public prefix.*No remote writes started/u);
+      expect(remote).not.toHaveBeenCalled();
+      expect(execute.mock.calls).toHaveLength(
+        "variables" in source && source.variables.includes("*") ? 1 : 0,
+      );
+    }
+
+    // A deliberately public literal remains valid configuration.
+    await writeFile(join(root, "dev.yaml"), stringify(stack()));
+    await writeFile(join(root, "preview.tpl"), "VITE_PUBLIC_URL=https://example.com\n");
+    const execute = vi.fn();
+    const remote = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ envs: [] }))
+      .mockResolvedValueOnce(confirmed("VITE_PUBLIC_URL"));
+    await runSyncCommand(args({ apply: true }), io(), {
+      root,
+      execute,
+      fetch: remote,
+      environment: { VERCEL_TOKEN: "token" },
+    });
+    expect(execute).not.toHaveBeenCalled();
+    expect(JSON.parse(String(remote.mock.calls[1]?.[1]?.body))).toMatchObject({
+      key: "VITE_PUBLIC_URL",
+      type: "plain",
+      visibility: "config",
+    });
+  });
+
+  it("B8 rejects GitHub-reserved names before any write across source forms", async () => {
+    const root = await fixture(
+      "API_KEY=op://Engineering/Preview Env/API_KEY\nGITHUB_TOKEN=op://Engineering/Preview Env/GITHUB_TOKEN\n",
+    );
+    const config = syncConfig();
+    for (const source of [
+      config.sources.preview,
+      { vault: "Engineering", item: "Preview Env", variables: ["API_KEY", "GITHUB_TOKEN"] },
+      { vault: "Engineering", item: "Preview Env", variables: ["*"] },
+    ]) {
+      await writeFile(
+        join(root, "dev.yaml"),
+        stringify(
+          stack({
+            ...config,
+            sources: { ...config.sources, production: { ...source } },
+          }),
+        ),
+      );
+      const execute = vi.fn(async (request: ProcessRequest) => {
+        if (request.executable === "gh") return "";
+        if (request.args[0] !== "item") return "private-secret";
+        return JSON.stringify({
+          fields: [
+            { label: "API_KEY", value: "private-secret" },
+            { label: "GITHUB_TOKEN", value: "private-secret" },
+          ],
+        });
+      });
+      await expect(
+        runSyncCommand(args({ target: "github", environment: "all", apply: true }), io(), {
+          root,
+          execute,
+        }),
+      ).rejects.toThrow(/GitHub reserves secret names.*No remote writes started/u);
+      expect(execute.mock.calls).toHaveLength(
+        "variables" in source && source.variables.includes("*") ? 1 : 0,
+      );
+    }
+  });
+
   it("B7 defaults to a dry run and requires explicit target and destination selection", async () => {
     const root = await fixture(),
       output = io();
@@ -293,6 +419,7 @@ describe("dev-all environment sync", () => {
     for (const response of [
       Response.json({ error: "private-api-value" }, { status: 403 }),
       Response.json({ failed: [{ error: "private-api-value" }] }, { status: 201 }),
+      new Response("unparseable-provider-response", { status: 201 }),
     ]) {
       const remote = vi
         .fn<typeof fetch>()
@@ -307,7 +434,9 @@ describe("dev-all environment sync", () => {
           fetch: remote,
           environment: { VERCEL_TOKEN: "token" },
         }),
-      ).rejects.toThrow(/PUBLIC_URL; 1\/2 writes confirmed/u);
+      ).rejects.toThrow(
+        /PUBLIC_URL; 1\/2 writes confirmed\. This unconfirmed write may also have applied/u,
+      );
       expect(output.output.join("")).not.toMatch(/private-api-value|private-secret-value/u);
     }
   });

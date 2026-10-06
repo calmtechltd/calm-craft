@@ -67,6 +67,9 @@ type Variable = {
 };
 type Operation = Variable & { environment: string; source: SecretSource };
 
+// These framework prefixes can expose values in browser bundles regardless of storage type.
+const publicPrefix = /^(?:NEXT_PUBLIC_|VITE_|PUBLIC_|REACT_APP_|GATSBY_|VUE_APP_|NUXT_PUBLIC_)/u;
+
 export function executeSecretProcess(request: ProcessRequest): Promise<string> {
   return new Promise((resolve_, reject) => {
     const child = execFile(
@@ -259,6 +262,16 @@ async function plan(
       throw new Error("The requested variable is missing from a selected envSync source.");
     if (target.provider === "github" && selected.some((variable) => !variable.secret))
       throw new Error("GitHub envSync sources must contain only 1Password secret references.");
+    for (const variable of selected) {
+      if (target.provider === "github" && variable.key.startsWith("GITHUB_"))
+        throw new Error(
+          `GitHub reserves secret names starting with GITHUB_: ${variable.key}. Exclude or rename this variable. No remote writes started.`,
+        );
+      if (target.provider === "vercel" && variable.secret && publicPrefix.test(variable.key))
+        throw new Error(
+          `${variable.key} has a browser-public prefix and cannot be synced as a secret. Exclude or rename it, or supply an intentional public literal in a template. No remote writes started.`,
+        );
+    }
     for (const variable of selected) operations.push({ ...variable, source, environment });
   }
   return { target, operations };
@@ -469,7 +482,7 @@ export async function runSyncCommand(
         });
     } catch {
       throw new Error(
-        `env-sync stopped at ${args.target}/${operation.environment}: ${operation.key}; ${completed}/${operations.length} writes confirmed. Check provider access and retry; earlier writes may have applied.`,
+        `env-sync stopped at ${args.target}/${operation.environment}: ${operation.key}; ${completed}/${operations.length} writes confirmed. This unconfirmed write may also have applied. Check provider state before retrying; earlier writes are retained.`,
       );
     }
     completed++;
