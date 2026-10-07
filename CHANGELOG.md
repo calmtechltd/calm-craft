@@ -2,6 +2,11 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.4 — 2026-10-07
+
+- Restore `run-implementation-plan-all` with explicit host-goal setup and an explicit goal-request prompt.
+- Prepare plugin patch versions automatically after successful main-branch checks, keeping client manifests and command examples in sync.
+
 ## 0.4.3 — pending
 
 - Merge single-chunk and finish-plan execution into `run-implementation-plan`, retaining explicit host-goal authorization.

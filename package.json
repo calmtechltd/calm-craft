@@ -1,6 +1,6 @@
 {
   "name": "@calmcraft/cli",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Local visualizer and branch review for CalmCraft product specs.",
   "keywords": [
     "branch-review",
@@ -49,6 +49,7 @@
     "lint": "oxlint .",
     "pack:check": "pnpm build && pnpm pack --dry-run",
     "release:check": "node scripts/verify-release-package.mjs",
+    "plugin:patch": "node scripts/bump-plugin-version.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test --pass-with-no-tests",
     "test:unit": "vitest run --exclude 'test/e2e/**'"
