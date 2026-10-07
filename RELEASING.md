@@ -20,11 +20,11 @@ On npmjs.com, require two-factor authentication, disallow token publishing, and 
 
 ## Prepare a version
 
-Merged changes receive a plugin patch automatically after the main-branch Quality workflow succeeds. The patch workflow updates all manifests, the CLI version, package pins and changelog with `pnpm plugin:patch`, verifies the release contract and package, and commits the versioned source. A merge that already increases the version keeps that version. Superseded Quality runs do not publish an older revision, and a concurrent main update prevents the version commit from pushing. Bot commits use the repository's `GITHUB_TOKEN`, so they do not start another patch loop.
+Merged changes receive a plugin patch automatically after the main-branch Quality workflow succeeds. The patch workflow updates all manifests, the CLI source version and changelog with `pnpm plugin:patch`, verifies the release contract and package, and commits the versioned source. It compares with the commit before the validated push, captured by Quality, so a version increase anywhere in a multi-commit push is preserved. Missing or mismatched push context stops publication. Superseded Quality runs do not publish an older revision, and a concurrent main update prevents the version commit from pushing. Bot commits use the repository's `GITHUB_TOKEN`, so they do not start another patch loop.
 
-The plugin marketplace's hourly check picks up the new source commit. For immediate refresh, configure `CALMTECH_MARKETPLACE_TOKEN` as a fine-grained Actions secret with Actions write access only to `calmtechltd/calmtech-marketplace`; the patch workflow dispatches its refresh workflow. Without that secret, it reports the hourly fallback. Marketplace publication and client refresh are separate steps: upgrade the Calmtech marketplace and update the installed plugin through Codex's plugin manager, then use a new chat to discover the skills.
+The plugin marketplace's hourly check picks up the new source commit. For immediate refresh, configure `CALMTECH_MARKETPLACE_TOKEN` as a fine-grained Actions secret with Actions write access only to `calmtechltd/calmtech-marketplace`; the patch workflow dispatches its refresh workflow. Without that secret, or if dispatch fails, it warns that the hourly check will pick up the version. Marketplace publication and client refresh are separate steps: upgrade the Calmtech marketplace and update the installed plugin through Codex's plugin manager, then use a new chat to discover the skills.
 
-This automates plugin versions; npm publication still follows the staged approval process below.
+This automates plugin versions; npm publication still follows the staged approval process below. Exact CLI download pins in `README.md` and `skills/spec-visualize/SKILL.md` remain on the last published CLI release. Plugin-only bumps never advance those pins; update them together only after the tested npm version is published and promoted.
 
 1. Use `pnpm plugin:patch` for a local patch, or update `package.json`, `plugin.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, and `src/meta.ts` to one deliberate minor/major version.
 2. Move the release notes in `CHANGELOG.md` from pending to the release date.
@@ -44,10 +44,10 @@ Any failure requires a new version. npm versions and staged tarballs are immutab
 
 ## Promote the tested tarball
 
-After every smoke job passes, move the already-tested version to the public channel with an authenticated maintainer session and two-factor authentication:
+After every smoke job passes, set `CALMCRAFT_TESTED_VERSION` to the exact registry version tested above, then move it to the public channel with an authenticated maintainer session and two-factor authentication:
 
 ```sh
-npm dist-tag add @calmcraft/cli@0.4.4 latest
+npm dist-tag add "@calmcraft/cli@$CALMCRAFT_TESTED_VERSION" latest
 npm dist-tag rm @calmcraft/cli next
 ```
 

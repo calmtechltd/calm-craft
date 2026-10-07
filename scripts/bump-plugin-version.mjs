@@ -9,8 +9,7 @@ const manifests = [
   ".claude-plugin/plugin.json",
   ".codex-plugin/plugin.json",
 ];
-const pins = ["README.md", "RELEASING.md", "skills/spec-visualize/SKILL.md"];
-const paths = [...manifests, "src/meta.ts", ...pins, "CHANGELOG.md"];
+const paths = [...manifests, "src/meta.ts", "CHANGELOG.md"];
 const sources = new Map(
   await Promise.all(paths.map(async (path) => [path, await readFile(resolve(root, path), "utf8")])),
 );
@@ -22,11 +21,6 @@ assert(
   sources.get("src/meta.ts").includes(`CALMCRAFT_VERSION = "${previous}"`),
   "CLI version differs from package version.",
 );
-for (const path of pins)
-  assert(
-    sources.get(path).includes(`@calmcraft/cli@${previous}`),
-    `Missing current package pin in ${path}.`,
-  );
 const parts = previous.split(".").map(Number);
 assert(parts.every(Number.isSafeInteger), "Version components must be safe integers.");
 assert(Number.isSafeInteger(parts[2] + 1), "Patch version overflow.");
@@ -42,11 +36,6 @@ sources.set(
     .get("src/meta.ts")
     .replace(`CALMCRAFT_VERSION = "${previous}"`, `CALMCRAFT_VERSION = "${next}"`),
 );
-for (const path of pins)
-  sources.set(
-    path,
-    sources.get(path).replaceAll(`@calmcraft/cli@${previous}`, `@calmcraft/cli@${next}`),
-  );
 const changelog = sources.get("CHANGELOG.md");
 const heading = changelog.indexOf("\n## ");
 assert(heading >= 0, "Changelog has no release heading.");

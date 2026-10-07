@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: publish-plugin-patch
@@ -44,10 +45,31 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
         if: steps.revision.outputs.current == 'true'
-      - name: Prepare a patch unless this commit already bumped the version
+      - uses: actions/download-artifact@v8
         if: steps.revision.outputs.current == 'true'
+        with:
+          name: plugin-push-context
+          path: ${{ runner.temp }}/plugin-push-context
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Prepare a patch unless the validated push already bumped the version
+        if: steps.revision.outputs.current == 'true'
+        env:
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
+          PUSH_CONTEXT_PATH: ${{ runner.temp }}/plugin-push-context/plugin-push.json
         run: |
-          previous=$(git show HEAD^:package.json | node -e 'let s=""; process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s).version))')
+          baseline=$(node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const push = JSON.parse(readFileSync(process.env.PUSH_CONTEXT_PATH, 'utf8'));
+          assert.match(push.before, /^[a-f0-9]{40}$/, 'Missing push baseline.');
+          assert.notEqual(push.before, '0'.repeat(40), 'A branch-creation push has no previous version.');
+          assert.equal(push.after, process.env.VALIDATED_SHA, 'Push context does not match the validated revision.');
+          console.log(push.before);
+          NODE
+          )
+          git fetch --no-tags --depth=1 origin "$baseline"
+          previous=$(git show "$baseline:package.json" | node -e 'let s=""; process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s).version))')
           current=$(node -p 'require("./package.json").version')
           if [ "$previous" = "$current" ]; then
             node scripts/bump-plugin-version.mjs
@@ -69,7 +91,7 @@ jobs:
       - name: Publish versioned plugin source
         if: steps.revision.outputs.current == 'true'
         run: |
-          git add -- package.json plugin.json .claude-plugin/plugin.json .codex-plugin/plugin.json src/meta.ts README.md RELEASING.md skills/spec-visualize/SKILL.md CHANGELOG.md
+          git add -- package.json plugin.json .claude-plugin/plugin.json .codex-plugin/plugin.json src/meta.ts CHANGELOG.md
           git diff --cached --check
           if ! git diff --cached --quiet; then
             version=$(node -p 'require("./package.json").version')
@@ -82,7 +104,9 @@ jobs:
           GH_TOKEN: ${{ secrets.CALMTECH_MARKETPLACE_TOKEN }}
         run: |
           if [ -n "$GH_TOKEN" ]; then
-            gh workflow run refresh.yml --repo calmtechltd/calmtech-marketplace
+            if ! gh workflow run refresh.yml --repo calmtechltd/calmtech-marketplace; then
+              echo '::warning::Marketplace dispatch failed. The marketplace hourly source check will pick up this version.'
+            fi
           else
             echo '::warning::CALMTECH_MARKETPLACE_TOKEN is not configured. The marketplace hourly source check will pick up this version.'
           fi
