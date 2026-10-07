@@ -26,9 +26,9 @@ Pick up an existing `*-implementation-plan.md` and implement **one chunk per pas
 
 - **One chunk (default):** a named chunk, "next chunk", or an ordinary "run" / "continue the plan" request selects one chunk unless the user has already authorized finishing the wider scope. Verify and record that chunk, then report the next one.
 - **Finish the plan:** an explicit "finish the plan" or "run all remaining chunks" request selects the plan's agreed delivery scope. Repeat the workflow below one chunk at a time; verify and record each chunk before starting the next. Continue without another prompt until the selected scope is complete or blocked. Do not start deferred phases or backlog work outside that scope.
-- **Host goal:** when the user explicitly requests a host goal, start or continue one whose objective names the plan and selected delivery scope. Follow the same chunk workflow on each pass, preserve progress across passes, and honor changes to the user's assignment. Complete the goal only when every selected chunk satisfies its existing **Done when**. Follow the host's goal lifecycle and blocker rules. Finishing a plan in the current session does not by itself authorize creating a persistent goal.
+- **Host goal:** when the user explicitly requests a host goal, set it up after opening the plan and before implementing a chunk, using the procedure below. Follow the same chunk workflow on each pass and preserve progress across passes. Finishing a plan in the current session does not by itself authorize creating a persistent goal.
 
-The former `run-implementation-plan-all` workflow is now the finish-plan mode of this skill.
+Use [`run-implementation-plan-all`](../run-implementation-plan-all/SKILL.md) as the explicit shortcut to create or continue a host goal for the remaining delivery scope. Ordinary finish-plan requests can still run in the current session without a goal.
 
 ## Workflow
 
@@ -37,6 +37,16 @@ The former `run-implementation-plan-all` workflow is now the finish-plan mode of
 Path from the user, or search `.active/**/*-implementation-plan.md`. If several match, ask which feature.
 
 Read the header (**Strategy**, agent session rules, migration note) and **How to use this plan**.
+
+#### Set up a requested host goal
+
+Use the host's goal tools; a written objective or plan status is not a host goal.
+
+1. Inspect the current goal with `get_goal` (or the host's equivalent). Reuse an active goal that already covers the selected plan and scope, provided its completion criteria cover every selected chunk's existing **Done when**. An unfinished goal for unrelated work must be resolved with the user; do not overwrite it or mark it complete to make room.
+2. When no unfinished goal exists, call `create_goal` with an objective naming the plan path, selected delivery scope, and completion criteria: implement and verify every selected chunk against its existing **Done when**, and record evidence in the plan. Set a token budget only if the user explicitly requested one.
+3. Confirm setup succeeded before coding. If goal tools are unavailable or setup fails, report that limitation explicitly; do not claim a goal was created. Continue session work only when the user's request allows it.
+
+On continuation, read the current goal and plan checkpoint before selecting the next chunk. Honor the user's current assignment and the host's goal lifecycle rules. Required but unverified work remains incomplete. Call `update_goal` with `complete` only when every selected chunk satisfies **Done when** and no required work remains. Use `paused` only at the user's explicit request, and `blocked` only when the host's blocker threshold is met. Do not mark a goal complete because a pass ended or its budget is nearly exhausted.
 
 ### 2. Pick the chunk
 
@@ -114,6 +124,7 @@ In one-chunk mode, stop here. In finish-plan mode, repeat from chunk selection w
 
 ## Related
 
+- `run-implementation-plan-all` — create or continue a host goal to finish the selected plan
 - `author-implementation-plan` — creates the plan
 - `spec-maintain-on-ship` — behaviour badges in the same PR
 - `planning.mdc` — when the user wants approval between micro-steps inside a chunk

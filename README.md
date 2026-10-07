@@ -199,6 +199,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | `author-implementation-plan`        | Design doc → chunks sized for one reviewable pass.                                                 |
 | `ask-questions`                     | Surface open decisions in current work and ask them, structured.                                   |
 | `run-implementation-plan`           | Implement one chunk by default; explicitly finish the selected plan or run it in a host goal.      |
+| `run-implementation-plan-all`       | Create or continue a host goal to finish the selected plan, verifying one chunk at a time.         |
 | `bug-regression-red-green`          | Reproduce the failure, fix it, and preserve meaningful regression protection.                      |
 | `branch-self-review`                | Review your own diff before anyone else does. Reports; never fixes.                                |
 | `clean-code-slop`                   | Explicitly requested audit or cleanup of unjustified complexity, duplication, and low-value tests. |
@@ -209,7 +210,7 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | `coderabbit-review-implement`       | Apply triaged bot and human review fixes locally. No commit, push, or resolve.                     |
 | `coderabbit-review-publish-resolve` | Triage → fix → verify → commit → publish → reply and resolve, in one invocation.                   |
 
-`run-implementation-plan-all` has been merged into `run-implementation-plan`. Use `$run-implementation-plan` for the next chunk, `$run-implementation-plan finish the selected plan` for the remaining delivery scope, or explicitly request a host goal. Each mode verifies and records one chunk before starting the next.
+Use `$run-implementation-plan` for the next chunk, `$run-implementation-plan finish the selected plan` for the remaining delivery scope in the current session, or `$run-implementation-plan-all` to create or continue a host goal and finish that scope across turns. The all-mode default prompt explicitly requests the goal, and the skill sets it up before implementation. Each mode verifies and records one chunk before starting the next.
 
 The review skills preserve Ben's triage rules, nitpick bundling, implementation priorities, skip explanations, and single fixes-and-skips summary. `coderabbit-review-publish-resolve` replaces the confusing `coderabbit-review-implement-all` name: triage assesses the feedback, implement applies local fixes, and publish-and-resolve publishes them before GitHub communication. The workflows cover CodeRabbit, Codex, and human reviewers. [GitHub review access](references/github-review-access.md) documents the desktop/cloud transport fixes, including GraphQL thread replies and resolution and restricted tokens that cannot post a top-level summary.
 
