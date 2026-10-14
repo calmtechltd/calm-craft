@@ -1,0 +1,10 @@
+interface:
+  display_name: "Code Contract Implementation"
+  short_description: "Build or adapt code to satisfy selected contracts"
+  default_prompt: "Use $code-contract-implement to build or adapt code to satisfy the selected contracts, then verify the result."
+  icon_small: "./assets/calm-craft-icon.png"
+  icon_large: "./assets/calm-craft-icon.png"
+  brand_color: "#00BC72"
+
+policy:
+  allow_implicit_invocation: false

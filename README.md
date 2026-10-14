@@ -2,11 +2,12 @@
 
 Free and open source, from [Calm Tech Ltd](https://github.com/calmtechltd). MIT licensed — use it, change it, ship it commercially. We want nothing for it.
 
-An [Agent Plugin](https://agent-plugins.org/) providing three things that make coding agents produce work you can trust:
+An [Agent Plugin](https://agent-plugins.org/) providing four things that make coding agents produce work you can trust:
 
 1. **Specs** — the product's intent, written down in an addressable form, so an agent has a source of truth that doesn't move.
 2. **A delivery loop** — design → chunked plan → one chunk per pass, looped until the plan is done → gates → self-review.
 3. **Conventions** — decided once, enforced by lint where a machine can enforce them, ambient where it can't.
+4. **Coding contracts** — explicitly invoked discovery, spec-driven design, implementation and audit of code boundaries and structure.
 
 Portable by design: skills live in `skills/` per the Agent Plugins v1 spec, so this works in Codex, Cursor, VS Code, Copilot, and anything else implementing the standard. `.claude-plugin/` sits alongside for Claude Code, which uses its own manifest location; both read the same skills.
 
@@ -164,6 +165,19 @@ That indirection is the point. Skills stay portable and updatable; your repo's s
 | Skill               | Job                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | `engineering-setup` | Detect the toolchain, interview, write `.engineering/config.yaml` and `AGENTS.md`. Run first. |
+
+### Coding contracts — explicit trial
+
+Invoke these skills by name while the contract layer is being trialled. They apply to libraries, applications, tools and services. The [short contract guide](references/coding-contracts.md) defaults to responsibility/authority, API guarantees, desired structure and checks. Contracts link canonical specs/API requirements and evidence; changed obligations need fresh verification. Implementation completion requires both behavior and boundary conformance; passing tests alone do not establish either uninspected boundaries or permission to bypass them.
+
+Load relevant [contract details](references/code-contract-details.md) for state, effects, compatibility or framework migration, and [architecture principles](references/architecture-principles.md) for consequential design choices. Small updates need no separate design document. Reviews across several capabilities include relationship diagrams, with flows and current/proposed code trees where helpful. These skills do not run automatically, and the CLI/visualizer does not yet parse contracts.
+
+| Skill                     | Job                                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `code-contract-discover`  | Map existing or proposed capabilities and identify evidence-backed boundary gaps. Reports; does not refactor.      |
+| `code-contract-design`    | Propose/update contract specs and desired structure from specs, code and existing framework choices.               |
+| `code-contract-audit`     | Check selected code against its contracts; distinguish violations, target gaps and missing evidence. Reports only. |
+| `code-contract-implement` | Build missing code or adapt existing code for selected contracts, then verify the required behavior.               |
 
 ### Conventions
 
