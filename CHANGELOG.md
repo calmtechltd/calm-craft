@@ -2,6 +2,10 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## 0.4.5 — 2026-10-14
+
+- Publish the latest validated plugin changes under a new patch version.
+
 ## Unreleased
 
 - Make module boundary conformance explicit during implementation and completion, including abstraction leaks, bypasses and scope drift, with researched terminology and evidence guidance.
