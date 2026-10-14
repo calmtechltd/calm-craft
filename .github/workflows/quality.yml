@@ -9,6 +9,17 @@ permissions:
   contents: read
 
 jobs:
+  push-context:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: cp "$GITHUB_EVENT_PATH" "$RUNNER_TEMP/plugin-push.json"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: plugin-push-context
+          path: ${{ runner.temp }}/plugin-push.json
+          overwrite: true
+
   quality:
     runs-on: ubuntu-latest
     strategy:

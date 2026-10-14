@@ -1,0 +1,112 @@
+name: Publish plugin patch
+
+on:
+  workflow_run:
+    workflows: [Quality]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-plugin-patch
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 2
+      - name: Check that this is still the validated revision
+        id: revision
+        env:
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -n "$VALIDATED_SHA" ] && [ "$(git rev-parse HEAD)" != "$VALIDATED_SHA" ]; then
+            echo 'A newer main revision exists; its Quality run will prepare the patch.'
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: pnpm/action-setup@v4
+        if: steps.revision.outputs.current == 'true'
+        with:
+          version: 11.10.0
+      - uses: actions/setup-node@v6
+        if: steps.revision.outputs.current == 'true'
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.revision.outputs.current == 'true'
+      - uses: actions/download-artifact@v8
+        if: steps.revision.outputs.current == 'true'
+        with:
+          name: plugin-push-context
+          path: ${{ runner.temp }}/plugin-push-context
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Prepare a patch unless the validated push already bumped the version
+        if: steps.revision.outputs.current == 'true'
+        env:
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
+          PUSH_CONTEXT_PATH: ${{ runner.temp }}/plugin-push-context/plugin-push.json
+        run: |
+          baseline=$(node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const push = JSON.parse(readFileSync(process.env.PUSH_CONTEXT_PATH, 'utf8'));
+          assert.match(push.before, /^[a-f0-9]{40}$/, 'Missing push baseline.');
+          assert.notEqual(push.before, '0'.repeat(40), 'A branch-creation push has no previous version.');
+          assert.equal(push.after, process.env.VALIDATED_SHA, 'Push context does not match the validated revision.');
+          console.log(push.before);
+          NODE
+          )
+          git fetch --no-tags --depth=1 origin "$baseline"
+          previous=$(git show "$baseline:package.json" | node -e 'let s=""; process.stdin.on("data",c=>s+=c).on("end",()=>console.log(JSON.parse(s).version))')
+          current=$(node -p 'require("./package.json").version')
+          if [ "$previous" = "$current" ]; then
+            node scripts/bump-plugin-version.mjs
+          else
+            node --input-type=module - "$previous" "$current" <<'NODE'
+          import assert from 'node:assert/strict';
+          const [previous, current] = process.argv.slice(2);
+          assert([previous, current].every(v => /^\d+\.\d+\.\d+$/.test(v)), 'Use stable semantic versions for automatic publication.');
+          const before = previous.split('.').map(Number);
+          const after = current.split('.').map(Number);
+          const difference = after.map((n, i) => n - before[i]).find(n => n !== 0);
+          assert(difference > 0, 'A deliberate version change must increase the version.');
+          NODE
+          fi
+      - run: pnpm exec vitest run scripts/release-contract.test.ts scripts/plugin-version.test.ts
+        if: steps.revision.outputs.current == 'true'
+      - run: pnpm build && pnpm release:check
+        if: steps.revision.outputs.current == 'true'
+      - name: Publish versioned plugin source
+        if: steps.revision.outputs.current == 'true'
+        run: |
+          git add -- package.json plugin.json .claude-plugin/plugin.json .codex-plugin/plugin.json src/meta.ts CHANGELOG.md
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            version=$(node -p 'require("./package.json").version')
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Publish plugin patch $version"
+            git push origin HEAD:main
+          fi
+      - name: Refresh the Calmtech marketplace immediately
+        if: steps.revision.outputs.current == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CALMTECH_MARKETPLACE_TOKEN }}
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            if ! gh workflow run refresh.yml --repo calmtechltd/calmtech-marketplace; then
+              echo '::warning::Marketplace dispatch failed. The marketplace hourly source check will pick up this version.'
+            fi
+          else
+            echo '::warning::CALMTECH_MARKETPLACE_TOKEN is not configured. The marketplace hourly source check will pick up this version.'
+          fi

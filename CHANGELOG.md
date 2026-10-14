@@ -2,6 +2,18 @@
 
 CalmCraft follows [Semantic Versioning](https://semver.org/). Release notes describe user-visible CLI, spec-contract, security, and compatibility changes.
 
+## Unreleased
+
+- Make module boundary conformance explicit during implementation and completion, including abstraction leaks, bypasses and scope drift, with researched terminology and evidence guidance.
+- Show relationship diagrams and relevant flow/current-versus-proposed code views in architecture reviews and designs.
+- Keep code contracts compact by default, load detailed guidance only for relevant boundaries, and require fresh verification when obligations change.
+- Add four explicitly invoked `code-contract-*` skills for architecture discovery, spec-driven contract design/audit and building or adapting contracted code, with researched architecture principles and a technical contract format for libraries, applications, tools and services.
+
+## 0.4.4 — 2026-10-07
+
+- Restore `run-implementation-plan-all` with explicit host-goal setup and an explicit goal-request prompt.
+- Prepare plugin patch versions automatically after successful main-branch checks, keeping client manifests and command examples in sync.
+
 ## 0.4.3 — pending
 
 - Merge single-chunk and finish-plan execution into `run-implementation-plan`, retaining explicit host-goal authorization.

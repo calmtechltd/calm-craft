@@ -57,10 +57,13 @@ describe("npm release contract", () => {
     }
   });
 
-  it("keeps package pins, security routing, and distributed templates current", () => {
+  it("keeps published CLI pins consistent, security routing and distributed templates current", () => {
     const readme = read("README.md");
-    const manifest = json<PackageManifest>("package.json");
-    expect(readme).toContain(`@calmcraft/cli@${manifest.version}`);
+    const publishedVersions = new Set(
+      Array.from(readme.matchAll(/@calmcraft\/cli@(\d+\.\d+\.\d+)/gu), (match) => match[1]),
+    );
+    expect(publishedVersions.size).toBe(1);
+    const publishedVersion = [...publishedVersions][0];
     expect(read("SECURITY.md")).toContain(
       "https://github.com/calmtechltd/calm-craft/security/advisories/new",
     );
@@ -69,9 +72,17 @@ describe("npm release contract", () => {
     const releasing = read("RELEASING.md");
     expect(releasing).toContain("--allow-stage-publish");
     expect(releasing).toContain("npm stage publish --tag next");
-    expect(releasing).toContain(`npm dist-tag add @calmcraft/cli@${manifest.version} latest`);
+    expect(releasing).toContain(
+      'npm dist-tag add "@calmcraft/cli@$CALMCRAFT_TESTED_VERSION" latest',
+    );
     const visualizerSkill = read("skills/spec-visualize/SKILL.md");
-    expect(visualizerSkill).toContain(`@calmcraft/cli@${manifest.version}`);
+    const skillVersions = new Set(
+      Array.from(
+        visualizerSkill.matchAll(/@calmcraft\/cli@(\d+\.\d+\.\d+)/gu),
+        (match) => match[1],
+      ),
+    );
+    expect([...skillVersions]).toEqual([publishedVersion]);
   });
 
   it("uses stage-only OIDC publishing and a six-environment installed-package smoke matrix", () => {
